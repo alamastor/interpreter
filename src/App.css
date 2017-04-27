@@ -1,0 +1,17 @@
+.App {
+  text-align: center;
+}
+
+.container {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.code {
+  width: 100%;
+  min-height: 10em;
+  margin: 2rem 0;
+  font-size: 1em;
+  font-family: inherit;
+  resize: none;
+}
