@@ -9,11 +9,19 @@ type Token =  {
   type: 'EOF'
 }
 
+const isSpace = (s: ?string) => s === ' '
+
+const isDigit = (s: ?string) => !isNaN(parseInt(s, 10))
+
 class Interpreter {
   text: string;
   pos: number;
   currentToken: Token;
   currentChar: ?string;
+
+  grammer = [
+    'expr : INTEGER ((PLUS | MINUS) INTEGER)*'
+  ]
 
   constructor(text: string) {
     this.text = text
@@ -42,12 +50,12 @@ class Interpreter {
     while (
       this.currentChar !== null &&
       isDigit(this.currentChar) &&
-      typeof this.currentChar == 'string'
+      typeof this.currentChar === 'string'
     ) {
       result += this.currentChar
       this.advance()
     }
-    return parseInt(result)
+    return parseInt(result, 10)
   }
 
   getNextToken(): Token {
@@ -105,13 +113,16 @@ class Interpreter {
     }
   }
 
+  /**
+   * expr : INTEGER ((PLUS | MINUS) INTEGER)*
+   */
   expr(): string {
     this.currentToken = this.getNextToken()
 
     let result = this.term()
     while (
-      this.currentToken.type == 'PLUS' ||
-      this.currentToken.type == 'MINUS'
+      this.currentToken.type === 'PLUS' ||
+      this.currentToken.type === 'MINUS'
     ) {
       const op = this.currentToken
       if (op.type === 'PLUS') {
@@ -138,9 +149,5 @@ class Interpreter {
     }
   }
 }
-
-const isSpace = (s: ?string) => s === ' '
-
-const isDigit = (s: ?string) => !isNaN(parseInt(s, 10))
 
 export default Interpreter

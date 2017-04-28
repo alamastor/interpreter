@@ -1,17 +1,34 @@
 .App {
+  display: flex;
+}
+
+main {
   text-align: center;
+  width: 50%;
+  margin: 0;
 }
 
-.container {
-  max-width: 500px;
-  margin: 0 auto;
+section {
+  width: 25%;
+  padding: 0 4rem;
 }
 
-.code {
-  width: 100%;
-  min-height: 10em;
-  margin: 2rem 0;
-  font-size: 1em;
-  font-family: inherit;
-  resize: none;
+h4, h5 {
+  margin: 0;
+}
+
+ul {
+  margin: 0;
+}
+
+.interpreters {
+  padding: 2em;
+}
+
+.interpreter-list {
+  padding: 0;
+}
+
+.interpreter-link {
+  list-style: none;
 }

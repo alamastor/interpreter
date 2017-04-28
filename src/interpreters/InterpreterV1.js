@@ -12,6 +12,10 @@ class Interpreter {
   pos: number;
   currentToken: Token;
 
+  grammer = [
+    'expr : INTEGER PLUS INTEGER',
+  ]
+
   constructor(text: string) {
     this.text = text
     this.pos = 0
@@ -33,7 +37,7 @@ class Interpreter {
 
     if (!isNaN(parseInt(currentChar, 10))) {
       this.pos++
-      return { type: 'INTEGER', value: parseInt(currentChar) }
+      return { type: 'INTEGER', value: parseInt(currentChar, 10) }
     }
 
     if (currentChar === '+') {
@@ -56,11 +60,14 @@ class Interpreter {
         errStr = errStr +
         ' with value "' + this.currentToken.value
       }
-      errStr = errStr + '".'
+      errStr += '".'
       throw new Error(errStr)
     }
   }
 
+  /**
+   * expr -> INTEGER PLUS INTEGER
+   */
   expr(): string {
     this.currentToken = this.getNextToken()
 

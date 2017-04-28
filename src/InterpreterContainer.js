@@ -1,21 +1,18 @@
 /* @flow */
-import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import InterpreterView from './InterpreterView';
 
 const mapStateToProps = (state, ownProps) => ({
   code: state.code,
-  interpreter: parseInt(ownProps.match.params.id),
+  interpreterVer: parseInt(ownProps.match.params.id, 10),
 })
 
-const mapDispatchToProps = (dispatch) => {
-  return {
-    onSetCode: (code) => (dispatch({
-      type: 'code_update',
-      code: code,
-    }))
-  }
-}
+const mapDispatchToProps = dispatch => ({
+  onSetCode: (code) => (dispatch({
+    type: 'code_update',
+    code: code,
+  }))
+})
 
 const AppContainer = connect(
   mapStateToProps,
