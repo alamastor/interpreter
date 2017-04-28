@@ -29,9 +29,13 @@ class InterpreterView extends Component {
         interpreter = new Interpreter(this.props.code)
         interpreterVer = 2
         break
+      case 3:
+        interpreter = new Interpreter(this.props.code)
+        interpreterVer = 3
+        break
       default:
         interpreter = new Interpreter(this.props.code)
-        interpreterVer = 2
+        interpreterVer = 3
     }
     return (
       <div className="App">

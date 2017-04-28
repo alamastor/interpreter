@@ -22,6 +22,10 @@ class Interpreter {
     this.currentChar = this.text[this.pos]
   }
 
+  error(text: string): Error {
+    throw new Error(text)
+  }
+
   advance() {
     this.pos++
     if (this.pos > this.text.length - 1) {
@@ -75,7 +79,8 @@ class Interpreter {
         return { type: 'MINUS' }
       }
 
-      throw new Error('Unrecognized token: "' + currentChar + '".')
+      this.error('Unrecognized token: "' + currentChar + '".')
+      return { type: 'EOF' }
     }
     return { type: 'EOF' }
   }
@@ -95,34 +100,35 @@ class Interpreter {
     }
   }
 
-  term(): number {
-    const token = this.currentToken
-    this.eat('INTEGER')
-    if (token.value && typeof token.value === 'number') {
-      return token.value
-    } else {
-      throw new Error('Invalid token (impossible state).')
-    }
-  }
-
   expr(): string {
     this.currentToken = this.getNextToken()
 
-    let result = this.term()
-    while (
-      this.currentToken.type == 'PLUS' ||
-      this.currentToken.type == 'MINUS'
-    ) {
-      const op = this.currentToken
-      if (op.type === 'PLUS') {
-        this.eat('PLUS')
-        result += this.term()
-      } else {
-        this.eat('MINUS')
-        result -= this.term()
-      }
+    const left = this.currentToken
+    this.eat('INTEGER')
+
+    const op = this.currentToken
+    if (op.type === 'PLUS') {
+      this.eat('PLUS')
+    } else {
+      this.eat('MINUS')
     }
-    return result.toString();
+
+    const right = this.currentToken
+    this.eat('INTEGER')
+
+    if (
+      typeof left.value === 'number' &&
+      typeof right.value === 'number'
+    ) {
+      if (op.type === 'PLUS') {
+        return (left.value + right.value).toString()
+      } else {
+        return (left.value - right.value).toString()
+      }
+    } else {
+      this.error('Wrong token type (Impossible state)')
+      return ''
+    }
   }
 
   interpret(): string {

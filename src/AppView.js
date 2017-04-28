@@ -15,7 +15,7 @@ const AppView = () => (
   <Router>
     <div>
       <ul>
-        { [1, 2].map(x => (
+        { [1, 2, 3].map(x => (
           <li key={x}>
             <Link to={ "/interpreter/" + x }>V{ x }</Link>
           </li>
