@@ -1,39 +1,35 @@
 /* @flow */
 
 import React, { Component } from 'react';
+import {
+  BrowserRouter as Router,
+  Route,
+  Redirect,
+  Switch,
+  Link,
+} from 'react-router-dom';
 import './App.css';
-import Interpreter from './Interpreter';
+import InterpreterContainer from './InterpreterContainer';
 
-
-class AppView extends Component {
-  onSetCode: Function;
-
-  constructor(props: any) {
-    super(props);
-
-    this.onSetCode = this.onSetCode.bind(this);
-  }
-
-  onSetCode(event: any) {
-    this.props.onSetCode(event.target.value);
-  }
-
-  render() {
-    return (
-      <div className="App">
-        <div className="container">
-          <textarea
-            className="code"
-            spellCheck="false"
-            value={ this.props.code }
-            onChange={ this.onSetCode }
-            rows="25"
-          />
-        </div>
-        <p>Result: { new Interpreter(this.props.code).interpret() }</p>
-      </div>
-    );
-  }
-}
+const AppView = () => (
+  <Router>
+    <div>
+      <ul>
+        { [1, 2].map(x => (
+          <li key={x}>
+            <Link to={ "/interpreter/" + x }>V{ x }</Link>
+          </li>
+        )) }
+      </ul>
+      <Switch>
+        <Route exact path ="/" render={
+          () => <Redirect exact path="/" to ="/interpreter"/>
+        }/>
+        <Route path="/interpreter/:id" component={InterpreterContainer}/>
+        <Route path="/interpreter" component={InterpreterContainer}/>
+      </Switch>
+    </div>
+  </Router>
+)
 
 export default AppView;

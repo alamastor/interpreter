@@ -41,7 +41,7 @@ class Interpreter {
       return { type: 'PLUS' }
     }
 
-    this.error('Unrecognized token: ' + currentChar)
+    this.error('Unrecognized token: "' + currentChar + '".')
     return { type: 'EOF' }
   }
 
@@ -56,7 +56,7 @@ class Interpreter {
         errStr = errStr +
         ' with value "' + this.currentToken.value
       }
-      errStr + '.'
+      errStr = errStr + '".'
       throw new Error(errStr)
     }
   }

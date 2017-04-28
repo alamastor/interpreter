@@ -1,10 +1,11 @@
 /* @flow */
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import AppView from './AppView';
+import InterpreterView from './InterpreterView';
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state, ownProps) => ({
   code: state.code,
+  interpreter: parseInt(ownProps.match.params.id),
 })
 
 const mapDispatchToProps = (dispatch) => {
@@ -19,6 +20,6 @@ const mapDispatchToProps = (dispatch) => {
 const AppContainer = connect(
   mapStateToProps,
   mapDispatchToProps,
-)(AppView)
+)(InterpreterView)
 
 export default AppContainer;
