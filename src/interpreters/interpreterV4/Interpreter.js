@@ -6,16 +6,13 @@ class Interpreter {
   currentToken: Token
 
   grammer = [
-    'expr   : term ((PLUS | MINUS) term))*',
-    'term   : factor ((MUL | DIV) factor))*',
+    'expr   : factor ((MUL | DIV) factor))*',
     'factor : INTEGER',
   ]
 
   constructor(lexer: Lexer) {
     this.lexer = lexer
-    if (!this.lexer.isEmpty()) {
-      this.currentToken = this.lexer.getNextToken()
-    }
+    this.currentToken = this.lexer.getNextToken()
   }
 
   eat(tokenType: string) {
@@ -47,9 +44,9 @@ class Interpreter {
   }
 
   /**
-   * term : factor ((MUL | DIV) factor)*
+   * expr : factor ((MUL | DIV) factor)*
    */
-  term(): number {
+  expr(): number {
     let result = this.factor()
     while (
       this.currentToken.type === 'MUL' ||
@@ -62,27 +59,6 @@ class Interpreter {
       } else {
         this.eat('DIV')
         result /= this.factor()
-      }
-    }
-    return result
-  }
-
-  /**
-   * expr : factor ((PLUS | MINUS) term)*
-   */
-  expr(): number {
-    let result = this.term()
-    while (
-      this.currentToken.type === 'PLUS' ||
-      this.currentToken.type === 'MINUS'
-    ) {
-      const op = this.currentToken
-      if (op.type === 'PLUS') {
-        this.eat('PLUS')
-        result += this.term()
-      } else {
-        this.eat('MINUS')
-        result -= this.term()
       }
     }
     return result

@@ -62,16 +62,6 @@ class Lexer {
         return { type: 'INTEGER', value: this.integer() }
       }
 
-      if (currentChar === '+') {
-        this.advance()
-        return { type: 'PLUS' }
-      }
-
-      if (currentChar === '-') {
-        this.advance()
-        return { type: 'MINUS' }
-      }
-
       if (currentChar === '*') {
         this.advance()
         return { type: 'MUL' }

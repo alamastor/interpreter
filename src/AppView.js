@@ -27,7 +27,7 @@ const AppView = () => (
           <h4>Interpreters</h4>
           <h5>Pascal</h5>
           <ul className="interpreter-list">
-            { [1, 2, 3, 4].map(x => (
+            { [1, 2, 3, 4, 5].map(x => (
               <li key={x} className="interpreter-link">
                 <Link to={ "/interpreter/" + x }>V{ x }</Link>
               </li>
