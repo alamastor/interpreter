@@ -12,7 +12,9 @@ class Interpreter {
 
   constructor(lexer: Lexer) {
     this.lexer = lexer
-    this.currentToken = this.lexer.getNextToken()
+    if (!this.lexer.isEmpty()) {
+      this.currentToken = this.lexer.getNextToken()
+    }
   }
 
   eat(tokenType: string) {
