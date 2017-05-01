@@ -17,6 +17,6 @@ export type Action = {
   type: 'interpreter_output_update',
   output: string
 } | {
-  type: 'interpreter_grammar_update',
+  type: 'parser_grammar_update',
   grammar: Array<string>
 }

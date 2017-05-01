@@ -8,8 +8,11 @@ import InterpreterV4 from './interpreters/interpreterV4/Interpreter'
 import LexerV4 from './interpreters/interpreterV4/Lexer'
 import InterpreterV5 from './interpreters/interpreterV5/Interpreter'
 import LexerV5 from './interpreters/interpreterV5/Lexer'
+import InterpreterV6 from './interpreters/interpreterV6/Interpreter'
+import LexerV6 from './interpreters/interpreterV6/Lexer'
 import Interpreter from './interpreters/interpreter/Interpreter'
 import Lexer from './interpreters/interpreter/Lexer'
+import Parser from './interpreters/interpreter/Parser'
 import TokenMiddleware from './TokenMiddleware'
 
 const onSetCode = (code, interpreterVer) => {
@@ -20,6 +23,7 @@ const onSetCode = (code, interpreterVer) => {
     })
 
     let interpreter;
+    let parser;
     switch (interpreterVer) {
       case 1:
         interpreter = new InterpreterV1(code)
@@ -31,12 +35,18 @@ const onSetCode = (code, interpreterVer) => {
         interpreter = new InterpreterV3(code)
         break
       case 4:
-        interpreter = new InterpreterV4(
-          new LexerV4(code)
-        )
+        interpreter = new InterpreterV4(new TokenMiddleware(
+          new LexerV4(code),
+          () => dispatch({ type: 'token_list_reset' }),
+          token => dispatch({ type: 'token_list_push', token: token })
+        ))
         break
       case 5:
-        interpreter = new InterpreterV5(new LexerV5(code))
+        interpreter = new InterpreterV5(new TokenMiddleware(
+          new LexerV5(code),
+          () => dispatch({ type: 'token_list_reset' }),
+          token => dispatch({ type: 'token_list_push', token: token })
+        ))
         break
       case 6:
         interpreter = new Interpreter(new TokenMiddleware(
@@ -45,15 +55,26 @@ const onSetCode = (code, interpreterVer) => {
           token => dispatch({ type: 'token_list_push', token: token })
         ))
         break
+      case 7:
+        parser = new Parser(new TokenMiddleware(
+          new Lexer(code),
+          () => dispatch({ type: 'token_list_reset' }),
+          token => dispatch({ type: 'token_list_push', token: token })
+        ))
+        interpreter = new Interpreter(parser)
+        break
       default:
-        interpreter = new Interpreter(
-          new Lexer(code)
-        )
+        parser = new Parser(new TokenMiddleware(
+          new Lexer(code),
+          () => dispatch({ type: 'token_list_reset' }),
+          token => dispatch({ type: 'token_list_push', token: token })
+        ))
+        interpreter = new Interpreter(parser)
     }
 
     dispatch({
-      type: 'interpreter_grammar_update',
-      grammar: interpreter.grammar
+      type: 'parser_grammar_update',
+      grammar: parser.grammar
     })
 
     dispatch({
@@ -65,7 +86,7 @@ const onSetCode = (code, interpreterVer) => {
 
 const mapStateToProps = (state, ownProps) => ({
   code: state.code,
-  grammar: state.interpreter.grammar,
+  grammar: state.parser.grammar,
   interpreterOutput: state.interpreter.output,
   tokenList: state.tokenList,
   interpreterVer: parseInt(ownProps.match.params.id, 10),

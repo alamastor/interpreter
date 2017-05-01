@@ -14,9 +14,8 @@ const code = (state: string = '', action: Action) => {
 }
 
 const InterpreterState = Immutable.Record({
-  interpreter: 6,
+  interpreter: 7,
   output: '',
-  grammar: [],
 })
 
 const interpreter = (
@@ -27,14 +26,29 @@ const interpreter = (
       return state.set('interpreterVersion', action.version)
     case 'interpreter_output_update':
       return state.set('output', action.output)
-    case 'interpreter_grammar_update':
+    default:
+      return state
+  }
+}
+
+const ParserState = Immutable.Record({
+  grammar: [],
+})
+
+const parser = (
+  state: ParserState = new ParserState(), action: Action
+) => {
+  switch (action.type) {
+    case 'parser_grammar_update':
       return state.set('grammar', action.grammar)
     default:
       return state
   }
 }
 
-const tokenList = (state: Immutable.List<Token> = new Immutable.List(), action: Action) => {
+const tokenList = (
+  state: Immutable.List<Token> = new Immutable.List(), action: Action
+) => {
   switch (action.type) {
     case 'token_list_reset':
       return new Immutable.List()
@@ -45,4 +59,4 @@ const tokenList = (state: Immutable.List<Token> = new Immutable.List(), action: 
   }
 }
 
-export { code, interpreter, tokenList }
+export { code, interpreter, parser, tokenList }

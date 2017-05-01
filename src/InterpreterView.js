@@ -11,17 +11,17 @@ class InterpreterView extends Component {
   }
 
   componentWillMount() {
-    this.props.onSetCode('', this.props.interpreterVer || 6)
+    this.props.onSetCode('', this.props.interpreterVer || 7)
   }
 
   onSetCode(event: any) {
-    this.props.onSetCode(event.target.value, this.props.iterpreterVer || 6)
+    this.props.onSetCode(event.target.value, this.props.iterpreterVer || 7)
   }
 
   render() {
     return (
       <main>
-        <h1>Pascal Interpreter V{ this.props.interpreterVer || 6 }</h1>
+        <h1>Pascal Interpreter V{ this.props.interpreterVer || 7 }</h1>
         <textarea
           className="code"
           spellCheck="false"

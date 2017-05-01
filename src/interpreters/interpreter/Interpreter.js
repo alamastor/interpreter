@@ -1,107 +1,48 @@
-import Lexer from './Lexer'
-import type { Token } from './Token'
+import typeof Parser from './Parser'
+import type { AST } from './Parser'
 
 class Interpreter {
-  lexer: Lexer
-  currentToken: Token
+  parser: Parser;
 
-  grammar = [
-    'expr   : term ((PLUS | MINUS) term)*',
-    'term   : factor ((MUL | DIV) factor)*',
-    'factor : INTEGER | LPAREN expr RPAREN',
-  ]
-
-  constructor(lexer: Lexer) {
-    this.lexer = lexer
-    this.currentToken = this.lexer.getNextToken()
+  constructor(parser: Parser) {
+    this.parser = parser
   }
 
-  eat(tokenType: string) {
-    if (this.currentToken.type === tokenType) {
-      this.currentToken = this.lexer.getNextToken()
-    } else {
-      let errStr =
-        'Expected "' + tokenType + '" but got "' +
-        this.currentToken.type;
-      if (typeof this.currentToken.value === 'number') {
-        errStr += ' with value "' + this.currentToken.value
-      }
-      errStr += '".'
-      throw new Error(errStr)
+  visit(node: AST) {
+    let visitor;
+    switch (node.type) {
+      case 'bin_op':
+        return this.visitBinOp(node)
+      case 'num':
+        return this.visitNum(node)
+      default:
+        throw new Error('No visit method for ' + node.type + '.')
     }
   }
 
-  /**
-   * factor : INTEGER | LPAREN expr RPAREN
-   */
-  factor(): number {
-    const token = this.currentToken
-    if (token.type === 'INTEGER') {
-      this.eat('INTEGER')
-      if (token.value && typeof token.value === 'number') {
-        return token.value
-      } else {
-        throw new Error('Invalid token (impossible state).')
-      }
-    } else {
-      this.eat('LPAREN')
-      const result = this.expr()
-      this.eat('RPAREN')
-      return result
+  visitBinOp(node: AST) {
+    switch(node.op.type) {
+      case 'PLUS':
+        return this.visit(node.left) + this.visit(node.right)
+      case 'MINUS':
+        return this.visit(node.left) - this.visit(node.right)
+      case 'MUL':
+        return this.visit(node.left) * this.visit(node.right)
+      case 'DIV':
+        return this.visit(node.left) / this.visit(node.right)
+      default:
+        throw new Error('Unexpected op type: ' + node.op.type)
     }
   }
 
-  /**
-   * term : factor ((MUL | DIV) factor)*
-   */
-  term(): number {
-    let result = this.factor()
-    while (
-      this.currentToken.type === 'MUL' ||
-      this.currentToken.type === 'DIV'
-    ) {
-      const op = this.currentToken
-      if (op.type === 'MUL') {
-        this.eat('MUL')
-        result *= this.factor()
-      } else {
-        this.eat('DIV')
-        result /= this.factor()
-      }
-    }
-    return result
-  }
-
-  /**
-   * expr : factor ((PLUS | MINUS) term)*
-   */
-  expr(): number {
-    let result = this.term()
-    while (this.currentToken.type === 'PLUS' ||
-      this.currentToken.type === 'MINUS'
-    ) {
-      const op = this.currentToken
-      if (op.type === 'PLUS') {
-        this.eat('PLUS')
-        result += this.term()
-      } else {
-        this.eat('MINUS')
-        result -= this.term()
-      }
-    }
-    return result
+  visitNum(node: AST) {
+    return node.token.value
   }
 
   interpret(): string {
-    if (this.currentToken.type === 'EOF') {
-      this.eat('EOF')
-      return ''
-    }
-
     try {
-      let result = this.expr();
-      this.eat('EOF')
-      return result.toString()
+      const tree = this.parser.parse();
+      return this.visit(tree).toString()
     } catch (e) {
       return 'Error: ' + e.message
     }
