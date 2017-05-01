@@ -9,7 +9,6 @@ class Interpreter {
   }
 
   visit(node: AST) {
-    let visitor;
     switch (node.type) {
       case 'bin_op':
         return this.visitBinOp(node)

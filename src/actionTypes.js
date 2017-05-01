@@ -1,6 +1,6 @@
 /* @flow */
 'use strict';
-import type { Token } from './interpreters/interpreter/Token'
+import type { Token } from './interpreter/Token'
 
 export type Action = {
   type: 'code_update',

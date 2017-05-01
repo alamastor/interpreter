@@ -14,7 +14,6 @@ const code = (state: string = '', action: Action) => {
 }
 
 const InterpreterState = Immutable.Record({
-  interpreter: 7,
   output: '',
 })
 
