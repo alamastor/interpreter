@@ -50,7 +50,7 @@ class Lexer {
   getNextToken(): Token {
     const text = this.text
 
-    while (this.currentChar !== null) {
+    while (this.currentChar) {
       const currentChar = text[this.pos]
 
       if (isSpace(this.currentChar)) {
@@ -80,6 +80,16 @@ class Lexer {
       if (currentChar === '/') {
         this.advance()
         return { type: 'DIV' }
+      }
+
+      if (currentChar === '(') {
+        this.advance()
+        return { type: 'LPAREN' }
+      }
+
+      if (currentChar === ')') {
+        this.advance()
+        return { type: 'RPAREN' }
       }
 
       throw new Error('Unrecognized token: "' + currentChar + '".')

@@ -10,10 +10,6 @@ type Token =  {
 } | {
   type: 'DIV'
 } | {
-  type: 'LPAREN'
-} | {
-  type: 'RPAREN'
-} | {
   type: 'EOF'
 }
 

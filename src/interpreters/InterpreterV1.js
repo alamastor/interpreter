@@ -12,7 +12,7 @@ class Interpreter {
   pos: number;
   currentToken: Token;
 
-  grammer = [
+  grammar = [
     'expr : INTEGER PLUS INTEGER',
   ]
 

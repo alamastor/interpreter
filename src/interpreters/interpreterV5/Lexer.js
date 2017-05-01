@@ -50,7 +50,7 @@ class Lexer {
   getNextToken(): Token {
     const text = this.text
 
-    while (this.currentChar) {
+    while (this.currentChar !== null) {
       const currentChar = text[this.pos]
 
       if (isSpace(this.currentChar)) {
@@ -60,6 +60,16 @@ class Lexer {
 
       if (isDigit(currentChar)) {
         return { type: 'INTEGER', value: this.integer() }
+      }
+
+      if (currentChar === '+') {
+        this.advance()
+        return { type: 'PLUS' }
+      }
+
+      if (currentChar === '-') {
+        this.advance()
+        return { type: 'MINUS' }
       }
 
       if (currentChar === '*') {

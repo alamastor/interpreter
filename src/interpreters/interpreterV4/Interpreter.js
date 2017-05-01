@@ -5,16 +5,14 @@ class Interpreter {
   lexer: Lexer
   currentToken: Token
 
-  grammer = [
-    'expr   : factor ((MUL | DIV) factor))*',
+  grammar = [
+    'expr   : factor ((MUL | DIV) factor)*',
     'factor : INTEGER',
   ]
 
   constructor(lexer: Lexer) {
     this.lexer = lexer
-    if (!this.lexer.isEmpty()) {
-      this.currentToken = this.lexer.getNextToken()
-    }
+    this.currentToken = this.lexer.getNextToken()
   }
 
   eat(tokenType: string) {
@@ -67,7 +65,7 @@ class Interpreter {
   }
 
   interpret(): string {
-    if (this.lexer.isEmpty()) {
+    if (this.currentToken !== 'EOF') {
       return ''
     }
 

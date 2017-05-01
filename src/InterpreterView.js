@@ -1,11 +1,4 @@
-import React, { Component } from 'react';
-import InterpreterV1 from './interpreters/InterpreterV1';
-import InterpreterV2 from './interpreters/InterpreterV2';
-import InterpreterV3 from './interpreters/InterpreterV3';
-import InterpreterV4 from './interpreters/interpreterV4/Interpreter';
-import LexerV4 from './interpreters/interpreterV4/Lexer';
-import Interpreter from './interpreters/interpreter/Interpreter';
-import Lexer from './interpreters/interpreter/Lexer';
+import React, { Component } from 'react'
 import './Interpreter.css'
 
 class InterpreterView extends Component {
@@ -17,39 +10,18 @@ class InterpreterView extends Component {
     this.onSetCode = this.onSetCode.bind(this);
   }
 
+  componentWillMount() {
+    this.props.onSetCode('', this.props.interpreterVer || 6)
+  }
+
   onSetCode(event: any) {
-    this.props.onSetCode(event.target.value);
+    this.props.onSetCode(event.target.value, this.props.iterpreterVer || 6)
   }
 
   render() {
-    let interpreterVer = this.props.interpreterVer || 4
-    let interpreter;
-    switch (interpreterVer) {
-      case 1:
-        interpreter = new InterpreterV1(this.props.code)
-        break
-      case 2:
-        interpreter = new InterpreterV2(this.props.code)
-        break
-      case 3:
-        interpreter = new InterpreterV3(this.props.code)
-        break
-      case 4:
-        interpreter = new InterpreterV4(new LexerV4(this.props.code))
-        break
-      case 5:
-        interpreter = new Interpreter(new Lexer(this.props.code))
-        break
-      default:
-        interpreter = new Interpreter(new Lexer(this.props.code))
-    }
     return (
       <main>
-        <h1>Pascal Interpreter V{ interpreterVer }</h1>
-        <h4 className='grammer--header'>Grammer:</h4>
-        {interpreter.grammer.map((s, i) => (
-          <p key={i} className="grammer--line">{s}</p>
-        ))}
+        <h1>Pascal Interpreter V{ this.props.interpreterVer || 6 }</h1>
         <textarea
           className="code"
           spellCheck="false"
@@ -57,7 +29,27 @@ class InterpreterView extends Component {
           onChange={ this.onSetCode }
           rows="20"
         />
-        <p>Result: { interpreter.interpret() }</p>
+        <h4 className="grammar--header">Grammar:</h4>
+        {this.props.grammar.map((s, i) => (
+          <p key={i} className="grammar--line">{s}</p>
+        ))}
+        <h4 className="lexer--header">Lexer Stream:</h4>
+        {this.props.tokenList.map((tokenOrError, i) => {
+          let result
+          if (tokenOrError instanceof Error) {
+            const error = tokenOrError
+            result = error.message
+          } else {
+            const token = tokenOrError
+            result = token.type
+            if (token.hasOwnProperty('value')) {
+              result += ': ' + token.value
+            }
+          }
+          return (<p key={i} className="lexer--line">{result}</p>)
+        })}
+        <h4 className="interpreter--header">Interpreter Output:</h4>
+        <p className="interpreter--line">{ this.props.interpreterOutput }</p>
       </main>
     )
   }

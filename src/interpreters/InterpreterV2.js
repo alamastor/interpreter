@@ -19,7 +19,7 @@ class Interpreter {
   currentToken: Token;
   currentChar: ?string;
 
-  grammer = [
+  grammar = [
     'expr : INTEGER (PLUS | MINUS) INTEGER'
   ]
 

@@ -8,12 +8,14 @@ class Interpreter {
   grammar = [
     'expr   : term ((PLUS | MINUS) term)*',
     'term   : factor ((MUL | DIV) factor)*',
-    'factor : INTEGER | LPAREN expr RPAREN',
+    'factor : INTEGER',
   ]
 
   constructor(lexer: Lexer) {
     this.lexer = lexer
-    this.currentToken = this.lexer.getNextToken()
+    if (!this.lexer.isEmpty()) {
+      this.currentToken = this.lexer.getNextToken()
+    }
   }
 
   eat(tokenType: string) {
@@ -32,22 +34,15 @@ class Interpreter {
   }
 
   /**
-   * factor : INTEGER | LPAREN expr RPAREN
+   * factor : INTEGER
    */
   factor(): number {
     const token = this.currentToken
-    if (token.type === 'INTEGER') {
-      this.eat('INTEGER')
-      if (token.value && typeof token.value === 'number') {
-        return token.value
-      } else {
-        throw new Error('Invalid token (impossible state).')
-      }
+    this.eat('INTEGER')
+    if (token.value && typeof token.value === 'number') {
+      return token.value
     } else {
-      this.eat('LPAREN')
-      const result = this.expr()
-      this.eat('RPAREN')
-      return result
+      throw new Error('Invalid token (impossible state).')
     }
   }
 
@@ -77,7 +72,8 @@ class Interpreter {
    */
   expr(): number {
     let result = this.term()
-    while (this.currentToken.type === 'PLUS' ||
+    while (
+      this.currentToken.type === 'PLUS' ||
       this.currentToken.type === 'MINUS'
     ) {
       const op = this.currentToken
@@ -93,15 +89,12 @@ class Interpreter {
   }
 
   interpret(): string {
-    if (this.currentToken.type === 'EOF') {
-      this.eat('EOF')
+    if (this.lexer.isEmpty()) {
       return ''
     }
 
     try {
-      let result = this.expr();
-      this.eat('EOF')
-      return result.toString()
+      return this.expr().toString()
     } catch (e) {
       return 'Error: ' + e.message
     }

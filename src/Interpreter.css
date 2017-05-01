@@ -1,19 +1,41 @@
 .code {
   width: 100%;
   min-height: 10em;
-  margin: 2rem 0 0 0;
+  margin: 0;
   font-size: 1em;
   font-family: inherit;
   resize: none;
   box-sizing: border-box;
 }
 
-.grammer--header {
+.grammar--header {
+  margin: 1em 0 0 0;
   text-align: left;
-  margin: 0;
 }
 
-.grammer--line {
+.grammar--line {
+  text-align: left;
+  margin: 0;
+  white-space: pre;
+}
+
+.interpreter--header {
+  margin: 1em 0 0 0;
+  text-align: left;
+}
+
+.interpreter--line {
+  text-align: left;
+  margin: 0;
+  white-space: pre;
+}
+
+.lexer--header {
+  margin: 1em 0 0 0;
+  text-align: left;
+}
+
+.lexer--line {
   text-align: left;
   margin: 0;
   white-space: pre;
