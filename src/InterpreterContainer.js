@@ -59,6 +59,8 @@ type DispatchProps = {|
   onPushToken: Token => () => void,
   onHoverToken: (Token | UnexpectedChar) => () => void,
   onStopHoverToken: () => () => void,
+  onHoverNode: Node => () => void,
+  onStopHoverNode: () => () => void,
 |};
 
 const mapDispatchToProps: MapDispatchToProps<
@@ -89,7 +91,16 @@ const mapDispatchToProps: MapDispatchToProps<
     }),
   onStopHoverToken: () =>
     dispatch({
-      type: "token_stop_hover",
+      type: "token_hover_stop",
+    }),
+  onHoverNode: node =>
+    dispatch({
+      type: "ast_node_hover",
+      node: node,
+    }),
+  onStopHoverNode: () =>
+    dispatch({
+      type: "ast_node_hover_stop",
     }),
 });
 

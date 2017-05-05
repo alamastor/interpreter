@@ -102,6 +102,8 @@ class ASTView extends Component {
                 onClick={(node: Node) => {
                   console.log(node);
                 }}
+                onHoverNode={this.props.onHoverNode}
+                onStopHoverNode={this.props.onStopHoverNode}
               />
             ))}
             {nodes.slice(1).map((node, idx) => <Link key={idx} node={node} />)}
@@ -115,13 +117,17 @@ class ASTView extends Component {
 }
 
 const NodeView = props => {
-  const onClick = () => {
-    props.onClick(props.node);
+  const onMouseEnter = () => {
+    props.onHoverNode(props.node.data);
+  };
+  const onMouseLeave = () => {
+    props.onStopHoverNode();
   };
   return (
     <g
       transform={"translate(" + props.node.x + "," + props.node.y + ")"}
-      onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       <circle r={NODE_RAD} fill="lightsteelblue" stroke="steelblue" />
       <text textAnchor="middle" alignmentBaseline="middle" fontSize="8">

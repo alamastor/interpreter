@@ -6,10 +6,14 @@ const Node = Immutable.Record(
     name: "",
     children: new Immutable.List(),
     hiddenChildren: new Immutable.List(),
+    startPos: 0,
+    endPos: 0,
   }: {
     name: string,
     children: Immutable.List<Node>,
     hiddenChildren: Immutable.List<Node>,
+    startPos: number,
+    endPos: number,
   }),
 );
 
@@ -38,22 +42,31 @@ class Stratifier {
   }
 
   visitBinOp(node: BinOp): Node {
+    const left = this.visit(node.left);
+    const right = this.visit(node.right);
     return new Node({
       name: "BinOp:" + node.op.type,
-      children: Immutable.List([this.visit(node.left), this.visit(node.right)]),
+      children: Immutable.List([left, right]),
+      startPos: left.startPos,
+      endPos: right.endPos,
     });
   }
 
   visitUnaryOp(node: UnaryOp): Node {
+    const expr = this.visit(node.expr);
     return new Node({
       name: "UnaryOp:" + node.op.type,
-      children: Immutable.List([this.visit(node.expr)]),
+      children: Immutable.List([expr]),
+      startPos: node.op.startPos,
+      endPos: expr.endPos,
     });
   }
 
   visitNum(node: Num) {
     return new Node({
       name: "Num: " + node.token.value,
+      startPos: node.token.startPos,
+      endPos: node.token.endPos,
     });
   }
 }

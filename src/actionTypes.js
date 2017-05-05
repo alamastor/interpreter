@@ -3,6 +3,7 @@
 import type { Token } from "./interpreter/Token";
 import type { AST } from "./interpreter/Parser";
 import { UnexpectedChar } from "./interpreter/Lexer";
+import Node from "./ASTStratifier";
 
 export type Action =
   | {
@@ -17,8 +18,11 @@ export type Action =
       token: Token,
     }
   | {
-      type: "interpreter_ver_update",
-      ver: number,
+      type: "token_hover",
+      tokenOrError: Token | UnexpectedChar,
+    }
+  | {
+      type: "token_hover_stop",
     }
   | {
       type: "interpreter_output_update",
@@ -33,9 +37,9 @@ export type Action =
       ast: AST,
     }
   | {
-      type: "token_hover",
-      tokenOrError: Token | UnexpectedChar,
+      type: "ast_node_hover",
+      node: Node,
     }
   | {
-      type: "token_stop_hover",
+      type: "ast_node_hover_stop",
     };

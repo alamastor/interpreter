@@ -27,7 +27,13 @@ const code = (
       return state
         .set("highlightStart", action.tokenOrError.startPos)
         .set("highlightStop", action.tokenOrError.endPos);
-    case "token_stop_hover":
+    case "token_hover_stop":
+      return state.set("highlightStart", 0).set("highlightStop", 0);
+    case "ast_node_hover":
+      return state
+        .set("highlightStart", action.node.startPos)
+        .set("highlightStop", action.node.endPos);
+    case "ast_node_hover_stop":
       return state.set("highlightStart", 0).set("highlightStop", 0);
     default:
       return state;

@@ -48,7 +48,11 @@ class InterpreterView extends Component {
         ))}
         <h4 className="ast-header">AST:</h4>
         <div className="ast-container">
-          <AST strata={this.props.strata} />
+          <AST
+            strata={this.props.strata}
+            onHoverNode={this.props.onHoverNode}
+            onStopHoverNode={this.props.onStopHoverNode}
+          />
         </div>
         <h4 className="interpreter--header">Interpreter Output:</h4>
         <p className="interpreter--line">{this.props.interpreterOutput}</p>
