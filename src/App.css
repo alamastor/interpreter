@@ -4,12 +4,13 @@
 
 main {
   text-align: center;
-  width: 50%;
+  max-width: 70%;
+  width: 70%;
   margin: 0;
 }
 
 section {
-  width: 25%;
+  width: 15%;
   padding: 0 4rem;
 }
 

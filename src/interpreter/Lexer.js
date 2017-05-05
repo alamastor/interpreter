@@ -1,3 +1,4 @@
+/* @flow */
 import type { Token } from './Token'
 
 const isSpace = (s: ?string) => s === ' '
@@ -13,10 +14,6 @@ class Lexer {
     this.text = text
     this.pos = 0
     this.currentChar = this.text[this.pos]
-  }
-
-  isEmpty() {
-    return this.text.length === 0
   }
 
   advance() {
@@ -92,7 +89,7 @@ class Lexer {
         return { type: 'RPAREN' }
       }
 
-      throw new Error('Unrecognized token: "' + currentChar + '".')
+      throw new Error('Unrecognized character: "' + currentChar + '".')
     }
     return { type: 'EOF' }
   }
