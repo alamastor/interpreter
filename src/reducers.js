@@ -4,10 +4,31 @@ import * as Immutable from "immutable";
 import type { Token } from "./interpreter/Token";
 import ASTStratifier, { Node } from "./ASTStratifier";
 
-const code = (state: string = "", action: Action) => {
+const CodeState = Immutable.Record(
+  ({
+    code: "",
+    highlightStart: 0,
+    highlightStop: 0,
+  }: {
+    code: string,
+    highlightStart: number,
+    highlightStop: number,
+  }),
+);
+
+const code = (
+  state: CodeState = new CodeState(),
+  action: Action,
+): CodeState => {
   switch (action.type) {
     case "code_update":
-      return action.code;
+      return state.set("code", action.code);
+    case "token_hover":
+      return state
+        .set("highlightStart", action.tokenOrError.startPos)
+        .set("highlightStop", action.tokenOrError.endPos);
+    case "token_stop_hover":
+      return state.set("highlightStart", 0).set("highlightStop", 0);
     default:
       return state;
   }

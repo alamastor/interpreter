@@ -9,6 +9,7 @@ import ASTMiddleware from "./ASTMiddleware";
 import type { MapDispatchToProps } from "react-redux";
 import type { Action } from "./actionTypes";
 import type { Token } from "./interpreter/Token";
+import { UnexpectedChar } from "./interpreter/Lexer";
 
 const onSetCode = code => {
   return dispatch => {
@@ -56,6 +57,8 @@ type DispatchProps = {|
   onSetInterpreterVer: number => () => void,
   onResetTokens: () => () => void,
   onPushToken: Token => () => void,
+  onHoverToken: (Token | UnexpectedChar) => () => void,
+  onStopHoverToken: () => () => void,
 |};
 
 const mapDispatchToProps: MapDispatchToProps<
@@ -78,6 +81,15 @@ const mapDispatchToProps: MapDispatchToProps<
     dispatch({
       type: "token_list_push",
       token: token,
+    }),
+  onHoverToken: tokenOrError =>
+    dispatch({
+      type: "token_hover",
+      tokenOrError: tokenOrError,
+    }),
+  onStopHoverToken: () =>
+    dispatch({
+      type: "token_stop_hover",
     }),
 });
 

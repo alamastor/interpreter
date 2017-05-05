@@ -1,9 +1,21 @@
 /* @flow */
-import type { Token } from './Token'
+import type { Token } from "./Token";
+import ExtendableError from "es6-error";
 
-const isSpace = (s: ?string) => s === ' '
+const isSpace = (s: ?string) => s === " ";
 
-const isDigit = (s: ?string) => !isNaN(parseInt(s, 10))
+const isDigit = (s: ?string) => !isNaN(parseInt(s, 10));
+
+class UnexpectedChar extends ExtendableError {
+  startPos: number;
+  endPos: number;
+
+  constructor(message: string, startPos: number, endPos: number) {
+    super(message);
+    this.startPos = startPos;
+    this.endPos = endPos;
+  }
+}
 
 class Lexer {
   text: string;
@@ -11,89 +23,134 @@ class Lexer {
   currentChar: ?string;
 
   constructor(text: string) {
-    this.text = text
-    this.pos = 0
-    this.currentChar = this.text[this.pos]
+    this.text = text;
+    this.pos = 0;
+    this.currentChar = this.text[this.pos];
   }
 
   advance() {
-    this.pos++
+    this.pos++;
     if (this.pos > this.text.length - 1) {
       this.currentChar = null;
     } else {
-      this.currentChar = this.text[this.pos]
+      this.currentChar = this.text[this.pos];
     }
   }
 
   skipWhitespace() {
     while (this.currentChar !== null && isSpace(this.currentChar)) {
-      this.advance()
+      this.advance();
     }
   }
 
-  integer() {
-    let result = ''
+  integer(): Token {
+    let result = "";
+    const startPos = this.pos;
     while (
       this.currentChar !== null &&
       isDigit(this.currentChar) &&
-      typeof this.currentChar === 'string'
+      typeof this.currentChar === "string"
     ) {
-      result += this.currentChar
-      this.advance()
+      result += this.currentChar;
+      this.advance();
     }
-    return parseInt(result, 10)
+    return {
+      type: "INTEGER",
+      value: parseInt(result, 10),
+      startPos: startPos,
+      endPos: this.pos,
+    };
   }
 
   getNextToken(): Token {
-    const text = this.text
+    const text = this.text;
 
     while (this.currentChar) {
-      const currentChar = text[this.pos]
+      const currentChar = text[this.pos];
 
       if (isSpace(this.currentChar)) {
-        this.skipWhitespace()
-        continue
+        this.skipWhitespace();
+        continue;
       }
 
       if (isDigit(currentChar)) {
-        return { type: 'INTEGER', value: this.integer() }
+        return this.integer();
       }
 
-      if (currentChar === '+') {
-        this.advance()
-        return { type: 'PLUS' }
+      if (currentChar === "+") {
+        const startPos = this.pos;
+        this.advance();
+        return {
+          type: "PLUS",
+          startPos: startPos,
+          endPos: this.pos,
+        };
       }
 
-      if (currentChar === '-') {
-        this.advance()
-        return { type: 'MINUS' }
+      if (currentChar === "-") {
+        const startPos = this.pos;
+        this.advance();
+        return {
+          type: "MINUS",
+          startPos: startPos,
+          endPos: this.currentChar,
+        };
       }
 
-      if (currentChar === '*') {
-        this.advance()
-        return { type: 'MUL' }
+      if (currentChar === "*") {
+        const startPos = this.pos;
+        this.advance();
+        return {
+          type: "MUL",
+          startPos: startPos,
+          endPos: this.pos,
+        };
       }
 
-      if (currentChar === '/') {
-        this.advance()
-        return { type: 'DIV' }
+      if (currentChar === "/") {
+        const startPos = this.pos;
+        this.advance();
+        return {
+          type: "DIV",
+          startPos: startPos,
+          endPos: this.pos,
+        };
       }
 
-      if (currentChar === '(') {
-        this.advance()
-        return { type: 'LPAREN' }
+      if (currentChar === "(") {
+        const startPos = this.pos;
+        this.advance();
+        return {
+          type: "LPAREN",
+          startPos: startPos,
+          endPos: this.pos,
+        };
       }
 
-      if (currentChar === ')') {
-        this.advance()
-        return { type: 'RPAREN' }
+      if (currentChar === ")") {
+        const startPos = this.pos;
+        this.advance();
+        return {
+          type: "RPAREN",
+          startPos: startPos,
+          endPos: this.pos,
+        };
       }
 
-      throw new Error('Unrecognized character: "' + currentChar + '".')
+      const err = new UnexpectedChar(
+        'Unrecognized character: "' + currentChar + '".',
+        this.pos,
+        this.pos + 1,
+      );
+      throw err;
     }
-    return { type: 'EOF' }
+    return {
+      type: "EOF",
+      startPos: this.pos,
+      endPos: this.pos + 1,
+    };
   }
-
 }
 
-export default Lexer
+export { UnexpectedChar };
+export default Lexer;

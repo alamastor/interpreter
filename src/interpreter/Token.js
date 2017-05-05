@@ -1,20 +1,34 @@
-type Token =  {
-  type: 'INTEGER',
-  value: number
-} | {
-  type: 'PLUS'
-} | {
-  type: 'MINUS'
-} | {
-  type: 'MUL'
-} | {
-  type: 'DIV'
-} | {
-  type: 'LPAREN'
-} | {
-  type: 'RPAREN'
-} | {
-  type: 'EOF'
-}
+type TokenUnion =
+  | {
+      type: "INTEGER",
+      value: number,
+    }
+  | {
+      type: "PLUS",
+    }
+  | {
+      type: "MINUS",
+    }
+  | {
+      type: "MUL",
+    }
+  | {
+      type: "DIV",
+    }
+  | {
+      type: "LPAREN",
+    }
+  | {
+      type: "RPAREN",
+    }
+  | {
+      type: "EOF",
+    };
 
-export type { Token }
+type TokenBase = {
+  startPos: number,
+  stopPos: number,
+};
+
+type Token = TokenUnion & TokenBase;
+export type { Token };

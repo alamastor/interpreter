@@ -1,29 +1,29 @@
-import typeof { Lexer } from './interpreters/interpreter/Lexer'
+import Lexer from "./interpreter/Lexer";
+import { UnexpectedChar } from "./interpreter/Lexer";
+import type { Token } from "./interpreter/Token";
 
 class TokenMiddleware {
-  lexer: Lexer
-  pushToken: Function
+  lexer: Lexer;
+  pushToken: (Token | UnexpectedChar) => void;
 
-  constructor (
-    lexer: Lexer,
-    resetTokenList: Function,
-    pushToken: Function
-  ) {
-    this.lexer = lexer
-    this.pushToken = pushToken
-    resetTokenList()
+  constructor(lexer: Lexer, resetTokenList: Function, pushToken: Function) {
+    this.lexer = lexer;
+    this.pushToken = pushToken;
+    resetTokenList();
   }
 
   getNextToken() {
     try {
-      const token = this.lexer.getNextToken()
-      this.pushToken(token)
-      return token
+      const token = this.lexer.getNextToken();
+      this.pushToken(token);
+      return token;
     } catch (e) {
-      this.pushToken(e)
-      throw e
+      if (e instanceof UnexpectedChar) {
+        this.pushToken(e);
+      }
+      throw e;
     }
   }
 }
 
-export default TokenMiddleware
+export default TokenMiddleware;
