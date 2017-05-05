@@ -3,6 +3,7 @@ import type { Action } from "./actionTypes.js";
 import * as Immutable from "immutable";
 import type { Token } from "./interpreter/Token";
 import ASTStratifier from "./ASTStratifier";
+import type { Node } from "./ASTStratifier";
 
 const code = (state: string = "", action: Action) => {
   switch (action.type) {

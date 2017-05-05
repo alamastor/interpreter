@@ -1,4 +1,4 @@
-import type { AST } from "./interpreter/parser";
+import type { AST, BinOp, UnaryOp, Num } from "./interpreter/parser";
 
 type Node = {
   children: Array<Node>,
@@ -21,6 +21,8 @@ class Stratifier {
     switch (node.type) {
       case "bin_op":
         return this.visitBinOp(node);
+      case "unary_op":
+        return this.visitUnaryOp(node);
       case "num":
         return this.visitNum(node);
       default:
@@ -28,34 +30,30 @@ class Stratifier {
     }
   }
 
-  visitBinOp(node: AST): Node {
-    if (node.type === "bin_op") {
-      return {
-        name: "BinOp:" + node.op.type,
-        children: [this.visit(node.left), this.visit(node.right)],
-        hiddenChildren: [],
-      };
-    } else {
-      throw new Error(
-        'Invalid node type: expected "bin_op", got "' + node.type + '".',
-      );
-    }
+  visitBinOp(node: BinOp): Node {
+    return {
+      name: "BinOp:" + node.op.type,
+      children: [this.visit(node.left), this.visit(node.right)],
+      hiddenChildren: [],
+    };
   }
 
-  visitNum(node: AST) {
-    if (node.type === "num") {
-      return {
-        name: "Num: " + node.token.value,
-        children: [],
-        hiddenChildren: [],
-      };
-    } else {
-      throw new Error(
-        'Invalid node type: expected "num", got "' + node.type + '".',
-      );
-    }
+  visitUnaryOp(node: UnaryOp): Node {
+    return {
+      name: "UnaryOp:" + node.op.type,
+      children: [this.visit(node.expr)],
+      hiddenChildren: [],
+    };
+  }
+
+  visitNum(node: Num) {
+    return {
+      name: "Num: " + node.token.value,
+      children: [],
+      hiddenChildren: [],
+    };
   }
 }
 
-export { Node };
+export type { Node };
 export default Stratifier;

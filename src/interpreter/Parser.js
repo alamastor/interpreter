@@ -2,17 +2,22 @@
 import Lexer from "./Lexer";
 import type { Token } from "./Token";
 
-type AST =
-  | {
-      type: "bin_op",
-      left: Token,
-      op: Token,
-      right: Token
-    }
-  | {
-      type: "num",
-      token: Token
-    };
+export type BinOp = {|
+  type: "bin_op",
+  left: Token,
+  op: Token,
+  right: Token,
+|};
+export type UnaryOp = {|
+  type: "unary_op",
+  op: Token,
+  expr: AST,
+|};
+export type Num = {|
+  type: "num",
+  token: Token,
+|};
+export type AST = BinOp | UnaryOp | Num;
 
 class Parser {
   lexer: Lexer;
@@ -23,7 +28,7 @@ class Parser {
   grammar = [
     "expr   : term ((PLUS | MINUS) term)*",
     "term   : factor ((MUL | DIV) factor)*",
-    "factor : INTEGER | LPAREN expr RPAREN"
+    "factor : (PLUS | MINUS) factor | INTEGER | LPAREN expr RPAREN",
   ];
 
   constructor(lexer: Lexer) {
@@ -45,16 +50,30 @@ class Parser {
   }
 
   /**
-   * factor : INTEGER | LPAREN expr RPAREN
+   * factor : (PLUS | MINUS) factor | INTEGER | LPAREN expr RPAREN
    */
   factor(): AST {
     const token = this.currentToken;
-    if (token.type === "INTEGER") {
+    if (token.type === "PLUS") {
+      this.eat("PLUS");
+      return {
+        type: "unary_op",
+        op: token,
+        expr: this.factor(),
+      };
+    } else if (token.type === "MINUS") {
+      this.eat("MINUS");
+      return {
+        type: "unary_op",
+        op: token,
+        expr: this.factor(),
+      };
+    } else if (token.type === "INTEGER") {
       this.eat("INTEGER");
       if (token.value && typeof token.value === "number") {
         return {
           type: "num",
-          token: token
+          token: token,
         };
       } else {
         throw new Error("Invalid token (impossible state).");
@@ -86,7 +105,7 @@ class Parser {
         type: "bin_op",
         left: node,
         op: op,
-        right: this.factor()
+        right: this.factor(),
       };
     }
     return node;
@@ -111,7 +130,7 @@ class Parser {
         type: "bin_op",
         left: node,
         op: op,
-        right: this.term()
+        right: this.term(),
       };
     }
     return node;
@@ -123,5 +142,4 @@ class Parser {
   }
 }
 
-export type { AST };
 export default Parser;
