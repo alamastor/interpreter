@@ -32,7 +32,7 @@ class ASTView extends Component {
 
   render() {
     if (this.props.strata) {
-      const tree = d3.hierarchy(this.props.strata);
+      const tree = d3.hierarchy(this.props.strata.toJS());
       let i = 0;
       tree.id = i++;
       const addIds = node => {

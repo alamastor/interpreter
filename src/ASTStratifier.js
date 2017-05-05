@@ -1,10 +1,17 @@
 import type { AST, BinOp, UnaryOp, Num } from "./interpreter/parser";
+import * as Immutable from "immutable";
 
-type Node = {
-  children: Array<Node>,
-  hiddenChildren: Array<Node>,
-  name: string,
-};
+const Node = Immutable.Record(
+  ({
+    name: "",
+    children: new Immutable.List(),
+    hiddenChildren: new Immutable.List(),
+  }: {
+    name: string,
+    children: Immutable.List<Node>,
+    hiddenChildren: Immutable.List<Node>,
+  }),
+);
 
 class Stratifier {
   ast: AST;
@@ -17,7 +24,7 @@ class Stratifier {
     return this.visit(this.ast);
   }
 
-  visit(node: AST) {
+  visit(node: AST): Node {
     switch (node.type) {
       case "bin_op":
         return this.visitBinOp(node);
@@ -31,29 +38,25 @@ class Stratifier {
   }
 
   visitBinOp(node: BinOp): Node {
-    return {
+    return new Node({
       name: "BinOp:" + node.op.type,
-      children: [this.visit(node.left), this.visit(node.right)],
-      hiddenChildren: [],
-    };
+      children: Immutable.List([this.visit(node.left), this.visit(node.right)]),
+    });
   }
 
   visitUnaryOp(node: UnaryOp): Node {
-    return {
+    return new Node({
       name: "UnaryOp:" + node.op.type,
-      children: [this.visit(node.expr)],
-      hiddenChildren: [],
-    };
+      children: Immutable.List([this.visit(node.expr)]),
+    });
   }
 
   visitNum(node: Num) {
-    return {
+    return new Node({
       name: "Num: " + node.token.value,
-      children: [],
-      hiddenChildren: [],
-    };
+    });
   }
 }
 
-export type { Node };
+export { Node };
 export default Stratifier;
