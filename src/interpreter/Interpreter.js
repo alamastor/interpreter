@@ -1,3 +1,4 @@
+/* @flow */
 import ExtendableError from "es6-error";
 import { UnexpectedChar } from "./Lexer";
 import Parser, { UnexpectedToken } from "./Parser";
@@ -53,11 +54,13 @@ class NameError extends InterpreterError {
   }
 }
 
+interface ParserInterface {}
+
 class Interpreter {
-  parser: Parser;
+  parser: ParserInterface;
   globalScope: Map<string, number>;
 
-  constructor(parser: Parser) {
+  constructor(parser: ParserInterface) {
     this.parser = parser;
     this.globalScope = new Map();
   }
@@ -147,7 +150,7 @@ class Interpreter {
   visitNum(node: Num): number {
     if (
       node.token.type === "INTEGER_CONST" ||
-      node.token.type == "REAL_CONST"
+      node.token.type === "REAL_CONST"
     ) {
       return node.token.value;
     } else {

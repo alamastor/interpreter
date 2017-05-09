@@ -6,7 +6,11 @@ class TokenMiddleware {
   lexer: Lexer;
   pushToken: (Token | UnexpectedChar) => void;
 
-  constructor(lexer: Lexer, resetTokenList: Function, pushToken: Function) {
+  constructor(
+    lexer: Lexer,
+    resetTokenList: () => void,
+    pushToken: Token => void,
+  ) {
     this.lexer = lexer;
     this.pushToken = pushToken;
     resetTokenList();

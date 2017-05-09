@@ -10,6 +10,8 @@ import type { MapDispatchToProps } from "react-redux";
 import type { Action } from "./actionTypes";
 import type { Token } from "./interpreter/Token";
 import { UnexpectedChar } from "./interpreter/Lexer";
+import ASTStatifier from "./ASTStratifier";
+import * as Immutable from "immutable";
 
 const onSetCode = code => {
   return dispatch => {
@@ -43,7 +45,18 @@ const onSetCode = code => {
   };
 };
 
-const mapStateToProps = (state, ownProps) => ({
+type StateProps = {|
+  code: string,
+  grammar: Immutable.List<string>,
+  strata: typeof ASTStatifier,
+  interpreterOutput: string,
+  tokenList: Immutable.List<Token>,
+  grammarMinimized: boolean,
+  tokensMinimized: boolean,
+  astMinimized: boolean,
+|};
+
+const mapStateToProps = (state, ownProps): StateProps => ({
   code: state.code,
   grammar: state.parser.grammar,
   strata: state.astVis.strata,
@@ -69,7 +82,7 @@ type DispatchProps = {|
 
 const mapDispatchToProps: MapDispatchToProps<
   Action,
-  Object,
+  *,
   DispatchProps,
 > = dispatch => ({
   onSetCode: (code, interpreterVer) =>
@@ -118,5 +131,7 @@ const mapDispatchToProps: MapDispatchToProps<
 const AppContainer = connect(mapStateToProps, mapDispatchToProps)(
   InterpreterView,
 );
+
+export type InterpreterProps = StateProps & DispatchProps;
 
 export default AppContainer;

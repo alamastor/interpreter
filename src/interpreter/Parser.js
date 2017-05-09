@@ -23,9 +23,9 @@ export type Assign = {|
 
 export type BinOp = {|
   type: "bin_op",
-  left: UnaryOp | Num | BinOp | Var,
+  left: BinOp | Num | UnaryOp | Var,
   op: PLUS | MINUS | MUL | INTEGER_DIV | FLOAT_DIV,
-  right: UnaryOp | Num | BinOp | Var,
+  right: BinOp | Num | UnaryOp | Var,
   startPos: number,
   stopPos: number,
 |};
@@ -137,7 +137,6 @@ class Parser {
   lexer: Lexer;
 
   currentToken: Token;
-  parse: Function;
 
   grammar = [
     "program             : PROGRAM variable SEMI block DOT",

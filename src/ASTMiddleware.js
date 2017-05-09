@@ -1,10 +1,13 @@
+/* @flow */
 import Parser from "./interpreter/Parser";
+import type { Program } from "./interpreter/Parser";
 
 class ASTMiddleware {
   parser: Parser;
-  updateAST: Function;
+  ast: Program;
+  updateAST: Program => void;
 
-  constructor(parser: Parser, updateAST: Function) {
+  constructor(parser: Parser, updateAST: Program => void) {
     this.parser = parser;
     this.updateAST = updateAST;
   }

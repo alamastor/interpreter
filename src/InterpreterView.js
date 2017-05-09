@@ -4,11 +4,12 @@ import "./Interpreter.css";
 import AST from "./ASTView";
 import type { Token } from "./interpreter/Token";
 import { UnexpectedChar } from "./interpreter/Lexer";
+import type { InterpreterProps } from "./InterpreterContainer";
 
 class InterpreterView extends Component {
-  onSetCode: Function;
+  onSetCode: string => void;
 
-  constructor(props: any) {
+  constructor(props: InterpreterProps) {
     super(props);
 
     this.onSetCode = this.onSetCode.bind(this);
@@ -18,8 +19,10 @@ class InterpreterView extends Component {
     this.props.onSetCode("");
   }
 
-  onSetCode(event: any) {
-    this.props.onSetCode(event.target.value);
+  onSetCode({ target }: { target: EventTarget }) {
+    if (target.value) {
+      this.props.onSetCode(target.value);
+    }
   }
 
   render() {

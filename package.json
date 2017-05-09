@@ -3,11 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "devDependencies": {
-    "eslint-plugin-flowtype": "2.21.0",
-    "flow-bin": "^0.44.2",
     "autoprefixer": "6.7.2",
     "babel-core": "6.22.1",
-    "babel-eslint": "7.1.1",
+    "babel-eslint": "^7.1.1",
     "babel-jest": "18.0.0",
     "babel-loader": "6.2.10",
     "babel-preset-react-app": "^2.2.0",
@@ -22,11 +20,13 @@
     "eslint": "3.16.1",
     "eslint-config-react-app": "^0.6.2",
     "eslint-loader": "1.6.0",
+    "eslint-plugin-flowtype": "^2.32.1",
     "eslint-plugin-import": "2.0.1",
     "eslint-plugin-jsx-a11y": "4.0.0",
     "eslint-plugin-react": "6.4.1",
     "extract-text-webpack-plugin": "1.0.1",
     "file-loader": "0.10.0",
+    "flow-bin": "^0.44.2",
     "fs-extra": "0.30.0",
     "html-webpack-plugin": "2.24.0",
     "http-proxy-middleware": "0.17.3",
@@ -90,6 +90,19 @@
     ]
   },
   "eslintConfig": {
-    "extends": "react-app"
+    "extends": "react-app",
+    "plugins": [
+      "eslint-plugin-flowtype",
+      "flowtype"
+    ],
+    "rules": {
+      "flowtype/boolean-style": [
+        2,
+        "boolean"
+      ],
+      "flowtype/define-flow-type": 2,
+      "flowtype/use-flow-type": 2,
+      "flowtype/valid-syntax": 2
+    }
   }
 }
