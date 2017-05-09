@@ -33,21 +33,58 @@ class InterpreterView extends Component {
         >
           {this.props.code.code}
         </Code>
-        <h4 className="grammar--header">Grammar:</h4>
-        {this.props.grammar.map((s, i) => (
-          <p key={i} className="grammar--line">{s}</p>
-        ))}
-        <h4 className="lexer--header">Token Stream:</h4>
-        {this.props.tokenList.map((tokenOrError, i) => (
-          <TokenView
-            tokenOrError={tokenOrError}
-            onHoverToken={this.props.onHoverToken}
-            onStopHoverToken={this.props.onStopHoverToken}
-            key={i}
-          />
-        ))}
-        <h4 className="ast-header">AST:</h4>
-        <div className="ast-container">
+        <h4 className="grammar--header">
+          Grammar
+          <button
+            className="toggle-button"
+            onClick={this.props.onClickGrammarToggle}
+          >
+            {this.props.grammarMinimized ? "+" : "-"}
+          </button>
+        </h4>
+        <ul
+          className="grammar--list"
+          style={{ display: this.props.grammarMinimized ? "none" : "block" }}
+        >
+          {this.props.grammar.map((s, i) => (
+            <p key={i} className="grammar--line">{s}</p>
+          ))}
+        </ul>
+        <h4 className="lexer--header">
+          Token Stream
+          <button
+            className="toggle-button"
+            onClick={this.props.onClickTokensToggle}
+          >
+            {this.props.tokensMinimized ? "+" : "-"}
+          </button>
+        </h4>
+        <ul
+          className="lexer--list"
+          style={{ display: this.props.tokensMinimized ? "none" : "block" }}
+        >
+          {this.props.tokenList.map((tokenOrError, i) => (
+            <TokenView
+              tokenOrError={tokenOrError}
+              onHoverToken={this.props.onHoverToken}
+              onStopHoverToken={this.props.onStopHoverToken}
+              key={i}
+            />
+          ))}
+        </ul>
+        <h4 className="ast-header">
+          AST
+          <button
+            className="toggle-button"
+            onClick={this.props.onClickASTToggle}
+          >
+            {this.props.astMinimized ? "+" : "-"}
+          </button>
+        </h4>
+        <div
+          className="ast-container"
+          style={{ display: this.props.astMinimized ? "none" : "block" }}
+        >
           <AST
             strata={this.props.strata}
             onHoverNode={this.props.onHoverNode}
@@ -74,19 +111,23 @@ const TokenView = (props: {
   } else {
     const token = tokenOrError;
     result = token.type;
-    if (token.hasOwnProperty("value")) {
-      result += ": " + token.value;
+    if (token.value) {
+      if (typeof token.value === "number") {
+        result += ": " + token.value.toString(10);
+      } else if (typeof token.value === "string") {
+        result += ": " + token.value;
+      }
     }
   }
   const onMouseEnter = () => props.onHoverToken(tokenOrError);
   return (
-    <p
+    <li
       className="lexer--line"
       onMouseEnter={onMouseEnter}
       onMouseLeave={props.onStopHoverToken}
     >
       {result}
-    </p>
+    </li>
   );
 };
 
@@ -97,33 +138,69 @@ type HighlightViewProps = {
   onSetCode: string => void,
 };
 
-const Code = (props: HighlightViewProps): Element<any> => {
-  let code;
-  typeof props.children === "string" ? (code = props.children) : (code = "");
+const Code = class extends Component {
+  props: HighlightViewProps;
+  onScroll: UIEvent => void;
+  state: {
+    scrollTop: number,
+    scrollLeft: number,
+  };
 
-  const highlightText = code + " "; // One space on end to allow highligh EOF.
-  const beforeHightlight = highlightText.slice(0, props.highlightStart);
-  const highlight = highlightText.slice(
-    props.highlightStart,
-    props.highlightStop,
-  );
-  const afterHighlight = highlightText.slice(props.highlightStop);
-  return (
-    <div className="code">
-      <textarea
-        className="code-text"
-        spellCheck="false"
-        value={code}
-        onChange={props.onSetCode}
-      />
+  constructor(props: HighlightViewProps) {
+    super(props);
 
-      <div className="highlights-container">
-        <div className="highlights">
-          {beforeHightlight}<mark>{highlight}</mark>{afterHighlight}
+    this.onScroll = this.onScroll.bind(this);
+    this.state = {
+      scrollTop: 0,
+      scrollLeft: 0,
+    };
+  }
+
+  componentDidUpdate() {
+    this.refs.highlightsContainer.scrollTop = this.state.scrollTop;
+    this.refs.highlightsContainer.scrollLeft = this.state.scrollLeft;
+  }
+
+  onScroll(event: UIEvent) {
+    this.setState({
+      scrollTop: this.refs.textArea.scrollTop,
+      scrollLeft: this.refs.textArea.scrollLeft,
+    });
+  }
+
+  render() {
+    let code;
+    typeof this.props.children === "string"
+      ? (code = this.props.children)
+      : (code = "");
+
+    const highlightText = code + " "; // One space on end to allow highligh EOF.
+    const beforeHightlight = highlightText.slice(0, this.props.highlightStart);
+    const highlight = highlightText.slice(
+      this.props.highlightStart,
+      this.props.highlightStop,
+    );
+    const afterHighlight = highlightText.slice(this.props.highlightStop);
+
+    return (
+      <div className="code">
+        <textarea
+          className="code-text"
+          spellCheck="false"
+          value={code}
+          onChange={this.props.onSetCode}
+          onScroll={this.onScroll}
+          ref="textArea"
+        />
+
+        <div className="highlights-container" ref="highlightsContainer">
+          <div className="highlights">
+            {beforeHightlight}<mark>{highlight}</mark>{afterHighlight}
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 };
 
 export default InterpreterView;

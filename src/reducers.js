@@ -26,13 +26,13 @@ const code = (
     case "token_hover":
       return state
         .set("highlightStart", action.tokenOrError.startPos)
-        .set("highlightStop", action.tokenOrError.endPos);
+        .set("highlightStop", action.tokenOrError.stopPos);
     case "token_hover_stop":
       return state.set("highlightStart", 0).set("highlightStop", 0);
     case "ast_node_hover":
       return state
         .set("highlightStart", action.node.startPos)
-        .set("highlightStop", action.node.endPos);
+        .set("highlightStop", action.node.stopPos);
     case "ast_node_hover_stop":
       return state.set("highlightStart", 0).set("highlightStop", 0);
     default:
@@ -108,4 +108,32 @@ const astVis = (state: ASTVisState = new ASTVisState(), action: Action) => {
   }
 };
 
-export { code, interpreter, parser, tokenList, astVis };
+const InterpreterViewState = Immutable.Record(
+  ({
+    grammarMinimized: true,
+    tokensMinimized: true,
+    astMinimized: true,
+  }: {
+    grammarMinimized: boolean,
+    tokensMinimized: boolean,
+    astMinimized: boolean,
+  }),
+);
+
+const interpreterView = (
+  state: InterpreterViewState = new InterpreterViewState(),
+  action: Action,
+) => {
+  switch (action.type) {
+    case "interpreter_view_grammar_toggle_click":
+      return state.set("grammarMinimized", !state.grammarMinimized);
+    case "interpreter_view_tokens_toggle_click":
+      return state.set("tokensMinimized", !state.tokensMinimized);
+    case "interpreter_view_ast_toggle_click":
+      return state.set("astMinimized", !state.astMinimized);
+    default:
+      return state;
+  }
+};
+
+export { code, interpreter, parser, tokenList, astVis, interpreterView };

@@ -1,7 +1,14 @@
 /* @flow */
 import { combineReducers, createStore, applyMiddleware } from "redux";
 import thunk from "redux-thunk";
-import { code, tokenList, parser, interpreter, astVis } from "./reducers";
+import {
+  code,
+  tokenList,
+  parser,
+  interpreter,
+  astVis,
+  interpreterView,
+} from "./reducers";
 
 const reducer = combineReducers({
   code,
@@ -9,6 +16,7 @@ const reducer = combineReducers({
   interpreter,
   tokenList,
   astVis,
+  interpreterView,
 });
 
 const store = createStore(reducer, applyMiddleware(thunk));

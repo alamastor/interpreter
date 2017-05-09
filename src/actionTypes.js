@@ -1,7 +1,7 @@
 /* @flow */
 "use strict";
 import type { Token } from "./interpreter/Token";
-import type { AST } from "./interpreter/Parser";
+import type { Program } from "./interpreter/Parser";
 import { UnexpectedChar } from "./interpreter/Lexer";
 import Node from "./ASTStratifier";
 
@@ -34,7 +34,7 @@ export type Action =
     }
   | {
       type: "parser_ast_update",
-      ast: AST,
+      ast: Program,
     }
   | {
       type: "ast_node_hover",
@@ -42,4 +42,13 @@ export type Action =
     }
   | {
       type: "ast_node_hover_stop",
+    }
+  | {
+      type: "interpreter_view_grammar_toggle_click",
+    }
+  | {
+      type: "interpreter_view_tokens_toggle_click",
+    }
+  | {
+      type: "interpreter_view_ast_toggle_click",
     };

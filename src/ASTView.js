@@ -1,7 +1,7 @@
 /* @flow */
 import React, { Component } from "react";
 import * as d3 from "d3";
-import type { AST } from "./interpreter/parser";
+import type { Program } from "./interpreter/parser";
 
 const NODE_RAD = 25;
 
@@ -28,7 +28,7 @@ function reduceTree<T>(
 }
 
 class ASTView extends Component {
-  ast: AST;
+  ast: Program;
 
   render() {
     if (this.props.strata) {

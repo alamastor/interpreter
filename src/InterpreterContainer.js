@@ -49,18 +49,22 @@ const mapStateToProps = (state, ownProps) => ({
   strata: state.astVis.strata,
   interpreterOutput: state.interpreter.output,
   tokenList: state.tokenList,
-  interpreterVer: parseInt(ownProps.match.params.id, 10),
+  grammarMinimized: state.interpreterView.grammarMinimized,
+  tokensMinimized: state.interpreterView.tokensMinimized,
+  astMinimized: state.interpreterView.astMinimized,
 });
 
 type DispatchProps = {|
   onSetCode: (string, number) => () => void,
-  onSetInterpreterVer: number => () => void,
   onResetTokens: () => () => void,
   onPushToken: Token => () => void,
   onHoverToken: (Token | UnexpectedChar) => () => void,
   onStopHoverToken: () => () => void,
   onHoverNode: Node => () => void,
   onStopHoverNode: () => () => void,
+  onClickGrammarToggle: () => () => void,
+  onClickTokensToggle: () => () => void,
+  onClickASTToggle: () => () => void,
 |};
 
 const mapDispatchToProps: MapDispatchToProps<
@@ -70,11 +74,6 @@ const mapDispatchToProps: MapDispatchToProps<
 > = dispatch => ({
   onSetCode: (code, interpreterVer) =>
     dispatch(onSetCode(code, interpreterVer)),
-  onSetInterpreterVer: ver =>
-    dispatch({
-      type: "interpreter_ver_update",
-      ver: ver,
-    }),
   onResetTokens: () =>
     dispatch({
       type: "token_list_reset",
@@ -101,6 +100,18 @@ const mapDispatchToProps: MapDispatchToProps<
   onStopHoverNode: () =>
     dispatch({
       type: "ast_node_hover_stop",
+    }),
+  onClickGrammarToggle: () =>
+    dispatch({
+      type: "interpreter_view_grammar_toggle_click",
+    }),
+  onClickTokensToggle: () =>
+    dispatch({
+      type: "interpreter_view_tokens_toggle_click",
+    }),
+  onClickASTToggle: () =>
+    dispatch({
+      type: "interpreter_view_ast_toggle_click",
     }),
 });
 
