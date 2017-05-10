@@ -188,10 +188,10 @@ class Interpreter {
   visitVar(var_: Var): number {
     const varName = var_.token.name;
     const val = this.globalScope.get(varName);
-    if (val) {
+    if (val != undefined) {
       return val;
     } else {
-      throw NameError(varName);
+      throw new NameError(varName);
     }
   }
 
@@ -201,6 +201,7 @@ class Interpreter {
     try {
       const program = this.parser.parse();
       this.visitProgram(program);
+      return "";
     } catch (e) {
       if (e instanceof UnexpectedChar) {
         return "Lexer Error: " + e.message;

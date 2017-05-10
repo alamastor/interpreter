@@ -1,5 +1,4 @@
 /* @flow */
-import Parser from "./interpreter/Parser";
 import type { Program } from "./interpreter/Parser";
 import type { ParserInterface } from "./interpreter/Parser";
 

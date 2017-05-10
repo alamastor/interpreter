@@ -9,68 +9,63 @@ import ASTMiddleware from "./ASTMiddleware";
 import type { MapDispatchToProps } from "react-redux";
 import type { Action } from "./actionTypes";
 import type { Token } from "./interpreter/Token";
+import type { Program } from "./interpreter/Parser";
 import { UnexpectedChar } from "./interpreter/Lexer";
 import ASTStatifier from "./ASTStratifier";
 import * as Immutable from "immutable";
 
-const onSetCode = code => {
-  return dispatch => {
-    dispatch({
-      type: "code_update",
-      code: code,
-    });
-
-    const parser = new Parser(
-      new TokenMiddleware(
-        new Lexer(code),
-        () => dispatch({ type: "token_list_reset" }),
-        token => dispatch({ type: "token_list_push", token: token }),
-      ),
-    );
-
-    dispatch({
-      type: "parser_grammar_update",
-      grammar: parser.grammar,
-    });
-
-    const interpreterOutput = new Interpreter(
-      new ASTMiddleware(parser, ast =>
-        dispatch({ type: "parser_ast_update", ast: ast }),
-      ),
-    ).interpret();
-    dispatch({
-      type: "interpreter_output_update",
-      output: interpreterOutput,
-    });
-  };
-};
-
 type StateProps = {|
   code: string,
-  grammar: Immutable.List<string>,
+  grammar: Array<string>,
   strata: typeof ASTStatifier,
   interpreterOutput: string,
-  tokenList: Immutable.List<Token>,
+  tokenList: Array<Token>,
+  highlightStart: number,
+  highlightStop: number,
   grammarMinimized: boolean,
   tokensMinimized: boolean,
   astMinimized: boolean,
 |};
 
-const mapStateToProps = (state, ownProps): StateProps => ({
-  code: state.code,
-  grammar: state.parser.grammar,
-  strata: state.astVis.strata,
-  interpreterOutput: state.interpreter.output,
-  tokenList: state.tokenList,
-  grammarMinimized: state.interpreterView.grammarMinimized,
-  tokensMinimized: state.interpreterView.tokensMinimized,
-  astMinimized: state.interpreterView.astMinimized,
-});
+const mapStateToProps = (state, ownProps): StateProps => {
+  const codeState = state.code;
+  let tokenList = [];
+  const parser = new Parser(
+    new TokenMiddleware(
+      new Lexer(codeState.code),
+      () => {
+        tokenList = [];
+      },
+      token => {
+        tokenList.push(token);
+      },
+    ),
+  );
+  let programAST: Program;
+  const interpreterOutput = new Interpreter(
+    new ASTMiddleware(parser, ast => {
+      programAST = ast;
+    }),
+  ).interpret();
+
+  const strata = new ASTStatifier(programAST).build();
+
+  return {
+    code: codeState,
+    grammar: parser.grammar,
+    strata: strata,
+    interpreterOutput: interpreterOutput,
+    tokenList: tokenList,
+    highlightStart: state.interpreterView.highlightStart,
+    highlightStop: state.interpreterView.highlightStop,
+    grammarMinimized: state.interpreterView.grammarMinimized,
+    tokensMinimized: state.interpreterView.tokensMinimized,
+    astMinimized: state.interpreterView.astMinimized,
+  };
+};
 
 type DispatchProps = {|
   onSetCode: string => () => void,
-  onResetTokens: () => () => void,
-  onPushToken: Token => () => void,
   onHoverToken: (Token | UnexpectedChar) => () => void,
   onStopHoverToken: () => () => void,
   onHoverNode: Node => () => void,
@@ -85,15 +80,10 @@ const mapDispatchToProps: MapDispatchToProps<
   *,
   DispatchProps,
 > = dispatch => ({
-  onSetCode: code => dispatch(onSetCode(code)),
-  onResetTokens: () =>
+  onSetCode: code =>
     dispatch({
-      type: "token_list_reset",
-    }),
-  onPushToken: token =>
-    dispatch({
-      type: "token_list_push",
-      token: token,
+      type: "code_update",
+      code: code,
     }),
   onHoverToken: tokenOrError =>
     dispatch({

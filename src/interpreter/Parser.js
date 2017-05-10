@@ -366,8 +366,8 @@ class Parser {
   empty(): NoOp {
     return {
       type: "no_op",
-      startPos: 0,
-      stopPos: 0,
+      startPos: this.currentToken.startPos,
+      stopPos: this.currentToken.startPos,
     };
   }
 

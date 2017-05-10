@@ -30,14 +30,16 @@ const Node = Immutable.Record(
 );
 
 class Stratifier {
-  ast: Program;
+  ast: ?Program;
 
-  constructor(ast: Program) {
+  constructor(ast: ?Program) {
     this.ast = ast;
   }
 
   build() {
-    return this.visitProgram(this.ast);
+    if (this.ast) {
+      return this.visitProgram(this.ast);
+    }
   }
 
   visitAssign(assign: Assign): Node {
@@ -128,8 +130,8 @@ class Stratifier {
     return new Node({
       name: "Compound",
       children: Immutable.List(childNodes),
-      startPos: compound.startPos,
-      stopPos: compound.stopPos,
+      startPos: childNodes[0].startPos,
+      stopPos: childNodes[childNodes.length - 1].stopPos,
     });
   }
 

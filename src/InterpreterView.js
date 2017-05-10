@@ -15,10 +15,6 @@ class InterpreterView extends Component {
     this.onSetCode = this.onSetCode.bind(this);
   }
 
-  componentWillMount() {
-    this.props.onSetCode("");
-  }
-
   onSetCode({ target }: { target: EventTarget }) {
     if (target.value) {
       this.props.onSetCode(target.value);
@@ -31,8 +27,8 @@ class InterpreterView extends Component {
         <h1>Pascal Interpreter</h1>
         <Code
           onSetCode={this.onSetCode}
-          highlightStart={this.props.code.highlightStart}
-          highlightStop={this.props.code.highlightStop}
+          highlightStart={this.props.highlightStart}
+          highlightStop={this.props.highlightStop}
         >
           {this.props.code.code}
         </Code>

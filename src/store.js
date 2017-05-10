@@ -1,24 +1,23 @@
 /* @flow */
 import { combineReducers, createStore, applyMiddleware } from "redux";
 import thunk from "redux-thunk";
-import {
-  code,
-  tokenList,
-  parser,
-  interpreter,
-  astVis,
-  interpreterView,
-} from "./reducers";
+import { code, interpreterView } from "./reducers";
+import { loadState, saveState } from "./localStorage";
+import throttle from "lodash/throttle";
 
 const reducer = combineReducers({
   code,
-  parser,
-  interpreter,
-  tokenList,
-  astVis,
   interpreterView,
 });
 
-const store = createStore(reducer, applyMiddleware(thunk));
+const persistedState = loadState();
+
+const store = createStore(reducer, persistedState, applyMiddleware(thunk));
+
+store.subscribe(
+  throttle(() => {
+    saveState(store.getState());
+  }),
+);
 
 export default store;
