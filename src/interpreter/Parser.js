@@ -16,7 +16,7 @@ import type {
 export type Assign = {|
   type: "assign",
   variable: Var,
-  value: UnaryOp | Num | BinOp | Var,
+  value: BinOp | Num | UnaryOp | Var,
   startPos: number,
   stopPos: number,
 |};
@@ -133,6 +133,9 @@ class UnexpectedToken extends ExtendableError {
   }
 }
 
+export interface ParserInterface {
+  parse(): Program,
+}
 class Parser {
   lexer: Lexer;
 

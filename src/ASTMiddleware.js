@@ -1,13 +1,14 @@
 /* @flow */
 import Parser from "./interpreter/Parser";
 import type { Program } from "./interpreter/Parser";
+import type { ParserInterface } from "./interpreter/Parser";
 
 class ASTMiddleware {
-  parser: Parser;
+  parser: ParserInterface;
   ast: Program;
   updateAST: Program => void;
 
-  constructor(parser: Parser, updateAST: Program => void) {
+  constructor(parser: ParserInterface, updateAST: Program => void) {
     this.parser = parser;
     this.updateAST = updateAST;
   }

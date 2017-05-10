@@ -1,9 +1,9 @@
 /* @flow */
 import ExtendableError from "es6-error";
 import { UnexpectedChar } from "./Lexer";
-import Parser, { UnexpectedToken } from "./Parser";
+import { UnexpectedToken } from "./Parser";
+import type { ParserInterface } from "./Parser";
 import type {
-  ASTNode,
   Assign,
   BinOp,
   Block,
@@ -42,19 +42,11 @@ class ImpossibleToken extends InterpreterError {
   }
 }
 
-class NoVisitMethod extends InterpreterError {
-  constructor(node: ASTNode) {
-    super('No visit method for "' + node.type + '".');
-  }
-}
-
 class NameError extends InterpreterError {
   constructor(name: string) {
     super('"' + name + '" not found in scope.');
   }
 }
-
-interface ParserInterface {}
 
 class Interpreter {
   parser: ParserInterface;
@@ -65,132 +57,141 @@ class Interpreter {
     this.globalScope = new Map();
   }
 
-  visit(node: ASTNode) {
-    switch (node.type) {
-      case "assign":
-        return this.visitAssign(node);
-      case "bin_op":
-        return this.visitBinOp(node);
-      case "block":
-        return this.visitBlock(node);
-      case "compound":
-        return this.visitCompound(node);
-      case "no_op":
-        return this.visitNoOp(node);
-      case "num":
-        return this.visitNum(node);
-      case "program":
-        return this.visitProgram(node);
-      case "type":
-        return this.visitType(node);
-      case "unary_op":
-        return this.visitUnaryOp(node);
-      case "var":
-        return this.visitVar(node);
-      case "var_decl":
-        return this.visitVarDecl(node);
-      default:
-        throw new NoVisitMethod(node);
-    }
-  }
-
-  visitAssign(node: Assign) {
-    if (node.variable.token.type === "ID") {
-      const varName = node.variable.token.name;
-      const value = this.visit(node.value);
+  visitAssign(assign: Assign) {
+    if (assign.variable.token.type === "ID") {
+      const varName = assign.variable.token.name;
+      let value;
+      switch (assign.value.type) {
+        case "bin_op":
+          value = this.visitBinOp(assign.value);
+          break;
+        case "num":
+          value = this.visitNum(assign.value);
+          break;
+        case "unary_op":
+          value = this.visitUnaryOp(assign.value);
+          break;
+        default:
+          value = this.visitVar(assign.value);
+      }
       if (typeof value === "number") {
         this.globalScope.set(varName, value);
       } else {
         throw new InterpreterError("Expected number.");
       }
     } else {
-      throw new ImpossibleToken(node.variable.token);
+      throw new ImpossibleToken(assign.variable.token);
     }
   }
 
-  visitBinOp(node: BinOp) {
-    const left = this.visit(node.left);
-    const right = this.visit(node.right);
-    // Remove me when typing fixed
-    if (typeof left === "number" && typeof right === "number") {
-      switch (node.op.type) {
-        case "PLUS":
-          return left + right;
-        case "MINUS":
-          return left - right;
-        case "MUL":
-          return left * right;
-        case "INTEGER_DIV":
-          return Math.floor(left / right);
-        case "FLOAT_DIV":
-          return left / right;
-        default:
-          throw new ImpossibleToken(node.op, ["PLUS", "MINUS", "MUL", "DIV"]);
-      }
-    } else {
-      throw new InterpreterError("Expected number.");
+  visitBinOp(binOp: BinOp) {
+    let left;
+    switch (binOp.left.type) {
+      case "bin_op":
+        left = this.visitBinOp(binOp.left);
+        break;
+      case "num":
+        left = this.visitNum(binOp.left);
+        break;
+      case "unary_op":
+        left = this.visitUnaryOp(binOp.left);
+        break;
+      default:
+        left = this.visitVar(binOp.left);
+    }
+    let right;
+    switch (binOp.right.type) {
+      case "bin_op":
+        right = this.visitBinOp(binOp.right);
+        break;
+      case "num":
+        right = this.visitNum(binOp.right);
+        break;
+      case "unary_op":
+        right = this.visitUnaryOp(binOp.right);
+        break;
+      default:
+        right = this.visitVar(binOp.right);
+    }
+
+    switch (binOp.op.type) {
+      case "PLUS":
+        return left + right;
+      case "MINUS":
+        return left - right;
+      case "MUL":
+        return left * right;
+      case "INTEGER_DIV":
+        return Math.floor(left / right);
+      default:
+        // FLOAT_DIV
+        return left / right;
     }
   }
 
   visitBlock(block: Block) {
-    block.declarations.forEach(declartation => {
-      this.visit(declartation);
-    });
-    this.visit(block.compoundStatement);
+    block.declarations.forEach(declaration => this.visitVarDecl(declaration));
+    this.visitCompound(block.compoundStatement);
   }
 
-  visitCompound(node: Compound) {
-    node.children.forEach(node => {
-      this.visit(node);
+  visitCompound(compound: Compound) {
+    compound.children.forEach(child => {
+      switch (child.type) {
+        case "compound":
+          this.visitCompound(child);
+          break;
+        case "assign":
+          this.visitAssign(child);
+          break;
+        default:
+          this.visitNoOp(child);
+      }
     });
   }
 
-  visitNoOp(node: NoOp) {}
+  visitNoOp(noOp: NoOp) {}
 
-  visitNum(node: Num): number {
-    if (
-      node.token.type === "INTEGER_CONST" ||
-      node.token.type === "REAL_CONST"
-    ) {
-      return node.token.value;
-    } else {
-      throw new ImpossibleToken(node.token, ["INTEGER_CONST", "REAL_CONST"]);
-    }
+  visitNum(num: Num): number {
+    return num.token.value;
   }
 
   visitProgram(program: Program) {
-    this.visit(program.block);
+    this.visitBlock(program.block);
   }
 
   visitType(type: Type) {}
 
-  visitUnaryOp(node: UnaryOp) {
-    const expr = this.visit(node.expr);
-    if (typeof expr === "number") {
-      switch (node.op.type) {
-        case "PLUS":
-          return expr;
-        case "MINUS":
-          return -expr;
-        default:
-          throw new ImpossibleToken(node.op, ["PLUS", "MINUS"]);
-      }
-    } else {
-      throw new InterpreterError("expected number");
+  visitUnaryOp(unaryOp: UnaryOp) {
+    let expr;
+    switch (unaryOp.expr.type) {
+      case "bin_op":
+        expr = this.visitBinOp(unaryOp.expr);
+        break;
+      case "num":
+        expr = this.visitNum(unaryOp.expr);
+        break;
+      case "unary_op":
+        expr = this.visitUnaryOp(unaryOp.expr);
+        break;
+      default:
+        expr = this.visitVar(unaryOp.expr);
+    }
+    switch (unaryOp.op.type) {
+      case "PLUS":
+        return expr;
+      default:
+        // MINU
+        return -expr;
     }
   }
 
-  visitVar(node: Var): number {
-    if (node.token.type === "ID") {
-      const varName = node.token.name;
-      const val = this.globalScope.get(varName);
-      if (val) {
-        return val;
-      } else {
-        throw NameError(varName);
-      }
+  visitVar(var_: Var): number {
+    const varName = var_.token.name;
+    const val = this.globalScope.get(varName);
+    if (val) {
+      return val;
     } else {
-      throw new ImpossibleToken(node.token, "ID");
+      throw NameError(varName);
     }
   }
 
@@ -198,8 +199,8 @@ class Interpreter {
 
   interpret() {
     try {
-      const tree = this.parser.parse();
-      this.visit(tree);
+      const program = this.parser.parse();
+      this.visitProgram(program);
     } catch (e) {
       if (e instanceof UnexpectedChar) {
         return "Lexer Error: " + e.message;

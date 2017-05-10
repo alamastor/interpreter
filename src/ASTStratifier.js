@@ -1,6 +1,4 @@
-import ExtendableError from "es6-error";
 import type {
-  ASTNode,
   Assign,
   BinOp,
   Block,
@@ -14,8 +12,6 @@ import type {
   VarDecl,
 } from "./interpreter/parser";
 import * as Immutable from "immutable";
-
-class StratifierError extends ExtendableError {}
 
 const Node = Immutable.Record(
   ({
@@ -41,54 +37,75 @@ class Stratifier {
   }
 
   build() {
-    return this.visit(this.ast);
+    return this.visitProgram(this.ast);
   }
 
-  visit(node: ASTNode): Node {
-    switch (node.type) {
-      case "assign":
-        return this.visitAssign(node);
-      case "block":
-        return this.visitBlock(node);
-      case "compound":
-        return this.visitCompound(node);
+  visitAssign(assign: Assign): Node {
+    const variable = this.visitVar(assign.variable);
+    let value;
+    switch (assign.value.type) {
       case "bin_op":
-        return this.visitBinOp(node);
-      case "unary_op":
-        return this.visitUnaryOp(node);
-      case "no_op":
-        return this.visitNoOp(node);
+        value = this.visitBinOp(assign.value);
+        break;
       case "num":
-        return this.visitNum(node);
-      case "program":
-        return this.visitProgram(node);
-      case "type":
-        return this.visitType(node);
-      case "var":
-        return this.visitVar(node);
-      case "var_decl":
-        return this.visitVarDecl(node);
+        value = this.visitNum(assign.value);
+        break;
+      case "unary_op":
+        value = this.visitUnaryOp(assign.value);
+        break;
       default:
-        throw new StratifierError("No visit method for " + node.type + ".");
+        value = this.visitVar(assign.value);
     }
-  }
-
-  visitAssign(node: Assign): Node {
-    const variable = this.visit(node.variable);
-    const value = this.visit(node.variable);
     return new Node({
       name: ":=",
       children: Immutable.List([variable, value]),
-      startPos: node.startPos,
-      stopPos: node.stopPos,
+      startPos: assign.startPos,
+      stopPos: assign.stopPos,
+    });
+  }
+
+  visitBinOp(binOp: BinOp): Node {
+    let left: Node;
+    switch (binOp.left.type) {
+      case "bin_op":
+        left = this.visitBinOp(binOp.left);
+        break;
+      case "num":
+        left = this.visitNum(binOp.left);
+        break;
+      case "unary_op":
+        left = this.visitUnaryOp(binOp.left);
+        break;
+      default:
+        left = this.visitVar(binOp.left);
+    }
+    let right: Node;
+    switch (binOp.right.type) {
+      case "bin_op":
+        right = this.visitBinOp(binOp.right);
+        break;
+      case "num":
+        right = this.visitNum(binOp.right);
+        break;
+      case "unary_op":
+        right = this.visitUnaryOp(binOp.right);
+        break;
+      default:
+        right = this.visitVar(binOp.right);
+    }
+    return new Node({
+      name: "BinOp:" + binOp.op.type,
+      children: Immutable.List([left, right]),
+      startPos: binOp.startPos,
+      stopPos: binOp.stopPos,
     });
   }
 
   visitBlock(block: Block): Node {
     const declarations = Immutable.List(block.declarations).map(declaration =>
-      this.visit(declaration),
+      this.visitVarDecl(declaration),
     );
-    const compoundStatement = this.visit(block.compoundStatement);
+    const compoundStatement = this.visitCompound(block.compoundStatement);
     return new Node({
       name: "Block",
       children: declarations.push(compoundStatement),
@@ -97,47 +114,45 @@ class Stratifier {
     });
   }
 
-  visitBinOp(node: BinOp): Node {
-    const left = this.visit(node.left);
-    const right = this.visit(node.right);
-    return new Node({
-      name: "BinOp:" + node.op.type,
-      children: Immutable.List([left, right]),
-      startPos: node.startPos,
-      stopPos: node.stopPos,
+  visitCompound(compound: Compound): Node {
+    const childNodes = compound.children.map(child => {
+      switch (child.type) {
+        case "compound":
+          return this.visitCompound(child);
+        case "assign":
+          return this.visitAssign(child);
+        default:
+          return this.visitNoOp(child);
+      }
     });
-  }
-
-  visitCompound(node: Compound): Node {
-    const childNodes = node.children.map(child => this.visit(child));
     return new Node({
       name: "Compound",
       children: Immutable.List(childNodes),
-      startPos: node.startPos,
-      stopPos: node.stopPos,
+      startPos: compound.startPos,
+      stopPos: compound.stopPos,
     });
   }
 
-  visitNoOp(node: NoOp): Node {
+  visitNoOp(noOp: NoOp): Node {
     return new Node({
       name: "NoOp",
-      startPos: node.startPos,
-      stopPos: node.stopPos,
+      startPos: noOp.startPos,
+      stopPos: noOp.stopPos,
     });
   }
 
-  visitNum(node: Num) {
+  visitNum(num: Num) {
     return new Node({
-      name: "Num: " + node.token.value,
-      startPos: node.startPos,
-      stopPos: node.stopPos,
+      name: "Num: " + num.token.value,
+      startPos: num.startPos,
+      stopPos: num.stopPos,
     });
   }
 
   visitProgram(program: Program) {
     return new Node({
       name: "Program: " + program.name,
-      children: Immutable.List([this.visit(program.block)]),
+      children: Immutable.List([this.visitBlock(program.block)]),
       startPos: program.startPos,
       stopPos: program.stopPos,
     });
@@ -151,13 +166,26 @@ class Stratifier {
     });
   }
 
-  visitUnaryOp(node: UnaryOp): Node {
-    const expr = this.visit(node.expr);
+  visitUnaryOp(unaryOp: UnaryOp): Node {
+    let expr: Node;
+    switch (unaryOp.expr.type) {
+      case "bin_op":
+        expr = this.visitBinOp(unaryOp.expr);
+        break;
+      case "num":
+        expr = this.visitNum(unaryOp.expr);
+        break;
+      case "unary_op":
+        expr = this.visitUnaryOp(unaryOp.expr);
+        break;
+      default:
+        expr = this.visitVar(unaryOp.expr);
+    }
     return new Node({
-      name: "UnaryOp:" + node.op.type,
+      name: "UnaryOp:" + unaryOp.op.type,
       children: Immutable.List([expr]),
-      startPos: node.startPos,
-      stopPos: node.stopPos,
+      startPos: unaryOp.startPos,
+      stopPos: unaryOp.stopPos,
     });
   }
 
@@ -173,8 +201,8 @@ class Stratifier {
     return new Node({
       name: "VarDecl",
       children: Immutable.List([
-        this.visit(varDecl.varNode),
-        this.visit(varDecl.typeNode),
+        this.visitVar(varDecl.varNode),
+        this.visitType(varDecl.typeNode),
       ]),
       startPos: varDecl.startPos,
       stopPos: varDecl.stopPos,
