@@ -68,7 +68,7 @@ const mapStateToProps = (state, ownProps): StateProps => ({
 });
 
 type DispatchProps = {|
-  onSetCode: (string, number) => () => void,
+  onSetCode: string => () => void,
   onResetTokens: () => () => void,
   onPushToken: Token => () => void,
   onHoverToken: (Token | UnexpectedChar) => () => void,
@@ -85,8 +85,7 @@ const mapDispatchToProps: MapDispatchToProps<
   *,
   DispatchProps,
 > = dispatch => ({
-  onSetCode: (code, interpreterVer) =>
-    dispatch(onSetCode(code, interpreterVer)),
+  onSetCode: code => dispatch(onSetCode(code)),
   onResetTokens: () =>
     dispatch({
       type: "token_list_reset",
