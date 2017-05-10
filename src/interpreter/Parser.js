@@ -287,7 +287,7 @@ class Parser {
       type: "compound",
       children: children,
       startPos: startPos,
-      stopPos: this.currentToken.stopPos,
+      stopPos: children[children.length - 1].stopPos,
     };
   }
 
@@ -328,15 +328,15 @@ class Parser {
    */
   assignmentStatement(): Assign {
     const startPos = this.currentToken.startPos;
-    const left = this.variable();
+    const variable = this.variable();
     this.eat("ASSIGN");
-    const right = this.expr();
+    const value = this.expr();
     return {
       type: "assign",
-      variable: left,
-      value: right,
+      variable: variable,
+      value: value,
       startPos: startPos,
-      stopPos: this.currentToken.stopPos,
+      stopPos: value.stopPos,
     };
   }
 
@@ -366,8 +366,8 @@ class Parser {
   empty(): NoOp {
     return {
       type: "no_op",
-      startPos: this.currentToken.startPos,
-      stopPos: this.currentToken.stopPos,
+      startPos: 0,
+      stopPos: 0,
     };
   }
 
@@ -383,25 +383,27 @@ class Parser {
   factor(): BinOp | Num | UnaryOp | Var {
     const startPos = this.currentToken.startPos;
     const token = this.currentToken;
+    let factor;
     switch (token.type) {
       case "PLUS":
         this.eat("PLUS");
-        const factor = this.factor();
+        factor = this.factor();
         return {
           type: "unary_op",
           op: token,
           expr: factor,
           startPos: startPos,
-          stopPos: this.currentToken.startPos,
+          stopPos: factor.stopPos,
         };
       case "MINUS":
         this.eat("MINUS");
+        factor = this.factor();
         return {
           type: "unary_op",
           op: token,
-          expr: this.factor(),
+          expr: factor,
           startPos: startPos,
-          stopPos: this.currentToken.startPos,
+          stopPos: factor.stopPos,
         };
       case "INTEGER_CONST":
         this.eat("INTEGER_CONST");
@@ -409,7 +411,7 @@ class Parser {
           type: "num",
           token: token,
           startPos: startPos,
-          stopPos: this.currentToken.startPos,
+          stopPos: token.stopPos,
         };
       case "REAL_CONST":
         this.eat("REAL_CONST");
@@ -417,7 +419,7 @@ class Parser {
           type: "num",
           token: token,
           startPos: startPos,
-          stopPos: this.currentToken.startPos,
+          stopPos: token.stopPos,
         };
       case "LPAREN":
         this.eat("LPAREN");
@@ -457,13 +459,14 @@ class Parser {
       } else {
         this.eat("FLOAT_DIV");
       }
+      const factor = this.factor();
       node = {
         type: "bin_op",
         left: node,
         op: op,
-        right: this.factor(),
+        right: factor,
         startPos: startPos,
-        stopPos: this.currentToken.startPos,
+        stopPos: factor.stopPos,
       };
     }
     return node;
@@ -485,13 +488,14 @@ class Parser {
       } else {
         this.eat("MINUS");
       }
+      const term = this.term();
       node = {
         type: "bin_op",
         left: node,
         op: op,
-        right: this.term(),
+        right: term,
         startPos: startPos,
-        stopPos: this.currentToken.startPos,
+        stopPos: term.stopPos,
       };
     }
     return node;
