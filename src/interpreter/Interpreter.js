@@ -188,7 +188,7 @@ class Interpreter {
   visitVar(var_: Var): number {
     const varName = var_.token.name;
     const val = this.globalScope.get(varName);
-    if (val != undefined) {
+    if (val !== undefined && val !== null) {
       return val;
     } else {
       throw new NameError(varName);

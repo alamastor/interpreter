@@ -1,5 +1,4 @@
 /* @flow */
-import * as Immutable from "immutable";
 import { CodeState } from "./reducers";
 
 export const loadState = () => {

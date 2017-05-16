@@ -13,7 +13,7 @@ import type {
 } from "./interpreter/parser";
 import * as Immutable from "immutable";
 
-const Node = Immutable.Record(
+const NodeBase = Immutable.Record(
   ({
     name: "",
     children: new Immutable.List(),
@@ -28,6 +28,30 @@ const Node = Immutable.Record(
     stopPos: number,
   }),
 );
+
+const Node = class extends NodeBase {
+  constructor(values: {
+    name?: string,
+    children?: Immutable.List<Node>,
+    hiddenChildren?: Immutable.List<Node>,
+    startPos?: number,
+    stopPos?: number,
+  }) {
+    // Convert children to this record type to allow deep
+    // convertion to records.
+    if (values && Array.isArray(values.children)) {
+      values.children = Immutable.List(
+        values.children.map(child => new Node(child)),
+      );
+    }
+    if (values && Array.isArray(values.hiddenChildren)) {
+      values.hiddenChildren = Immutable.List(
+        values.hiddenChildren.map(child => new Node(child)),
+      );
+    }
+    super(values);
+  }
+};
 
 class Stratifier {
   ast: ?Program;

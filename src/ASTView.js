@@ -1,20 +1,25 @@
 /* @flow */
 import React, { Component } from "react";
 import * as d3 from "d3";
+import * as Immutable from "immutable";
 import type { Program } from "./interpreter/parser";
+import { Node } from "./ASTStratifier";
 
-const NODE_RAD = 25;
+const NODE_RAD = 5;
 
-type Node = {|
-  children?: Array<Node>,
+type ViewNode = {|
+  children?: Array<ViewNode>,
   x?: number,
   y?: number,
-  parent: ?Node,
+  parent: ?ViewNode,
+  data: {|
+    name: string,
+  |},
 |};
 
-function reduceTree<T>(
-  root: Node,
-  callback: (T, Node) => T,
+export function reduceTree<T>(
+  root: ViewNode,
+  callback: (T, ViewNode) => T,
   initialValue: T,
 ): T {
   let accumulator = initialValue;
@@ -46,11 +51,14 @@ class ASTView extends Component {
       }
 
       const nodes = tree.descendants();
-      let layoutTree = d3.tree().nodeSize([NODE_RAD * 3, NODE_RAD * 3]);
+      let layoutTree = d3
+        .tree()
+        .nodeSize([NODE_RAD * 5, NODE_RAD * 25])
+        .separation(() => 1);
       layoutTree(tree);
       const minX = reduceTree(
         tree,
-        (prevX: number, node: Node) => {
+        (prevX: number, node: ViewNode) => {
           if (typeof node.x === "number" && node.x < prevX) {
             return node.x;
           } else {
@@ -61,7 +69,7 @@ class ASTView extends Component {
       );
       const maxX = reduceTree(
         tree,
-        (prevX: number, node: Node) => {
+        (prevX: number, node: ViewNode) => {
           if (typeof node.x === "number" && node.x > prevX) {
             return node.x;
           } else {
@@ -74,7 +82,7 @@ class ASTView extends Component {
       const treeMidX = (minX + maxX) / 2;
       const maxY = reduceTree(
         tree,
-        (prevY: number, node: Node) => {
+        (prevY: number, node: ViewNode) => {
           if (typeof node.y === "number" && node.y > prevY) {
             return node.y;
           } else {
@@ -83,30 +91,36 @@ class ASTView extends Component {
         },
         0,
       );
-      const svgWidth = treeWidth + (NODE_RAD + 1) * 2;
+      const svgWidth = maxY + (NODE_RAD + 1) * 2 + NODE_RAD * 25;
+      const svgHeight = treeWidth + (NODE_RAD + 1) * 2;
       return (
-        <svg width={svgWidth} height={maxY + (NODE_RAD + 1) * 2}>
+        <svg width={svgWidth} height={svgHeight}>
           <g
             transform={
               "translate(" +
-                (svgWidth / 2 - treeMidX) +
+                NODE_RAD * 25 +
                 "," +
-                (NODE_RAD + 1) +
+                (svgHeight / 2 - treeMidX) +
                 ")"
             }
           >
+            {nodes
+              .slice(1)
+              .map((node, idx) => <Link key={nodeKey(node)} node={node} />)}
             {nodes.map(node => (
               <NodeView
                 node={node}
-                key={node.id}
+                hiddenNodes={this.props.hiddenNodes}
+                key={nodeKey(node)}
+                id={nodeKey(node)}
                 onClick={(node: Node) => {
                   console.log(node);
                 }}
                 onHoverNode={this.props.onHoverNode}
                 onStopHoverNode={this.props.onStopHoverNode}
+                onClickNode={this.props.onClickNode}
               />
             ))}
-            {nodes.slice(1).map((node, idx) => <Link key={idx} node={node} />)}
           </g>
         </svg>
       );
@@ -116,51 +130,94 @@ class ASTView extends Component {
   }
 }
 
-const NodeView = props => {
+const NodeView = (props: {
+  node: ViewNode,
+  onHoverNode: ({ name: string }) => void,
+  onStopHoverNode: () => void,
+  onClickNode: ({}) => void,
+  id: string,
+}) => {
   const onMouseEnter = () => {
-    props.onHoverNode(props.node.data);
+    props.onHoverNode(new Node(props.node.data));
   };
   const onMouseLeave = () => {
     props.onStopHoverNode();
   };
-  return (
-    <g
-      transform={"translate(" + props.node.x + "," + props.node.y + ")"}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-    >
-      <circle r={NODE_RAD} fill="lightsteelblue" stroke="steelblue" />
-      <text textAnchor="middle" alignmentBaseline="middle" fontSize="8">
-        {props.node.data.name}
-      </text>
-    </g>
-  );
+  const onClickNode = () => {
+    props.onClickNode(new Node(props.node.data));
+  };
+
+  if (typeof props.node.y === "number" && typeof props.node.x === "number") {
+    return (
+      <g
+        transform={"translate(" + props.node.y + "," + props.node.x + ")"}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+      >
+        <circle
+          r={NODE_RAD}
+          fill={props.node.hiddenChildren ? "lightsteelblue" : "white"}
+          stroke="steelblue"
+          onClick={onClickNode}
+        />
+        <text
+          textAnchor="end"
+          alignmentBaseline="middle"
+          fontSize="10"
+          dx="-10"
+        >
+          {props.node.data.name}
+        </text>
+      </g>
+    );
+  }
+  return null;
 };
 
 const Link = props => {
   const [pathStartX, pathStartY] = [
-    props.node.parent.x,
     props.node.parent.y + NODE_RAD,
+    props.node.parent.x,
   ];
-  const [pathEndX, pathEndY] = [props.node.x, props.node.y - NODE_RAD];
+  const [pathEndX, pathEndY] = [props.node.y - NODE_RAD, props.node.x];
   const d =
     "M " +
     pathStartX +
     "," +
     pathStartY +
     "C " +
-    pathStartX +
+    (pathStartX + 60) +
     "," +
-    (pathStartY + 10) +
+    pathStartY +
     " " +
-    pathEndX +
+    (pathEndX - 60) +
     "," +
-    (pathEndY - 10) +
+    pathEndY +
     " " +
     pathEndX +
     "," +
     pathEndY;
   return <path d={d} stroke="darkgrey" fill="none" />;
+};
+
+const nodeKey = (node: ViewNode): string => {
+  let key: string;
+  if (!node.parent) {
+    key = node.data.name;
+  } else {
+    const parent = node.parent;
+    if (Array.isArray(parent.children)) {
+      const siblings = parent.children;
+      const twins = siblings.filter(
+        sibling => sibling.data.name === node.data.name,
+      );
+      const twinNumber = twins.findIndex(sibling => sibling === node);
+      key = nodeKey(parent) + ":" + node.data.name + "." + twinNumber;
+    } else {
+      throw new Error("Parent must have children");
+    }
+  }
+  return key;
 };
 
 export default ASTView;

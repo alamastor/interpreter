@@ -1,23 +1,17 @@
 /* @flow */
 import { connect } from "react-redux";
+import * as Immutable from "immutable";
 import InterpreterView from "./InterpreterView";
-import Interpreter from "./interpreter/Interpreter";
-import Lexer from "./interpreter/Lexer";
-import Parser from "./interpreter/Parser";
-import TokenMiddleware from "./TokenMiddleware";
-import ASTMiddleware from "./ASTMiddleware";
 import type { MapDispatchToProps } from "react-redux";
 import type { Action } from "./actionTypes";
-import type { Token } from "./interpreter/Token";
-import type { Program } from "./interpreter/Parser";
+import Node from "./ASTView";
 import { UnexpectedChar } from "./interpreter/Lexer";
-import ASTStatifier from "./ASTStratifier";
-import * as Immutable from "immutable";
+import type { Token } from "./interpreter/Token";
 
 type StateProps = {|
   code: string,
-  grammar: Array<string>,
-  strata: typeof ASTStatifier,
+  grammar: Immutable.List<string>,
+  strata: Node,
   interpreterOutput: string,
   tokenList: Array<Token>,
   highlightStart: number,
@@ -28,34 +22,12 @@ type StateProps = {|
 |};
 
 const mapStateToProps = (state, ownProps): StateProps => {
-  const codeState = state.code;
-  let tokenList = [];
-  const parser = new Parser(
-    new TokenMiddleware(
-      new Lexer(codeState.code),
-      () => {
-        tokenList = [];
-      },
-      token => {
-        tokenList.push(token);
-      },
-    ),
-  );
-  let programAST: Program;
-  const interpreterOutput = new Interpreter(
-    new ASTMiddleware(parser, ast => {
-      programAST = ast;
-    }),
-  ).interpret();
-
-  const strata = new ASTStatifier(programAST).build();
-
   return {
-    code: codeState,
-    grammar: parser.grammar,
-    strata: strata,
-    interpreterOutput: interpreterOutput,
-    tokenList: tokenList,
+    code: state.code,
+    grammar: state.interpreterView.grammar,
+    strata: state.interpreterView.strata,
+    interpreterOutput: state.interpreterView.interpreterOutput,
+    tokenList: state.interpreterView.tokenList,
     highlightStart: state.interpreterView.highlightStart,
     highlightStop: state.interpreterView.highlightStop,
     grammarMinimized: state.interpreterView.grammarMinimized,
@@ -73,6 +45,7 @@ type DispatchProps = {|
   onClickGrammarToggle: () => () => void,
   onClickTokensToggle: () => () => void,
   onClickASTToggle: () => () => void,
+  onClickASTNode: Node => () => void,
 |};
 
 const mapDispatchToProps: MapDispatchToProps<
@@ -114,6 +87,11 @@ const mapDispatchToProps: MapDispatchToProps<
   onClickASTToggle: () =>
     dispatch({
       type: "interpreter_view_ast_toggle_click",
+    }),
+  onClickASTNode: node =>
+    dispatch({
+      type: "interpreter_view_ast_node_click",
+      node: node,
     }),
 });
 

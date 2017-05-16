@@ -51,4 +51,8 @@ export type Action =
     }
   | {
       type: "interpreter_view_ast_toggle_click",
+    }
+  | {
+      type: "interpreter_view_ast_node_click",
+      node: Node,
     };

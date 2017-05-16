@@ -86,8 +86,10 @@ class InterpreterView extends Component {
         >
           <AST
             strata={this.props.strata}
+            hiddenNodes={this.props.astHiddenNodes}
             onHoverNode={this.props.onHoverNode}
             onStopHoverNode={this.props.onStopHoverNode}
+            onClickNode={this.props.onClickASTNode}
           />
         </div>
         <h4 className="interpreter--header">Interpreter Output:</h4>

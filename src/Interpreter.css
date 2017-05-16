@@ -104,7 +104,6 @@ mark {
 }
 
 .ast-container {
-  max-height: 20em;
   width: 100%;
-  overflow: auto;
+  overflow-x: auto;
 }
