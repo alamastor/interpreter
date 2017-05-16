@@ -147,6 +147,16 @@ const NodeView = (props: {
     props.onClickNode(new Node(props.node.data));
   };
 
+  let color;
+  if (
+    props.node.data.hiddenChildren &&
+    props.node.data.hiddenChildren.length > 0
+  ) {
+    color = "lightsteelblue";
+  } else {
+    color = "white";
+  }
+
   if (typeof props.node.y === "number" && typeof props.node.x === "number") {
     return (
       <g
@@ -156,7 +166,7 @@ const NodeView = (props: {
       >
         <circle
           r={NODE_RAD}
-          fill={props.node.hiddenChildren ? "lightsteelblue" : "white"}
+          fill={color}
           stroke="steelblue"
           onClick={onClickNode}
         />
