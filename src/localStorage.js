@@ -5,7 +5,6 @@ export const loadState = () => {
   try {
     const serializedState = localStorage.getItem("state");
     if (serializedState != null) {
-      // TODO: Maybe replace records with maps so can generalize this.
       const jsState = JSON.parse(serializedState);
       return { code: CodeState(jsState.code) };
     } else {

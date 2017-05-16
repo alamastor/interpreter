@@ -15,6 +15,10 @@ class InterpreterView extends Component {
     this.onSetCode = this.onSetCode.bind(this);
   }
 
+  componentWillMount() {
+    this.props.onSetCode(this.props.code.code);
+  }
+
   onSetCode({ target }: { target: EventTarget }) {
     if (target.value) {
       this.props.onSetCode(target.value);
