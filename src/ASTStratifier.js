@@ -1,3 +1,4 @@
+/* @flow */
 import type {
   Assign,
   BinOp,
@@ -12,31 +13,46 @@ import type {
   VarDecl,
 } from "./interpreter/parser";
 import * as Immutable from "immutable";
+import uuidV4 from "uuid/v4";
 
 const NodeBase = Immutable.Record(
   ({
+    id: 0,
     name: "",
     children: new Immutable.List(),
     hiddenChildren: new Immutable.List(),
     startPos: 0,
     stopPos: 0,
-  }: {
+  }: {|
+    id: number,
     name: string,
     children: Immutable.List<Node>,
     hiddenChildren: Immutable.List<Node>,
     startPos: number,
     stopPos: number,
-  }),
+  |}),
 );
 
 const Node = class extends NodeBase {
-  constructor(values: {
-    name?: string,
-    children?: Immutable.List<Node>,
-    hiddenChildren?: Immutable.List<Node>,
-    startPos?: number,
-    stopPos?: number,
-  }) {
+  constructor(
+    values:
+      | {
+          id?: number,
+          name?: string,
+          children?: Immutable.List<Node>,
+          hiddenChildren?: Immutable.List<Node>,
+          startPos?: number,
+          stopPos?: number,
+        }
+      | {
+          id: number,
+          name: string,
+          children: Immutable.List<Node>,
+          hiddenChildren: Immutable.List<Node>,
+          startPos: number,
+          stopPos: number,
+        },
+  ) {
     // Convert children to this record type to allow deep
     // convertion to records.
     if (values && Array.isArray(values.children)) {
@@ -55,6 +71,7 @@ const Node = class extends NodeBase {
 
 class Stratifier {
   ast: ?Program;
+  root: Node;
 
   constructor(ast: ?Program) {
     this.ast = ast;
@@ -62,7 +79,9 @@ class Stratifier {
 
   build() {
     if (this.ast) {
-      return this.visitProgram(this.ast);
+      const root = this.visitProgram(this.ast);
+      this.root = root;
+      return root;
     }
   }
 
@@ -83,6 +102,7 @@ class Stratifier {
         value = this.visitVar(assign.value);
     }
     return new Node({
+      id: uuidV4(),
       name: ":=",
       children: Immutable.List([variable, value]),
       startPos: assign.startPos,
@@ -120,6 +140,7 @@ class Stratifier {
         right = this.visitVar(binOp.right);
     }
     return new Node({
+      id: uuidV4(),
       name: "BinOp:" + binOp.op.type,
       children: Immutable.List([left, right]),
       startPos: binOp.startPos,
@@ -133,6 +154,7 @@ class Stratifier {
     );
     const compoundStatement = this.visitCompound(block.compoundStatement);
     return new Node({
+      id: uuidV4(),
       name: "Block",
       children: declarations.push(compoundStatement),
       startPos: block.startPos,
@@ -152,6 +174,7 @@ class Stratifier {
       }
     });
     return new Node({
+      id: uuidV4(),
       name: "Compound",
       children: Immutable.List(childNodes),
       startPos: childNodes[0].startPos,
@@ -161,6 +184,7 @@ class Stratifier {
 
   visitNoOp(noOp: NoOp): Node {
     return new Node({
+      id: uuidV4(),
       name: "NoOp",
       startPos: noOp.startPos,
       stopPos: noOp.stopPos,
@@ -169,14 +193,16 @@ class Stratifier {
 
   visitNum(num: Num) {
     return new Node({
+      id: uuidV4(),
       name: "Num: " + num.token.value,
       startPos: num.startPos,
       stopPos: num.stopPos,
     });
   }
 
-  visitProgram(program: Program) {
+  visitProgram(program: Program): Node {
     return new Node({
+      id: uuidV4(),
       name: "Program: " + program.name,
       children: Immutable.List([this.visitBlock(program.block)]),
       startPos: program.startPos,
@@ -186,6 +212,7 @@ class Stratifier {
 
   visitType(type: Type) {
     return new Node({
+      id: uuidV4(),
       name: "Type: " + type.value,
       startPos: type.startPos,
       stopPos: type.stopPos,
@@ -208,6 +235,7 @@ class Stratifier {
         expr = this.visitVar(unaryOp.expr);
     }
     return new Node({
+      id: uuidV4(),
       name: "UnaryOp:" + unaryOp.op.type,
       children: Immutable.List([expr]),
       startPos: unaryOp.startPos,
@@ -217,6 +245,7 @@ class Stratifier {
 
   visitVar(node: Var) {
     return new Node({
+      id: uuidV4(),
       name: "Var: " + node.token.name,
       startPos: node.startPos,
       stopPos: node.stopPos,
@@ -225,6 +254,7 @@ class Stratifier {
 
   visitVarDecl(varDecl: VarDecl): Node {
     return new Node({
+      id: uuidV4(),
       name: "VarDecl",
       children: Immutable.List([
         this.visitVar(varDecl.varNode),

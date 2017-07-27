@@ -3,7 +3,7 @@
 import type { Token } from "./interpreter/Token";
 import type { Program } from "./interpreter/Parser";
 import { UnexpectedChar } from "./interpreter/Lexer";
-import Node from "./ASTStratifier";
+import { Node } from "./ASTStratifier";
 
 export type Action =
   | {
@@ -53,6 +53,10 @@ export type Action =
       type: "interpreter_view_ast_toggle_click",
     }
   | {
-      type: "interpreter_view_ast_node_click",
+      type: "ast_node_click",
       node: Node,
+    }
+  | {
+      type: "ast_received_next_strata",
+      strata: Node,
     };

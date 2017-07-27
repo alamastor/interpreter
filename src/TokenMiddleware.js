@@ -1,3 +1,4 @@
+/* @flow */
 import Lexer from "./interpreter/Lexer";
 import { UnexpectedChar } from "./interpreter/Lexer";
 import type { Token } from "./interpreter/Token";

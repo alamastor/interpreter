@@ -2,6 +2,10 @@
 import ExtendableError from "es6-error";
 import type { Token } from "./Token";
 
+export interface LexerInterface {
+  getNextToken(): Token,
+}
+
 const isSpace = (s: string) => s.match(/ |\n/);
 
 const isDigit = (s: string) => !isNaN(parseInt(s, 10));

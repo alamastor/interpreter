@@ -4,14 +4,12 @@ import * as Immutable from "immutable";
 import InterpreterView from "./InterpreterView";
 import type { MapDispatchToProps } from "react-redux";
 import type { Action } from "./actionTypes";
-import Node from "./ASTView";
-import { UnexpectedChar } from "./interpreter/Lexer";
 import type { Token } from "./interpreter/Token";
+import { UnexpectedChar } from "./interpreter/Lexer";
 
 type StateProps = {|
   code: string,
   grammar: Immutable.List<string>,
-  strata: Node,
   interpreterOutput: string,
   tokenList: Array<Token>,
   highlightStart: number,
@@ -21,11 +19,10 @@ type StateProps = {|
   astMinimized: boolean,
 |};
 
-const mapStateToProps = (state, ownProps): StateProps => {
+const mapStateToProps = (state): StateProps => {
   return {
     code: state.code,
     grammar: state.interpreterView.grammar,
-    strata: state.interpreterView.strata,
     interpreterOutput: state.interpreterView.interpreterOutput,
     tokenList: state.interpreterView.tokenList,
     highlightStart: state.interpreterView.highlightStart,
@@ -40,12 +37,9 @@ type DispatchProps = {|
   onSetCode: string => () => void,
   onHoverToken: (Token | UnexpectedChar) => () => void,
   onStopHoverToken: () => () => void,
-  onHoverNode: Node => () => void,
-  onStopHoverNode: () => () => void,
   onClickGrammarToggle: () => () => void,
   onClickTokensToggle: () => () => void,
   onClickASTToggle: () => () => void,
-  onClickASTNode: Node => () => void,
 |};
 
 const mapDispatchToProps: MapDispatchToProps<
@@ -67,15 +61,6 @@ const mapDispatchToProps: MapDispatchToProps<
     dispatch({
       type: "token_hover_stop",
     }),
-  onHoverNode: node =>
-    dispatch({
-      type: "ast_node_hover",
-      node: node,
-    }),
-  onStopHoverNode: () =>
-    dispatch({
-      type: "ast_node_hover_stop",
-    }),
   onClickGrammarToggle: () =>
     dispatch({
       type: "interpreter_view_grammar_toggle_click",
@@ -88,17 +73,12 @@ const mapDispatchToProps: MapDispatchToProps<
     dispatch({
       type: "interpreter_view_ast_toggle_click",
     }),
-  onClickASTNode: node =>
-    dispatch({
-      type: "interpreter_view_ast_node_click",
-      node: node,
-    }),
 });
 
-const AppContainer = connect(mapStateToProps, mapDispatchToProps)(
+const InterpreterViewContainer = connect(mapStateToProps, mapDispatchToProps)(
   InterpreterView,
 );
 
 export type InterpreterProps = StateProps & DispatchProps;
 
-export default AppContainer;
+export default InterpreterViewContainer;

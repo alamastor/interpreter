@@ -1,6 +1,7 @@
 /* @flow */
 import ExtendableError from "es6-error";
 import Lexer from "./Lexer";
+import type { LexerInterface } from "./Lexer";
 import type {
   Token,
   PLUS,
@@ -45,11 +46,11 @@ export type Compound = {|
   stopPos: number,
 |};
 
-export type NoOp = {|
+export type NoOp = {
   type: "no_op",
   startPos: number,
   stopPos: number,
-|};
+};
 
 export type Num = {|
   type: "num",
@@ -58,13 +59,13 @@ export type Num = {|
   stopPos: number,
 |};
 
-export type Program = {|
+export type Program = {
   type: "program",
   name: string,
   block: Block,
   startPos: number,
   stopPos: number,
-|};
+};
 
 export type Type = {|
   type: "type",
@@ -137,7 +138,7 @@ export interface ParserInterface {
   parse(): Program,
 }
 class Parser {
-  lexer: Lexer;
+  lexer: LexerInterface;
 
   currentToken: Token;
 
@@ -157,7 +158,7 @@ class Parser {
     "factor              : PLUS factor | MINUS factor | INTEGER_CONST | REAL_CONST | LPAREN expr RPAREN | variable",
   ];
 
-  constructor(lexer: Lexer) {
+  constructor(lexer: LexerInterface) {
     this.lexer = lexer;
   }
 

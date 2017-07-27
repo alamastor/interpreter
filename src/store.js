@@ -1,13 +1,15 @@
 /* @flow */
 import { combineReducers, createStore, applyMiddleware } from "redux";
 import thunk from "redux-thunk";
-import { code, interpreterView } from "./reducers";
+import { code, interpreterView } from "./reducers/reducers";
+import astView from "./reducers/ASTView";
 import { loadState, saveState } from "./localStorage";
 import throttle from "lodash/throttle";
 
 const reducer = combineReducers({
   code,
   interpreterView,
+  astView,
 });
 
 const persistedState = loadState();

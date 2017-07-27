@@ -1,7 +1,7 @@
 /* @flow */
 import React, { Component, Element } from "react";
 import "./Interpreter.css";
-import AST from "./ASTView";
+import ASTContainer from "./ASTContainer";
 import type { Token } from "./interpreter/Token";
 import { UnexpectedChar } from "./interpreter/Lexer";
 import type { InterpreterProps } from "./InterpreterContainer";
@@ -88,13 +88,7 @@ class InterpreterView extends Component {
           className="ast-container"
           style={{ display: this.props.astMinimized ? "none" : "block" }}
         >
-          <AST
-            strata={this.props.strata}
-            hiddenNodes={this.props.astHiddenNodes}
-            onHoverNode={this.props.onHoverNode}
-            onStopHoverNode={this.props.onStopHoverNode}
-            onClickNode={this.props.onClickASTNode}
-          />
+          <ASTContainer />
         </div>
         <h4 className="interpreter--header">Interpreter Output:</h4>
         <p className="interpreter--line">{this.props.interpreterOutput}</p>

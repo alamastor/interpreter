@@ -1,5 +1,5 @@
 /* @flow */
-import { CodeState } from "./reducers";
+import { CodeState } from "./reducers/reducers";
 
 export const loadState = () => {
   try {
