@@ -117,39 +117,41 @@ class ASTView extends Component {
         findNode(previousTree, this.props.sourceNode) || tree;
 
       return (
-        <svg width={svgWidth} height={svgHeight}>
-          <TransitionGroup
-            component="g"
-            transform={
-              "translate(" + (NODE_RAD + 1) + "," + (NODE_RAD + 1) + ")"
-            }
-          >
-            {nodes
-              .slice(1)
-              .map(node =>
-                <Link
-                  key={viewNodeKey(node)}
+        <TransitionGroup component="div">
+          <SVGContainer width={svgWidth} height={svgHeight}>
+            <TransitionGroup
+              component="g"
+              transform={
+                "translate(" + (NODE_RAD + 1) + "," + (NODE_RAD + 1) + ")"
+              }
+            >
+              {nodes
+                .slice(1)
+                .map(node =>
+                  <Link
+                    key={viewNodeKey(node)}
+                    node={node}
+                    sourceNode={sourceNode}
+                    nextSourceNode={nextSourceNode}
+                    previousSourceNode={previousSourceNode}
+                  />,
+                )}
+              {nodes.map(node =>
+                <NodeView
                   node={node}
+                  key={viewNodeKey(node)}
+                  id={viewNodeKey(node)}
+                  onHoverNode={this.props.onHoverNode}
+                  onStopHoverNode={this.props.onStopHoverNode}
+                  onClickNode={this.props.onClickNode}
                   sourceNode={sourceNode}
                   nextSourceNode={nextSourceNode}
                   previousSourceNode={previousSourceNode}
                 />,
               )}
-            {nodes.map(node =>
-              <NodeView
-                node={node}
-                key={viewNodeKey(node)}
-                id={viewNodeKey(node)}
-                onHoverNode={this.props.onHoverNode}
-                onStopHoverNode={this.props.onStopHoverNode}
-                onClickNode={this.props.onClickNode}
-                sourceNode={sourceNode}
-                nextSourceNode={nextSourceNode}
-                previousSourceNode={previousSourceNode}
-              />,
-            )}
-          </TransitionGroup>
-        </svg>
+            </TransitionGroup>
+          </SVGContainer>
+        </TransitionGroup>
       );
     } else {
       return null;
@@ -217,6 +219,50 @@ const findNode = (root: ViewNode, sourceNode: Node): ?ViewNode => {
     return root.children
       .map(child => findNode(child, sourceNode))
       .find(x => x !== undefined);
+  }
+};
+
+const SVGContainer = class extends Component<
+  void,
+  { width: number, height: number, children?: React.Element<*> },
+  { width: number, height: number },
+> {
+  constructor(props) {
+    super(props);
+    this.state = {
+      width: this.props.width,
+      height: this.props.height,
+    };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    let ele = d3.select(ReactDOM.findDOMNode(this));
+    if (
+      nextProps.height < this.props.height ||
+      nextProps.width < this.props.width
+    ) {
+      ele.transition(
+        d3
+          .transition()
+          .delay(1000)
+          .attr("height", nextProps.height)
+          .attr("width", nextProps.width)
+          .on("end", () => {
+            this.setState({
+              width: this.nextProps.width,
+              height: this.nextProps.height,
+            });
+          }),
+      );
+    }
+  }
+
+  render() {
+    return (
+      <svg width={this.state.width} height={this.state.height}>
+        {this.props.children}
+      </svg>
+    );
   }
 };
 
