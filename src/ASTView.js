@@ -25,6 +25,13 @@ type ViewNode = {
   },
 };
 
+const getNodeX = (node: ViewNode): number => node.x || 0;
+const getNodeY = (node: ViewNode): number => node.y || 0;
+const getNodeParentX = (node: ViewNode): number =>
+  node.parent ? getNodeX(node.parent) : getNodeX(node);
+const getNodeParentY = (node: ViewNode): number =>
+  node.parent ? getNodeY(node.parent) : getNodeY(node);
+
 export function reduceTree<T>(
   root: ViewNode,
   callback: (T, ViewNode) => T,
@@ -227,6 +234,7 @@ const SVGContainer = class extends Component<
   { width: number, height: number, children?: React.Element<*> },
   { width: number, height: number },
 > {
+  state = { width: 0, height: 0 };
   constructor(props) {
     super(props);
     this.state = {
@@ -249,8 +257,8 @@ const SVGContainer = class extends Component<
           .attr("width", nextProps.width)
           .on("end", () => {
             this.setState({
-              width: this.nextProps.width,
-              height: this.nextProps.height,
+              width: nextProps.width,
+              height: nextProps.height,
             });
           }),
       );
@@ -424,17 +432,21 @@ type LinkProps = {
   previousSourceNode: ViewNode,
   nextSourceNode: ViewNode,
 };
+
 type LinkState = {
   startX: number,
   startY: number,
   endX: number,
   endY: number,
 };
+
 const Link = class extends Component<void, LinkProps, LinkState> {
-  sourceX: number;
-  sourceY: number;
-  parentX: number;
-  parentY: number;
+  state = {
+    startX: 0,
+    startY: 0,
+    endX: 0,
+    endY: 0,
+  };
 
   constructor(props: {
     node: ViewNode,
@@ -473,43 +485,36 @@ const Link = class extends Component<void, LinkProps, LinkState> {
       .attr(
         "d",
         this.pathShape(
-          this.props.node.parent.x,
-          this.props.node.parent.y,
-          this.props.node.x,
-          this.props.node.y,
+          getNodeParentX(this.props.node),
+          getNodeParentY(this.props.node),
+          getNodeX(this.props.node),
+          getNodeY(this.props.node),
         ),
       )
       .on("end", () => {
         this.setState({
-          startX: this.props.node.parent.x,
-          startY: this.props.node.parent.y,
-          endX: this.props.node.x,
-          endY: this.props.node.y,
+          startX: getNodeParentX(this.props.node),
+          startY: getNodeParentY(this.props.node),
+          endX: getNodeX(this.props.node),
+          endY: getNodeY(this.props.node),
         });
         callback();
       });
   }
 
   componentWillReceiveProps(nextProps: LinkProps) {
-    if (
-      nextProps.node.x !== this.props.node.x ||
-      nextProps.node.y !== this.props.node.y ||
-      nextProps.node.parent.x !== this.props.node.parent.x ||
-      nextProps.node.parent.y !== this.props.node.parent.y
-    ) {
-      let ele = d3.select(ReactDOM.findDOMNode(this));
-      ele
-        .transition(d3.transition().duration(1000))
-        .attr(
-          "d",
-          this.pathShape(
-            nextProps.node.parent.x,
-            nextProps.node.parent.y,
-            nextProps.node.x,
-            nextProps.node.y,
-          ),
-        );
-    }
+    let ele = d3.select(ReactDOM.findDOMNode(this));
+    ele
+      .transition(d3.transition().duration(1000))
+      .attr(
+        "d",
+        this.pathShape(
+          getNodeParentX(nextProps.node),
+          getNodeParentY(nextProps.node),
+          getNodeX(nextProps.node),
+          getNodeY(nextProps.node),
+        ),
+      );
   }
 
   componentWillEnter(callback) {
@@ -531,8 +536,10 @@ const Link = class extends Component<void, LinkProps, LinkState> {
       )
       .on("end", () => {
         this.setState({
-          x: 0,
-          y: 0,
+          startX: this.props.nextSourceNode.x || 0,
+          startY: this.props.nextSourceNode.y || 0,
+          endX: this.props.nextSourceNode.x || 0,
+          endY: this.props.nextSourceNode.y || 0,
         });
         callback();
       });
