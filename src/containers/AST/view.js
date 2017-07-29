@@ -4,9 +4,9 @@ import ReactDOM from "react-dom";
 import TransitionGroup from "react-transition-group/TransitionGroup";
 import * as d3 from "d3";
 import * as Immutable from "immutable";
-import type { Program } from "./interpreter/parser";
-import { Node } from "./ASTStratifier";
-import type { ASTProps } from "./ASTContainer";
+import type { Program } from "../../interpreter/parser";
+import { Node } from "../../ASTStratifier";
+import type { ASTProps } from "./index";
 
 const NODE_RAD = 5;
 const DURATION = 1000;

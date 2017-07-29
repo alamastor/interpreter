@@ -8,7 +8,6 @@ import TokenMiddleware from "../TokenMiddleware";
 import ASTMiddleware from "../ASTMiddleware";
 import type { Program } from "../interpreter/Parser";
 import type { Token } from "../interpreter/Token";
-import { reduceTree } from "../ASTView";
 
 export const CodeState = Immutable.Record(
   ({

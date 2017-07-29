@@ -1,7 +1,7 @@
 /* @flow */
 import React, { Component, Element } from "react";
 import "./Interpreter.css";
-import ASTContainer from "./ASTContainer";
+import ASTContainer from "./containers/AST";
 import type { Token } from "./interpreter/Token";
 import { UnexpectedChar } from "./interpreter/Lexer";
 import type { InterpreterProps } from "./InterpreterContainer";
@@ -49,9 +49,11 @@ class InterpreterView extends Component {
           className="grammar--list"
           style={{ display: this.props.grammarMinimized ? "none" : "block" }}
         >
-          {this.props.grammar.map((s, i) => (
-            <p key={i} className="grammar--line">{s}</p>
-          ))}
+          {this.props.grammar.map((s, i) =>
+            <p key={i} className="grammar--line">
+              {s}
+            </p>,
+          )}
         </ul>
         <h4 className="lexer--header">
           Token Stream
@@ -66,14 +68,14 @@ class InterpreterView extends Component {
           className="lexer--list"
           style={{ display: this.props.tokensMinimized ? "none" : "block" }}
         >
-          {this.props.tokenList.map((tokenOrError, i) => (
+          {this.props.tokenList.map((tokenOrError, i) =>
             <TokenView
               tokenOrError={tokenOrError}
               onHoverToken={this.props.onHoverToken}
               onStopHoverToken={this.props.onStopHoverToken}
               key={i}
-            />
-          ))}
+            />,
+          )}
         </ul>
         <h4 className="ast-header">
           AST
@@ -91,7 +93,9 @@ class InterpreterView extends Component {
           <ASTContainer />
         </div>
         <h4 className="interpreter--header">Interpreter Output:</h4>
-        <p className="interpreter--line">{this.props.interpreterOutput}</p>
+        <p className="interpreter--line">
+          {this.props.interpreterOutput}
+        </p>
       </main>
     );
   }
@@ -194,7 +198,11 @@ const Code = class extends Component {
 
         <div className="highlights-container" ref="highlightsContainer">
           <div className="highlights">
-            {beforeHightlight}<mark>{highlight}</mark>{afterHighlight}
+            {beforeHightlight}
+            <mark>
+              {highlight}
+            </mark>
+            {afterHighlight}
           </div>
         </div>
       </div>

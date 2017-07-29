@@ -1,9 +1,9 @@
 /* @flow */
 import { connect } from "react-redux";
 import type { MapDispatchToProps } from "react-redux";
-import { Node } from "./ASTStratifier";
-import type { Action } from "./actionTypes";
-import ASTView from "./ASTView";
+import { Node } from "../../ASTStratifier";
+import type { Action } from "../../actionTypes";
+import ASTView from "./view";
 
 type StateProps = {
   strata: Node,

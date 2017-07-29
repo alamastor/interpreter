@@ -2,7 +2,7 @@
 import { combineReducers, createStore, applyMiddleware } from "redux";
 import thunk from "redux-thunk";
 import { code, interpreterView } from "./reducers/reducers";
-import astView from "./reducers/ASTView";
+import astView from "./containers/AST/reducer";
 import { loadState, saveState } from "./localStorage";
 import throttle from "lodash/throttle";
 
