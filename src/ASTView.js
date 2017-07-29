@@ -9,6 +9,7 @@ import { Node } from "./ASTStratifier";
 import type { ASTProps } from "./ASTContainer";
 
 const NODE_RAD = 5;
+const DURATION = 1000;
 
 type ViewNode = {
   children?: Array<ViewNode>,
@@ -252,7 +253,7 @@ const SVGContainer = class extends Component<
       ele.transition(
         d3
           .transition()
-          .delay(1000)
+          .delay(DURATION)
           .attr("height", nextProps.height)
           .attr("width", nextProps.width)
           .on("end", () => {
@@ -315,7 +316,7 @@ const NodeView = class extends Component {
       const x = this.props.node.x;
       const y = this.props.node.y;
       ele
-        .transition(d3.transition().duration(1000))
+        .transition(d3.transition().duration(DURATION))
         .attr("transform", "translate(" + x + "," + y + ")")
         .on("end", () => {
           this.setState({ x, y });
@@ -339,7 +340,7 @@ const NodeView = class extends Component {
         const x = nextProps.node.x;
         const y = nextProps.node.y;
         ele
-          .transition(d3.transition().duration(1000))
+          .transition(d3.transition().duration(DURATION))
           .attr("transform", "translate(" + x + "," + y + ")")
           .on("end", () => {
             this.setState({ x, y });
@@ -351,7 +352,7 @@ const NodeView = class extends Component {
   componentWillLeave(callback) {
     let ele = d3.select(ReactDOM.findDOMNode(this));
     ele
-      .transition(d3.transition().duration(1000))
+      .transition(d3.transition().duration(DURATION))
       .attr(
         "transform",
         "translate(" +
@@ -481,7 +482,7 @@ const Link = class extends Component<void, LinkProps, LinkState> {
 
     // Transition stuff here.
     ele
-      .transition(d3.transition().duration(1000))
+      .transition(d3.transition().duration(DURATION))
       .attr(
         "d",
         this.pathShape(
@@ -505,7 +506,7 @@ const Link = class extends Component<void, LinkProps, LinkState> {
   componentWillReceiveProps(nextProps: LinkProps) {
     let ele = d3.select(ReactDOM.findDOMNode(this));
     ele
-      .transition(d3.transition().duration(1000))
+      .transition(d3.transition().duration(DURATION))
       .attr(
         "d",
         this.pathShape(
@@ -524,7 +525,7 @@ const Link = class extends Component<void, LinkProps, LinkState> {
   componentWillLeave(callback) {
     let ele = d3.select(ReactDOM.findDOMNode(this));
     ele
-      .transition(d3.transition().duration(1000))
+      .transition(d3.transition().duration(DURATION))
       .attr(
         "d",
         this.pathShape(
