@@ -46,11 +46,11 @@ export type Compound = {|
   stopPos: number,
 |};
 
-export type NoOp = {
+export type NoOp = {|
   type: "no_op",
   startPos: number,
   stopPos: number,
-};
+|};
 
 export type Num = {|
   type: "num",
@@ -59,13 +59,13 @@ export type Num = {|
   stopPos: number,
 |};
 
-export type Program = {
+export type Program = {|
   type: "program",
   name: string,
   block: Block,
   startPos: number,
   stopPos: number,
-};
+|};
 
 export type Type = {|
   type: "type",
