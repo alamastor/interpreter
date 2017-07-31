@@ -21,10 +21,10 @@ type StateProps = {|
 
 const mapStateToProps = (state): StateProps => {
   return {
-    code: state.code,
-    grammar: state.interpreterView.grammar,
-    interpreterOutput: state.interpreterView.interpreterOutput,
-    tokenList: state.interpreterView.tokenList,
+    code: state.code.code,
+    grammar: state.code.grammar,
+    interpreterOutput: state.code.interpreterOutput,
+    tokenList: state.code.tokenList,
     highlightStart: state.interpreterView.highlightStart,
     highlightStop: state.interpreterView.highlightStop,
     grammarMinimized: state.interpreterView.grammarMinimized,

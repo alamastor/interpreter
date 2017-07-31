@@ -2,18 +2,30 @@
 import * as Immutable from "immutable";
 import type { Action } from "../actionTypes.js";
 import Interpreter from "../interpreter/Interpreter";
+import SymbolTableBuilder from "../interpreter/SymbolTable";
 import Lexer from "../interpreter/Lexer";
 import Parser from "../interpreter/Parser";
 import TokenMiddleware from "../TokenMiddleware";
-import ASTMiddleware from "../ASTMiddleware";
 import type { Program } from "../interpreter/Parser";
 import type { Token } from "../interpreter/Token";
+import type { ASTNode } from "../interpreter/Parser";
+import { UnexpectedChar } from "../interpreter/Lexer";
+import { UnexpectedToken } from "../interpreter/Parser";
+import { InterpreterError } from "../interpreter/Interpreter";
 
 export const CodeState = Immutable.Record(
   ({
+    grammar: Immutable.List(),
     code: "",
+    ast: null,
+    tokenList: Immutable.List(),
+    interpreterOutput: "",
   }: {
+    grammar: Immutable.List<string>,
     code: string,
+    ast: ?ASTNode,
+    tokenList: Immutable.List<Token>,
+    interpreterOutput: string,
   }),
 );
 
@@ -23,7 +35,44 @@ const code = (
 ): CodeState => {
   switch (action.type) {
     case "code_update":
-      return state.set("code", action.code);
+      let tokenList = [];
+      try {
+        const ast = new Parser(
+          new TokenMiddleware(
+            new Lexer(action.code),
+            () => {
+              tokenList = [];
+            },
+            token => {
+              tokenList.push(token);
+            },
+          ),
+        ).parse();
+        const interpreterOutput = new Interpreter(ast).interpret();
+        return state
+          .set("code", action.code)
+          .set("grammar", Immutable.List(Parser.grammar))
+          .set("interpreterOutput", interpreterOutput)
+          .set("tokenList", Immutable.List(tokenList))
+          .set("ast", ast);
+      } catch (e) {
+        if (e instanceof UnexpectedChar) {
+          return state
+            .set("code", action.code)
+            .set("interpreterOutput", "Lexer Error: " + e.message);
+        }
+        if (e instanceof UnexpectedToken) {
+          return state
+            .set("code", action.code)
+            .set("interpreterOutput", "Parser Error: " + e.message);
+        }
+        if (e instanceof InterpreterError) {
+          return state
+            .set("code", action.code)
+            .set("interpreterOutput", "Interpreter Error: " + e.message);
+        }
+        return state.set("code", action.code);
+      }
     default:
       return state;
   }
@@ -31,18 +80,12 @@ const code = (
 
 const InterpreterViewState = Immutable.Record(
   ({
-    grammar: Immutable.List(),
-    interpreterOutput: "",
-    tokenList: Immutable.List(),
     highlightStart: 0,
     highlightStop: 0,
     grammarMinimized: true,
     tokensMinimized: true,
     astMinimized: false,
   }: {
-    grammar: Immutable.List<string>,
-    interpreterOutput: string,
-    tokenList: Immutable.List<Token>,
     highlightStart: number,
     highlightStop: number,
     grammarMinimized: boolean,
@@ -56,26 +99,6 @@ const interpreterView = (
   action: Action,
 ) => {
   switch (action.type) {
-    case "code_update":
-      let tokenList = [];
-      const parser = new Parser(
-        new TokenMiddleware(
-          new Lexer(action.code),
-          () => {
-            tokenList = [];
-          },
-          token => {
-            tokenList.push(token);
-          },
-        ),
-      );
-      let programAST: Program;
-      const interpreterOutput = new Interpreter(parser).interpret();
-
-      return state
-        .set("grammar", Immutable.List(parser.grammar))
-        .set("interpreterOutput", interpreterOutput)
-        .set("tokenList", Immutable.List(tokenList));
     case "token_hover":
       return state
         .set("highlightStart", action.tokenOrError.startPos)

@@ -16,7 +16,7 @@ class InterpreterView extends Component {
   }
 
   componentWillMount() {
-    this.props.onSetCode(this.props.code.code);
+    this.props.onSetCode(this.props.code);
   }
 
   onSetCode({ target }: { target: EventTarget }) {
@@ -34,7 +34,7 @@ class InterpreterView extends Component {
           highlightStart={this.props.highlightStart}
           highlightStop={this.props.highlightStop}
         >
-          {this.props.code.code}
+          {this.props.code}
         </Code>
         <h4 className="grammar--header">
           Grammar

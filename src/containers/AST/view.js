@@ -27,9 +27,13 @@ class ASTView extends Component {
   ast: Program;
   props: ASTProps;
 
+  componentWillMount() {
+    this.props.onReceiveAST(this.props.ast);
+  }
+
   componentWillReceiveProps(nextProps: ASTProps) {
-    if (nextProps.nextStrata !== this.props.nextStrata) {
-      this.props.onReceivedNextStrata(nextProps.nextStrata);
+    if (nextProps.ast !== this.props.ast) {
+      this.props.onReceiveAST(nextProps.ast);
     }
   }
 

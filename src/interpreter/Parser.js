@@ -142,7 +142,7 @@ class Parser {
 
   currentToken: Token;
 
-  grammar = [
+  static grammar = [
     "program             : PROGRAM variable SEMI block DOT",
     "block               : declarations compound_statement",
     "declarations        : VAR (variable_declaration SEMI)+ | empty",

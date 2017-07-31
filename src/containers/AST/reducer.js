@@ -3,7 +3,6 @@ import * as Immutable from "immutable";
 import type { Action } from "../../actionTypes.js";
 import Parser from "../../interpreter/Parser";
 import Lexer from "../../interpreter/Lexer";
-import ASTMiddleware from "../../ASTMiddleware";
 import type { Program } from "../../interpreter/Parser";
 import Interpreter from "../../interpreter/Interpreter";
 import ASTStratifier, { Node } from "../../ASTStratifier";
@@ -12,8 +11,8 @@ export const ASTViewState = Immutable.Record(
   ({
     strata: new Node({}),
     nextStrata: new Node({}),
-    sourceNode: new Node({}),
     previousStrata: new Node({}),
+    sourceNode: new Node({}),
   }: {
     strata: Node,
     nextStrata: Node,
@@ -24,26 +23,6 @@ export const ASTViewState = Immutable.Record(
 
 const ASTView = (state: ASTViewState = new ASTViewState(), action: Action) => {
   switch (action.type) {
-    case "code_update":
-      if (action.code !== "") {
-        const parser = new Parser(new Lexer(action.code));
-        let programAST: Program;
-        const interpreterOutput = new Interpreter(
-          new ASTMiddleware(parser, ast => {
-            programAST = ast;
-          }),
-        ).interpret();
-
-        const strata = new ASTStratifier(programAST).build();
-        if (strata) {
-          return state.set("strata", strata).set("sourceNode", strata);
-        } else {
-          return state;
-        }
-      } else {
-        return state;
-      }
-
     case "ast_node_click":
       return state
         .set(
@@ -56,10 +35,9 @@ const ASTView = (state: ASTViewState = new ASTViewState(), action: Action) => {
         )
         .set("sourceNode", action.node);
 
-    case "ast_received_next_strata":
-      return state
-        .set("strata", action.strata)
-        .set("previousStrata", state.strata);
+    case "ast_received_ast":
+      const strata = new ASTStratifier(action.ast).build();
+      return state.set("strata", strata).set("previousStrata", strata);
 
     default:
       return state;

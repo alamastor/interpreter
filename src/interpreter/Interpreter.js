@@ -18,7 +18,7 @@ import type {
 } from "./Parser";
 import type { Token } from "./Token";
 
-class InterpreterError extends ExtendableError {}
+export class InterpreterError extends ExtendableError {}
 
 class ImpossibleToken extends InterpreterError {
   constructor(token: Token, allowed: ?(string | Array<string>)) {
@@ -49,11 +49,11 @@ class NameError extends InterpreterError {
 }
 
 class Interpreter {
-  parser: ParserInterface;
+  program: Program;
   globalScope: Map<string, number>;
 
-  constructor(parser: ParserInterface) {
-    this.parser = parser;
+  constructor(program: Program) {
+    this.program = program;
     this.globalScope = new Map();
   }
 
@@ -198,22 +198,8 @@ class Interpreter {
   visitVarDecl(varDecl: VarDecl) {}
 
   interpret() {
-    try {
-      const program = this.parser.parse();
-      this.visitProgram(program);
-      return "";
-    } catch (e) {
-      if (e instanceof UnexpectedChar) {
-        return "Lexer Error: " + e.message;
-      }
-      if (e instanceof UnexpectedToken) {
-        return "Parser Error: " + e.message;
-      }
-      if (e instanceof InterpreterError) {
-        return "Interpreter Error: " + e.message;
-      }
-      throw e;
-    }
+    this.visitProgram(this.program);
+    return "";
   }
 }
 
