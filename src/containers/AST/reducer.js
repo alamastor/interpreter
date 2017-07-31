@@ -35,7 +35,11 @@ const ASTView = (state: ASTViewState = new ASTViewState(), action: Action) => {
         ).interpret();
 
         const strata = new ASTStratifier(programAST).build();
-        return state.set("strata", strata).set("sourceNode", strata);
+        if (strata) {
+          return state.set("strata", strata).set("sourceNode", strata);
+        } else {
+          return state;
+        }
       } else {
         return state;
       }
