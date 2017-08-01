@@ -1,17 +1,14 @@
 /* @flow */
 import * as Immutable from "immutable";
 import type { Action } from "../actionTypes.js";
-import Interpreter from "../interpreter/Interpreter";
-import Lexer from "../interpreter/Lexer";
-import Parser from "../interpreter/Parser";
 import TokenMiddleware from "../TokenMiddleware";
 import type { Program } from "../interpreter/Parser";
 import type { Token } from "../interpreter/Token";
 import type { ASTNode } from "../interpreter/Parser";
-import { UnexpectedChar } from "../interpreter/Lexer";
-import { UnexpectedToken } from "../interpreter/Parser";
-import { InterpreterError } from "../interpreter/Interpreter";
-import { SymbolTableBuilder } from "../interpreter/SymbolTable";
+import Lexer, { UnexpectedChar } from "../interpreter/Lexer";
+import Parser, { UnexpectedToken } from "../interpreter/Parser";
+import Interpreter, { InterpreterError } from "../interpreter/Interpreter";
+import { SymbolTableBuilder, NameError } from "../interpreter/SymbolTable";
 import type { ASTSymbol } from "../interpreter/SymbolTable";
 
 export const CodeState = Immutable.Record(
@@ -77,7 +74,14 @@ const code = (
             .set("code", action.code)
             .set("interpreterOutput", "Interpreter Error: " + e.message);
         }
-        return state.set("code", action.code);
+        if (e instanceof NameError) {
+          return state
+            .set("code", action.code)
+            .set("interpreterOutput", "Name Error: " + e.message);
+        }
+        return state
+          .set("code", action.code)
+          .set("interpreterOutput", "Unexpected Error: " + e.message);
       }
     default:
       return state;

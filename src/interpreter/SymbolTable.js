@@ -50,7 +50,7 @@ class SymbolTable {
   }
 }
 
-class NameError extends SymbolTable {}
+export class NameError extends SymbolTableError {}
 
 export class SymbolTableBuilder {
   table: SymbolTable;
