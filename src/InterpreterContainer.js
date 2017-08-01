@@ -6,16 +6,19 @@ import type { MapDispatchToProps } from "react-redux";
 import type { Action } from "./actionTypes";
 import type { Token } from "./interpreter/Token";
 import { UnexpectedChar } from "./interpreter/Lexer";
+import type { ASTSymbol } from "./interpreter/SymbolTable";
 
 type StateProps = {|
   code: string,
   grammar: Immutable.List<string>,
   interpreterOutput: string,
   tokenList: Array<Token>,
+  symbolTable: Map<string, ASTSymbol>,
   highlightStart: number,
   highlightStop: number,
   grammarMinimized: boolean,
   tokensMinimized: boolean,
+  symbolTableMinimized: boolean,
   astMinimized: boolean,
 |};
 
@@ -25,10 +28,12 @@ const mapStateToProps = (state): StateProps => {
     grammar: state.code.grammar,
     interpreterOutput: state.code.interpreterOutput,
     tokenList: state.code.tokenList,
+    symbolTable: state.code.symbolTable,
     highlightStart: state.interpreterView.highlightStart,
     highlightStop: state.interpreterView.highlightStop,
     grammarMinimized: state.interpreterView.grammarMinimized,
     tokensMinimized: state.interpreterView.tokensMinimized,
+    symbolTableMinimized: state.interpreterView.symbolTableMinimized,
     astMinimized: state.interpreterView.astMinimized,
   };
 };
@@ -40,6 +45,7 @@ type DispatchProps = {|
   onClickGrammarToggle: () => () => void,
   onClickTokensToggle: () => () => void,
   onClickASTToggle: () => () => void,
+  onClickSymbolTableToggle: () => () => void,
 |};
 
 const mapDispatchToProps: MapDispatchToProps<
@@ -72,6 +78,10 @@ const mapDispatchToProps: MapDispatchToProps<
   onClickASTToggle: () =>
     dispatch({
       type: "interpreter_view_ast_toggle_click",
+    }),
+  onClickSymbolTableToggle: () =>
+    dispatch({
+      type: "interpreter_view_symbol_table_toggle_click",
     }),
 });
 

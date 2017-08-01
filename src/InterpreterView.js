@@ -5,6 +5,7 @@ import ASTContainer from "./containers/AST";
 import type { Token } from "./interpreter/Token";
 import { UnexpectedChar } from "./interpreter/Lexer";
 import type { InterpreterProps } from "./InterpreterContainer";
+import type { ASTSymbol } from "./interpreter/SymbolTable";
 
 class InterpreterView extends Component {
   onSetCode: string => void;
@@ -92,6 +93,22 @@ class InterpreterView extends Component {
         >
           <ASTContainer />
         </div>
+        <h4>
+          Symbol Table
+          <button
+            className="toggle-button"
+            onClick={this.props.onClickSymbolTableToggle}
+          >
+            {this.props.symbolTableMinimized ? "+" : "-"}
+          </button>
+          <div
+            style={{
+              display: this.props.symbolTableMinimized ? "none" : "block",
+            }}
+          >
+            <SymbolTableView symbolTable={this.props.symbolTable} />
+          </div>
+        </h4>
         <h4 className="interpreter--header">Interpreter Output:</h4>
         <p className="interpreter--line">
           {this.props.interpreterOutput}
@@ -133,6 +150,25 @@ const TokenView = (props: {
     </li>
   );
 };
+
+const SymbolTableView = (props: { symbolTable: Map<string, ASTSymbol> }) =>
+  <ul>
+    {Array.from(props.symbolTable.values()).map((s, i) => {
+      if (s.symbolType === "builtin_type") {
+        return (
+          <li className="symbol-table--line" key={i}>
+            {s.name}
+          </li>
+        );
+      } else {
+        return (
+          <li className="symbol-table--line" key={i}>
+            {s.name + ": " + s.type.name}
+          </li>
+        );
+      }
+    })}
+  </ul>;
 
 type HighlightViewProps = {
   children?: Element<any>,

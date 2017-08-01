@@ -36,8 +36,12 @@ const ASTView = (state: ASTViewState = new ASTViewState(), action: Action) => {
         .set("sourceNode", action.node);
 
     case "ast_received_ast":
-      const strata = new ASTStratifier(action.ast).build();
-      return state.set("strata", strata).set("previousStrata", strata);
+      if (action.ast) {
+        const strata = new ASTStratifier(action.ast).build();
+        return state.set("strata", strata).set("previousStrata", strata);
+      } else {
+        return state;
+      }
 
     default:
       return state;

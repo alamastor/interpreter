@@ -13,7 +13,7 @@ import type {
   VarDecl,
 } from "./Parser";
 
-type Symbol = BuiltinTypeSymbol | VarSymbol;
+export type ASTSymbol = BuiltinTypeSymbol | VarSymbol;
 
 type BuiltinTypeSymbol = {|
   symbolType: "builtin_type",
@@ -29,7 +29,7 @@ type VarSymbol = {|
 class SymbolTableError extends ExtendableError {}
 
 class SymbolTable {
-  symbols: Map<string, Symbol>;
+  symbols: Map<string, ASTSymbol>;
 
   constructor() {
     this.symbols = new Map();
@@ -41,7 +41,7 @@ class SymbolTable {
     this.define({ symbolType: "builtin_type", name: "REAL" });
   }
 
-  define(symbol: Symbol) {
+  define(symbol: ASTSymbol) {
     this.symbols.set(symbol.name, symbol);
   }
 
@@ -52,7 +52,7 @@ class SymbolTable {
 
 class NameError extends SymbolTable {}
 
-class SymbolTableBuilder {
+export class SymbolTableBuilder {
   table: SymbolTable;
 
   constructor() {

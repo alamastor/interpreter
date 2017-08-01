@@ -2,7 +2,6 @@
 import * as Immutable from "immutable";
 import type { Action } from "../actionTypes.js";
 import Interpreter from "../interpreter/Interpreter";
-import SymbolTableBuilder from "../interpreter/SymbolTable";
 import Lexer from "../interpreter/Lexer";
 import Parser from "../interpreter/Parser";
 import TokenMiddleware from "../TokenMiddleware";
@@ -12,19 +11,23 @@ import type { ASTNode } from "../interpreter/Parser";
 import { UnexpectedChar } from "../interpreter/Lexer";
 import { UnexpectedToken } from "../interpreter/Parser";
 import { InterpreterError } from "../interpreter/Interpreter";
+import { SymbolTableBuilder } from "../interpreter/SymbolTable";
+import type { ASTSymbol } from "../interpreter/SymbolTable";
 
 export const CodeState = Immutable.Record(
   ({
     grammar: Immutable.List(),
     code: "",
-    ast: null,
     tokenList: Immutable.List(),
+    ast: null,
+    symbolTable: new Map(),
     interpreterOutput: "",
   }: {
     grammar: Immutable.List<string>,
     code: string,
-    ast: ?ASTNode,
     tokenList: Immutable.List<Token>,
+    ast: ?ASTNode,
+    symbolTable: Map<string, ASTSymbol>,
     interpreterOutput: string,
   }),
 );
@@ -48,12 +51,15 @@ const code = (
             },
           ),
         ).parse();
+        const symbolTableBuilder = new SymbolTableBuilder();
+        symbolTableBuilder.visitProgram(ast);
         const interpreterOutput = new Interpreter(ast).interpret();
         return state
           .set("code", action.code)
           .set("grammar", Immutable.List(Parser.grammar))
           .set("interpreterOutput", interpreterOutput)
           .set("tokenList", Immutable.List(tokenList))
+          .set("symbolTable", symbolTableBuilder.table.symbols)
           .set("ast", ast);
       } catch (e) {
         if (e instanceof UnexpectedChar) {
@@ -84,13 +90,15 @@ const InterpreterViewState = Immutable.Record(
     highlightStop: 0,
     grammarMinimized: true,
     tokensMinimized: true,
-    astMinimized: false,
+    astMinimized: true,
+    symbolTableMinimized: true,
   }: {
     highlightStart: number,
     highlightStop: number,
     grammarMinimized: boolean,
     tokensMinimized: boolean,
     astMinimized: boolean,
+    symbolTableMinimized: boolean,
   }),
 );
 
@@ -117,6 +125,8 @@ const interpreterView = (
       return state.set("tokensMinimized", !state.tokensMinimized);
     case "interpreter_view_ast_toggle_click":
       return state.set("astMinimized", !state.astMinimized);
+    case "interpreter_view_symbol_table_toggle_click":
+      return state.set("symbolTableMinimized", !state.symbolTableMinimized);
     default:
       return state;
   }

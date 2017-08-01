@@ -6,7 +6,7 @@ export const loadState = () => {
     const serializedState = localStorage.getItem("state");
     if (serializedState != null) {
       const jsState = JSON.parse(serializedState);
-      return { code: CodeState(jsState.code) };
+      return { code: CodeState(jsState.code.code) };
     } else {
       return undefined;
     }
