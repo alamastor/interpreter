@@ -35,6 +35,7 @@ const code = (
 ): CodeState => {
   switch (action.type) {
     case "code_update":
+      console.log(action.code);
       let tokenList = [];
       try {
         const ast = new Parser(
