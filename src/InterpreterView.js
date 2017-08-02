@@ -160,6 +160,12 @@ const SymbolTableView = (props: { symbolTable: Map<string, ASTSymbol> }) =>
             {s.name}
           </li>
         );
+      } else if (s.symbolType === "procedure") {
+        return (
+          <li className="symbol-table--line" key={i}>
+            {s.name}
+          </li>
+        );
       } else {
         return (
           <li className="symbol-table--line" key={i}>

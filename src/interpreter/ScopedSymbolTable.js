@@ -1,16 +1,22 @@
 /* @flow */
 
-export type ASTSymbol = BuiltinTypeSymbol | VarSymbol;
+export type ASTSymbol = BuiltinTypeSymbol | VarSymbol | ProcedureSymbol;
 
 type BuiltinTypeSymbol = {|
   symbolType: "builtin_type",
   name: string,
 |};
 
-type VarSymbol = {|
+export type VarSymbol = {|
   symbolType: "var",
   name: string,
   type: BuiltinTypeSymbol,
+|};
+
+export type ProcedureSymbol = {|
+  symbolType: "procedure",
+  name: string,
+  params: Array<VarSymbol>,
 |};
 
 export default class ScopedSymbolTable {
@@ -24,11 +30,11 @@ export default class ScopedSymbolTable {
   }
 
   _initBuiltins() {
-    this.define({ symbolType: "builtin_type", name: "INTEGER" });
-    this.define({ symbolType: "builtin_type", name: "REAL" });
+    this.insert({ symbolType: "builtin_type", name: "INTEGER" });
+    this.insert({ symbolType: "builtin_type", name: "REAL" });
   }
 
-  define(symbol: ASTSymbol) {
+  insert(symbol: ASTSymbol) {
     this.symbols.set(symbol.name, symbol);
   }
 

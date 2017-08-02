@@ -59,7 +59,7 @@ const code = (
           .set("grammar", Immutable.List(Parser.grammar))
           .set("interpreterOutput", interpreterOutput)
           .set("tokenList", Immutable.List(tokenList))
-          .set("symbolTable", semanticAnalyzer.table.symbols)
+          .set("symbolTable", semanticAnalyzer.currentScope.symbols)
           .set("ast", ast);
       } catch (e) {
         if (e instanceof UnexpectedChar) {

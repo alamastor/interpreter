@@ -14,19 +14,20 @@ import type {
   VarDecl,
 } from "./Parser";
 import ScopedSymbolTable from "./ScopedSymbolTable";
+import type { ProcedureSymbol, VarSymbol } from "./ScopedSymbolTable";
 
 export class SemanticError extends ExtendableError {}
 
-export default class SymbolTableBuilder {
-  table: ScopedSymbolTable;
+export default class SemanticAnalyzer {
+  currentScope: ScopedSymbolTable;
 
   constructor() {
-    this.table = new ScopedSymbolTable("global", 1);
+    this.currentScope = new ScopedSymbolTable("empty", 0);
   }
 
   visitAssign(assign: Assign) {
     const varName = assign.variable.name;
-    const varSymbol = this.table.lookup(varName);
+    const varSymbol = this.currentScope.lookup(varName);
     if (!varSymbol) {
       throw new SemanticError(varName);
     }
@@ -109,9 +110,48 @@ export default class SymbolTableBuilder {
 
   visitNum(num: Num) {}
 
-  visitProcedureDecl(procedureDecl: ProcedureDecl) {}
+  visitProcedureDecl(procedureDecl: ProcedureDecl) {
+    const procName = procedureDecl.name;
+    const procSymbol: ProcedureSymbol = {
+      symbolType: "procedure",
+      name: procName,
+      params: [],
+    };
+    this.currentScope.insert(procSymbol);
+
+    const procedureScope = new ScopedSymbolTable(procName, 2);
+    this.currentScope = procedureScope;
+
+    procedureDecl.params.forEach(param => {
+      const paramType = this.currentScope.lookup(param.typeNode.value);
+      if (!paramType) {
+        throw SemanticError(
+          "Expected built in type " +
+            param.typeNode.value +
+            " not found in scope.",
+        );
+      } else if (paramType.symbolType !== "builtin_type") {
+        throw SemanticError(
+          "Expected built in type, got : " + paramType.symbolType,
+        );
+      } else {
+        const paramName = param.varNode.name;
+        const varSymbol: VarSymbol = {
+          symbolType: "var",
+          name: paramName,
+          type: paramType,
+        };
+        this.currentScope.insert(varSymbol);
+        procSymbol.params.push(varSymbol);
+      }
+    });
+
+    this.visitBlock(procedureDecl.block);
+  }
 
   visitProgram(program: Program) {
+    const globalScope = new ScopedSymbolTable("global", 1);
+    this.currentScope = globalScope;
     this.visitBlock(program.block);
   }
 
@@ -134,7 +174,7 @@ export default class SymbolTableBuilder {
 
   visitVar(variable: Var) {
     const varName = variable.name;
-    const varSymbol = this.table.lookup(varName);
+    const varSymbol = this.currentScope.lookup(varName);
 
     if (!varSymbol) {
       throw new SemanticError(varName);
@@ -143,17 +183,17 @@ export default class SymbolTableBuilder {
 
   visitVarDecl(varDecl: VarDecl) {
     const typeName = varDecl.typeNode.value;
-    const typeSymbol = this.table.lookup(typeName);
+    const typeSymbol = this.currentScope.lookup(typeName);
     if (!typeSymbol || typeSymbol.symbolType !== "builtin_type") {
       throw new SemanticError("Expected type");
     }
     const varName = varDecl.varNode.name;
     const varSymbol = { symbolType: "var", name: varName, type: typeSymbol };
 
-    if (this.table.lookup(varName) !== undefined) {
+    if (this.currentScope.lookup(varName) !== undefined) {
       throw new SemanticError("Duplicate declaration : " + varName);
     }
 
-    this.table.define(varSymbol);
+    this.currentScope.insert(varSymbol);
   }
 }
