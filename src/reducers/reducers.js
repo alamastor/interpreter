@@ -11,7 +11,7 @@ import Interpreter, { InterpreterError } from "../interpreter/Interpreter";
 import SemanticAnalyzer, {
   SemanticError,
 } from "../interpreter/SemanticAnalyzer";
-import type { ASTSymbol } from "../interpreter/SymbolTable";
+import type { ASTSymbol } from "../interpreter/ScopedSymbolTable";
 
 export const CodeState = Immutable.Record(
   ({

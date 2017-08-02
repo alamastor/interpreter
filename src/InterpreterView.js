@@ -5,7 +5,7 @@ import ASTContainer from "./containers/AST";
 import type { Token } from "./interpreter/Token";
 import { UnexpectedChar } from "./interpreter/Lexer";
 import type { InterpreterProps } from "./InterpreterContainer";
-import type { ASTSymbol } from "./interpreter/SymbolTable";
+import type { ASTSymbol } from "./interpreter/ScopedSymbolTable";
 
 class InterpreterView extends Component {
   onSetCode: string => void;

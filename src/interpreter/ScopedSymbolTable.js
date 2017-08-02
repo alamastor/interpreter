@@ -13,15 +13,17 @@ type VarSymbol = {|
   type: BuiltinTypeSymbol,
 |};
 
-export default class SymbolTable {
+export default class ScopedSymbolTable {
   symbols: Map<string, ASTSymbol>;
 
-  constructor() {
+  constructor(scopeName: string, scopeLevel: number) {
     this.symbols = new Map();
-    this.initBuiltins();
+    self.scopeName = scopeName;
+    self.scopeLevel = scopeLevel;
+    this._initBuiltins();
   }
 
-  initBuiltins() {
+  _initBuiltins() {
     this.define({ symbolType: "builtin_type", name: "INTEGER" });
     this.define({ symbolType: "builtin_type", name: "REAL" });
   }

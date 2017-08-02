@@ -6,7 +6,7 @@ import type { MapDispatchToProps } from "react-redux";
 import type { Action } from "./actionTypes";
 import type { Token } from "./interpreter/Token";
 import { UnexpectedChar } from "./interpreter/Lexer";
-import type { ASTSymbol } from "./interpreter/SymbolTable";
+import type { ASTSymbol } from "./interpreter/ScopedSymbolTable";
 
 type StateProps = {|
   code: string,

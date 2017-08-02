@@ -13,15 +13,15 @@ import type {
   Var,
   VarDecl,
 } from "./Parser";
-import SymbolTable from "./SymbolTable";
+import ScopedSymbolTable from "./ScopedSymbolTable";
 
 export class SemanticError extends ExtendableError {}
 
 export default class SymbolTableBuilder {
-  table: SymbolTable;
+  table: ScopedSymbolTable;
 
   constructor() {
-    this.table = new SymbolTable();
+    this.table = new ScopedSymbolTable("global", 1);
   }
 
   visitAssign(assign: Assign) {
