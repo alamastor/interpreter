@@ -119,7 +119,11 @@ export default class SemanticAnalyzer {
     };
     this.currentScope.insert(procSymbol);
 
-    const procedureScope = new ScopedSymbolTable(procName, 2);
+    const procedureScope = new ScopedSymbolTable(
+      procName,
+      2,
+      this.currentScope,
+    );
     this.currentScope = procedureScope;
 
     procedureDecl.params.forEach(param => {
@@ -147,6 +151,10 @@ export default class SemanticAnalyzer {
     });
 
     this.visitBlock(procedureDecl.block);
+
+    if (this.currentScope.enclosingScope) {
+      this.currentScope = this.currentScope.enclosingScope;
+    }
   }
 
   visitProgram(program: Program) {

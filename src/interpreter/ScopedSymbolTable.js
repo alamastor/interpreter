@@ -21,11 +21,19 @@ export type ProcedureSymbol = {|
 
 export default class ScopedSymbolTable {
   symbols: Map<string, ASTSymbol>;
+  scopeName: string;
+  scopeLevel: number;
+  enclosingScope: ?ScopedSymbolTable;
 
-  constructor(scopeName: string, scopeLevel: number) {
+  constructor(
+    scopeName: string,
+    scopeLevel: number,
+    enclosingScope?: ScopedSymbolTable,
+  ) {
     this.symbols = new Map();
-    self.scopeName = scopeName;
-    self.scopeLevel = scopeLevel;
+    this.scopeName = scopeName;
+    this.scopeLevel = scopeLevel;
+    this.enclosingScope = enclosingScope;
     this._initBuiltins();
   }
 
@@ -39,6 +47,14 @@ export default class ScopedSymbolTable {
   }
 
   lookup(name: string) {
-    return this.symbols.get(name);
+    const symbol = this.symbols.get(name);
+
+    if (symbol) {
+      return symbol;
+    }
+
+    if (this.enclosingScope) {
+      return this.enclosingScope.lookup(name);
+    }
   }
 }
