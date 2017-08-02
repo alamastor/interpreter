@@ -59,9 +59,18 @@ export type Num = {|
   stopPos: number,
 |};
 
+export type Param = {|
+  type: "param",
+  varNode: Var,
+  typeNode: Type,
+  startPos: number,
+  stopPos: number,
+|};
+
 export type ProcedureDecl = {|
   type: "procedure_decl",
   name: string,
+  params: Array<Param>,
   block: Block,
   startPos: number,
   stopPos: number,
@@ -216,7 +225,7 @@ class Parser {
 
   /**
    * declarations : VAR (variable_declaration SEMI)+
-   *              | (PROCEDURE ID SEMI block SEMI)*
+   *              | (PROCEDURE ID (LPAREN formal_parameter_list RPAREN)? SEMI block SEMI)*
    *              | empty
    */
   declarations(): Array<VarDecl | ProcedureDecl> {
@@ -238,18 +247,61 @@ class Parser {
       } else {
         throw new UnexpectedToken(this.currentToken, "ID");
       }
+      let params: Array<Param> = [];
+      if (this.currentToken.type === "LPAREN") {
+        this.eat("LPAREN");
+        params = this.formalParameterList();
+        this.eat("RPAREN");
+      }
       this.eat("SEMI");
       const block = this.block();
       declarations.push({
         type: "procedure_decl",
         name: procName,
         block: block,
+        params: params,
         startPos: startPos,
         stopPos: this.currentToken.stopPos,
       });
       this.eat("SEMI");
     }
     return declarations;
+  }
+
+  /**
+   * formal_parameter_list : formal_parameters
+   *                       | formal_parameters SEMI formal_parameter_list
+   */
+  formalParameterList(): Array<Param> {
+    const params: Array<Param> = this.formalParameters();
+    if (this.currentToken.type === "SEMI") {
+      this.eat("SEMI");
+      return params.concat(this.formalParameterList());
+    }
+    return params;
+  }
+
+  /**
+   * formal_parameter : ID (COMMA ID)* COLON type_spec
+   */
+  formalParameters(): Array<Param> {
+    const varNodes = [this.variable()];
+    while (this.currentToken.type === "COMMA") {
+      this.eat("COMMA");
+      varNodes.push(this.variable());
+    }
+
+    this.eat("COLON");
+
+    const typeNode = this.typeSpec();
+    const params = varNodes.map(node => ({
+      type: "param",
+      varNode: node,
+      typeNode: typeNode,
+      startPos: node.startPos,
+      stopPos: typeNode.stopPos,
+    }));
+    return params;
   }
 
   /**

@@ -206,10 +206,26 @@ class Stratifier {
   }
 
   visitProcedureDecl(procedureDecl: ProcedureDecl) {
+    const params = procedureDecl.params.map(
+      param =>
+        new Node({
+          id: uuidV4(),
+          name: "Param",
+          children: Immutable.List([
+            this.visitVar(param.varNode),
+            this.visitType(param.typeNode),
+          ]),
+          startPos: param.startPos,
+          stopPos: param.stopPos,
+        }),
+    );
+
+    const block = this.visitBlock(procedureDecl.block);
+
     return new Node({
       id: uuidV4(),
       name: "ProcedureDecl: " + procedureDecl.name,
-      children: Immutable.List([this.visitBlock(procedureDecl.block)]),
+      children: Immutable.List(params.concat(block)),
       startPos: procedureDecl.startPos,
       stopPos: procedureDecl.stopPos,
     });
