@@ -52,6 +52,11 @@ export type Token =
   | MINUS
   | MUL
   | {
+      type: "PROCEDURE",
+      startPos: number,
+      stopPos: number,
+    }
+  | {
       type: "PROGRAM",
       startPos: number,
       stopPos: number,

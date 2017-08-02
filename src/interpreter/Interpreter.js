@@ -10,6 +10,7 @@ import type {
   Compound,
   UnaryOp,
   NoOp,
+  ProcedureDecl,
   Program,
   Num,
   Type,
@@ -130,7 +131,13 @@ class Interpreter {
   }
 
   visitBlock(block: Block) {
-    block.declarations.forEach(declaration => this.visitVarDecl(declaration));
+    block.declarations.forEach(declaration => {
+      if (declaration.type === "var_decl") {
+        return this.visitVarDecl(declaration);
+      } else {
+        return this.visitProcedureDecl(declaration);
+      }
+    });
     this.visitCompound(block.compoundStatement);
   }
 
@@ -154,6 +161,8 @@ class Interpreter {
   visitNum(num: Num): number {
     return num.token.value;
   }
+
+  visitProcedureDecl(procedureDecl: ProcedureDecl) {}
 
   visitProgram(program: Program) {
     this.visitBlock(program.block);

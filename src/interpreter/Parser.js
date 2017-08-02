@@ -33,7 +33,7 @@ export type BinOp = {|
 
 export type Block = {|
   type: "block",
-  declarations: Array<VarDecl>,
+  declarations: Array<VarDecl | ProcedureDecl>,
   compoundStatement: Compound,
   startPos: number,
   stopPos: number,
@@ -55,6 +55,14 @@ export type NoOp = {|
 export type Num = {|
   type: "num",
   token: INTEGER_CONST | REAL_CONST,
+  startPos: number,
+  stopPos: number,
+|};
+
+export type ProcedureDecl = {|
+  type: "procedure_decl",
+  name: string,
+  block: Block,
   startPos: number,
   stopPos: number,
 |};
@@ -114,7 +122,7 @@ export type ASTNode =
 
 class UnexpectedToken extends ExtendableError {
   constructor(token: Token, expected: ?(string | Array<string>)) {
-    let msg = 'Unexpected token "' + (token.name || token.type);
+    let msg = 'Unexpected token "' + token.type;
     if (expected) {
       if (typeof expected === "string") {
         msg += '", expected "' + expected;
@@ -144,7 +152,7 @@ class Parser {
   static grammar = [
     "program             : PROGRAM variable SEMI block DOT",
     "block               : declarations compound_statement",
-    "declarations        : VAR (variable_declaration SEMI)+ | empty",
+    "declarations        : VAR (variable_declaration SEMI)+ | (PROCEDURE ID SEMI block SEMI)* | empty",
     "variable_declaration: ID (COMMA ID)* COLON type_spec",
     "type_spec           : INTEGER",
     "compound_statement  : BEGIN statement_list END",
@@ -207,16 +215,39 @@ class Parser {
   }
 
   /**
-   * declarations : VAR (variable_declaration SEMI)+ | empty
+   * declarations : VAR (variable_declaration SEMI)+
+   *              | (PROCEDURE ID SEMI block SEMI)*
+   *              | empty
    */
-  declarations(): Array<VarDecl> {
-    let declarations = [];
+  declarations(): Array<VarDecl | ProcedureDecl> {
+    let declarations: Array<VarDecl | ProcedureDecl> = [];
     if (this.currentToken.type === "VAR") {
       this.eat("VAR");
       while (this.currentToken.type === "ID") {
         declarations = declarations.concat(this.variableDeclaration());
         this.eat("SEMI");
       }
+    }
+    while (this.currentToken.type === "PROCEDURE") {
+      const startPos = this.currentToken.startPos;
+      this.eat("PROCEDURE");
+      let procName: string;
+      if (this.currentToken.type === "ID") {
+        procName = this.currentToken.name;
+        this.eat("ID");
+      } else {
+        throw new UnexpectedToken(this.currentToken, "ID");
+      }
+      this.eat("SEMI");
+      const block = this.block();
+      declarations.push({
+        type: "procedure_decl",
+        name: procName,
+        block: block,
+        startPos: startPos,
+        stopPos: this.currentToken.stopPos,
+      });
+      this.eat("SEMI");
     }
     return declarations;
   }

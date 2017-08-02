@@ -7,6 +7,7 @@ import type {
   Compound,
   NoOp,
   Num,
+  ProcedureDecl,
   Program,
   UnaryOp,
   Var,
@@ -82,15 +83,6 @@ export class SymbolTableBuilder {
     }
   }
 
-  visitBlock(block: Block) {
-    block.declarations.forEach(node => this.visitVarDecl(node));
-    this.visitCompound(block.compoundStatement);
-  }
-
-  visitProgram(program: Program) {
-    this.visitBlock(program.block);
-  }
-
   visitBinOp(binOp: BinOp) {
     switch (binOp.left.type) {
       case "bin_op":
@@ -123,23 +115,15 @@ export class SymbolTableBuilder {
     }
   }
 
-  visitNum(num: Num) {}
-
-  visitUnaryOp(unaryOp: UnaryOp) {
-    switch (unaryOp.expr.type) {
-      case "bin_op":
-        this.visitBinOp(unaryOp.expr);
-        break;
-      case "num":
-        this.visitNum(unaryOp.expr);
-        break;
-      case "unary_op":
-        this.visitUnaryOp(unaryOp.expr);
-        break;
-      default:
-        // var case
-        this.visitVar(unaryOp.expr);
-    }
+  visitBlock(block: Block) {
+    block.declarations.forEach(node => {
+      if (node.type === "var_decl") {
+        return this.visitVarDecl(node);
+      } else {
+        return this.visitProcedureDecl(node);
+      }
+    });
+    this.visitCompound(block.compoundStatement);
   }
 
   visitCompound(compound: Compound) {
@@ -158,6 +142,31 @@ export class SymbolTableBuilder {
   }
 
   visitNoOp(noOp: NoOp) {}
+
+  visitNum(num: Num) {}
+
+  visitProcedureDecl(procedureDecl: ProcedureDecl) {}
+
+  visitProgram(program: Program) {
+    this.visitBlock(program.block);
+  }
+
+  visitUnaryOp(unaryOp: UnaryOp) {
+    switch (unaryOp.expr.type) {
+      case "bin_op":
+        this.visitBinOp(unaryOp.expr);
+        break;
+      case "num":
+        this.visitNum(unaryOp.expr);
+        break;
+      case "unary_op":
+        this.visitUnaryOp(unaryOp.expr);
+        break;
+      default:
+        // var case
+        this.visitVar(unaryOp.expr);
+    }
+  }
 
   visitVar(variable: Var) {
     const varName = variable.name;

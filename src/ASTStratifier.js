@@ -6,6 +6,7 @@ import type {
   Compound,
   NoOp,
   Num,
+  ProcedureDecl,
   Program,
   Type,
   UnaryOp,
@@ -149,9 +150,13 @@ class Stratifier {
   }
 
   visitBlock(block: Block): Node {
-    const declarations = Immutable.List(block.declarations).map(declaration =>
-      this.visitVarDecl(declaration),
-    );
+    const declarations = Immutable.List(block.declarations).map(declaration => {
+      if (declaration.type === "var_decl") {
+        return this.visitVarDecl(declaration);
+      } else {
+        return this.visitProcedureDecl(declaration);
+      }
+    });
     const compoundStatement = this.visitCompound(block.compoundStatement);
     return new Node({
       id: uuidV4(),
@@ -197,6 +202,16 @@ class Stratifier {
       name: "Num: " + num.token.value,
       startPos: num.startPos,
       stopPos: num.stopPos,
+    });
+  }
+
+  visitProcedureDecl(procedureDecl: ProcedureDecl) {
+    return new Node({
+      id: uuidV4(),
+      name: "ProcedureDecl: " + procedureDecl.name,
+      children: Immutable.List([this.visitBlock(procedureDecl.block)]),
+      startPos: procedureDecl.startPos,
+      stopPos: procedureDecl.stopPos,
     });
   }
 

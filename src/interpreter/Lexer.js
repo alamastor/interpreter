@@ -110,6 +110,12 @@ class Lexer {
           startPos: startPos,
           stopPos: this.pos,
         };
+      case "PROCEDURE":
+        return {
+          type: "PROCEDURE",
+          startPos: startPos,
+          stopPos: this.pos,
+        };
       case "PROGRAM":
         return {
           type: "PROGRAM",
