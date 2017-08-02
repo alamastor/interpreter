@@ -8,7 +8,7 @@ import type { ASTNode } from "../interpreter/Parser";
 import Lexer, { UnexpectedChar } from "../interpreter/Lexer";
 import Parser, { UnexpectedToken } from "../interpreter/Parser";
 import Interpreter, { InterpreterError } from "../interpreter/Interpreter";
-import { SymbolTableBuilder, NameError } from "../interpreter/SymbolTable";
+import SemanticAnalyzer, { NameError } from "../interpreter/SemanticAnalyzer";
 import type { ASTSymbol } from "../interpreter/SymbolTable";
 
 export const CodeState = Immutable.Record(
@@ -49,15 +49,15 @@ const code = (
             },
           ),
         ).parse();
-        const symbolTableBuilder = new SymbolTableBuilder();
-        symbolTableBuilder.visitProgram(ast);
+        const semanticAnalyzer = new SemanticAnalyzer();
+        semanticAnalyzer.visitProgram(ast);
         const interpreterOutput = new Interpreter(ast).interpret();
         return state
           .set("code", action.code)
           .set("grammar", Immutable.List(Parser.grammar))
           .set("interpreterOutput", interpreterOutput)
           .set("tokenList", Immutable.List(tokenList))
-          .set("symbolTable", symbolTableBuilder.table.symbols)
+          .set("symbolTable", semanticAnalyzer.table.symbols)
           .set("ast", ast);
       } catch (e) {
         if (e instanceof UnexpectedChar) {
