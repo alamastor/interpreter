@@ -15,9 +15,7 @@ import type {
 } from "./Parser";
 import SymbolTable from "./SymbolTable";
 
-class SymbolTableError extends ExtendableError {}
-
-export class NameError extends SymbolTableError {}
+export class SemanticError extends ExtendableError {}
 
 export default class SymbolTableBuilder {
   table: SymbolTable;
@@ -30,7 +28,7 @@ export default class SymbolTableBuilder {
     const varName = assign.variable.name;
     const varSymbol = this.table.lookup(varName);
     if (!varSymbol) {
-      throw new NameError(varName);
+      throw new SemanticError(varName);
     }
 
     switch (assign.value.type) {
@@ -139,7 +137,7 @@ export default class SymbolTableBuilder {
     const varSymbol = this.table.lookup(varName);
 
     if (!varSymbol) {
-      throw new NameError(varName);
+      throw new SemanticError(varName);
     }
   }
 
@@ -147,10 +145,15 @@ export default class SymbolTableBuilder {
     const typeName = varDecl.typeNode.value;
     const typeSymbol = this.table.lookup(typeName);
     if (!typeSymbol || typeSymbol.symbolType !== "builtin_type") {
-      throw new SymbolTableError("Expected type");
+      throw new SemanticError("Expected type");
     }
     const varName = varDecl.varNode.name;
     const varSymbol = { symbolType: "var", name: varName, type: typeSymbol };
+
+    if (this.table.lookup(varName) !== undefined) {
+      throw new SemanticError("Duplicate declaration : " + varName);
+    }
+
     this.table.define(varSymbol);
   }
 }

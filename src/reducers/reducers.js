@@ -8,7 +8,9 @@ import type { ASTNode } from "../interpreter/Parser";
 import Lexer, { UnexpectedChar } from "../interpreter/Lexer";
 import Parser, { UnexpectedToken } from "../interpreter/Parser";
 import Interpreter, { InterpreterError } from "../interpreter/Interpreter";
-import SemanticAnalyzer, { NameError } from "../interpreter/SemanticAnalyzer";
+import SemanticAnalyzer, {
+  SemanticError,
+} from "../interpreter/SemanticAnalyzer";
 import type { ASTSymbol } from "../interpreter/SymbolTable";
 
 export const CodeState = Immutable.Record(
@@ -75,7 +77,7 @@ const code = (
             .set("code", action.code)
             .set("interpreterOutput", "Interpreter Error: " + e.message);
         }
-        if (e instanceof NameError) {
+        if (e instanceof SemanticError) {
           return state
             .set("code", action.code)
             .set("interpreterOutput", "Name Error: " + e.message);

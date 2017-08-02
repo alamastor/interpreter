@@ -85,7 +85,7 @@ class Lexer {
       result += this.currentChar;
       this.advance();
     }
-    switch (result) {
+    switch (result.toUpperCase()) {
       case "BEGIN":
         return {
           type: "BEGIN",

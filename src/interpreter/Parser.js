@@ -221,7 +221,7 @@ class Parser {
    */
   declarations(): Array<VarDecl | ProcedureDecl> {
     let declarations: Array<VarDecl | ProcedureDecl> = [];
-    if (this.currentToken.type === "VAR") {
+    while (this.currentToken.type === "VAR") {
       this.eat("VAR");
       while (this.currentToken.type === "ID") {
         declarations = declarations.concat(this.variableDeclaration());
