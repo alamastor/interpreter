@@ -3,19 +3,21 @@ import * as Immutable from "immutable";
 import type { Action } from "../../actionTypes.js";
 import ASTStratifier, { Node } from "../../ASTStratifier";
 
-export const ASTViewState = Immutable.Record(
-  ({
-    strata: new Node({}),
-    nextStrata: new Node({}),
-    previousStrata: new Node({}),
-    sourceNode: new Node({}),
-  }: {
+export const ASTViewState =
+  Immutable.Record <
+  {
     strata: Node,
     nextStrata: Node,
     sourceNode: Node,
     previousStrata: Node,
-  }),
-);
+  } >
+  {
+    strata: new Node({}),
+    nextStrata: new Node({}),
+    previousStrata: new Node({}),
+    sourceNode: new Node({}),
+  };
+const a = new ASTViewState({});
 
 const updateChildNode = (root: Node, oldChild: Node, newChild: Node) => {
   if (!root.children) {
@@ -41,7 +43,10 @@ const toggleChildren = (node: Node) => {
     .set("children", node.hiddenChildren);
 };
 
-const ASTView = (state: ASTViewState = new ASTViewState(), action: Action) => {
+const ASTView = (
+  state: typeof ASTViewState = new ASTViewState(),
+  action: Action,
+) => {
   switch (action.type) {
     case "ast_node_click":
       return state

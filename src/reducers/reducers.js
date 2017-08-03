@@ -31,7 +31,7 @@ export const CodeState = Immutable.Record(
 );
 
 const code = (
-  state: CodeState = new CodeState(),
+  state: typeof CodeState = new CodeState(),
   action: Action,
 ): CodeState => {
   switch (action.type) {

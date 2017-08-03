@@ -1,4 +1,4 @@
-// flow-typed signature: 69ab72a0f907fb396d0110ee55b9155d
+// flow-typed signature: 2cd99957885bcb5c4b4def41ddb30c3c
 // flow-typed version: <<STUB>>/autoprefixer_v6.7.2/flow_v0.44.2
 
 /**
@@ -8,8 +8,8 @@
  *
  * Fill this stub out by replacing all the `any` types.
  *
- * Once filled out, we encourage you to share your work with the 
- * community by sending a pull request to: 
+ * Once filled out, we encourage you to share your work with the
+ * community by sending a pull request to:
  * https://github.com/flowtype/flow-typed
  */
 

@@ -1,4 +1,4 @@
-// flow-typed signature: d02c107a8b64c97d0327dbf9afd5b4ba
+// flow-typed signature: cf87dc183ddcc1a519e3f4acd711285a
 // flow-typed version: <<STUB>>/url-loader_v0.5.7/flow_v0.44.2
 
 /**
@@ -8,8 +8,8 @@
  *
  * Fill this stub out by replacing all the `any` types.
  *
- * Once filled out, we encourage you to share your work with the 
- * community by sending a pull request to: 
+ * Once filled out, we encourage you to share your work with the
+ * community by sending a pull request to:
  * https://github.com/flowtype/flow-typed
  */
 
