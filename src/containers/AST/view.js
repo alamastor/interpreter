@@ -3,7 +3,6 @@ import React, { Component } from "react";
 import ReactDOM from "react-dom";
 import TransitionGroup from "react-transition-group/TransitionGroup";
 import * as d3 from "d3";
-import * as Immutable from "immutable";
 import type { Program } from "../../interpreter/parser";
 import { Node } from "../../ASTStratifier";
 import type { ASTProps } from "./index";
@@ -13,7 +12,6 @@ import {
   getNodeParentY,
   getNodeX,
   getNodeY,
-  reduceTree,
   mapTreeToNewCoords,
   treeMaxX,
   treeMaxY,
@@ -22,6 +20,17 @@ import {
 
 const NODE_RAD = 5;
 const DURATION = 1000;
+
+const findNode = (root: ViewNode, sourceNode: Node): ?ViewNode => {
+  const data = root.data;
+  if (data.id === sourceNode.id) {
+    return root;
+  } else if (Array.isArray(root.children)) {
+    return root.children
+      .map(child => findNode(child, sourceNode))
+      .find(x => x !== undefined);
+  }
+};
 
 class ASTView extends Component {
   ast: Program;
@@ -123,17 +132,6 @@ class ASTView extends Component {
     }
   }
 }
-
-const findNode = (root: ViewNode, sourceNode: Node): ?ViewNode => {
-  const data = root.data;
-  if (data.id === sourceNode.id) {
-    return root;
-  } else if (Array.isArray(root.children)) {
-    return root.children
-      .map(child => findNode(child, sourceNode))
-      .find(x => x !== undefined);
-  }
-};
 
 const SVGContainer = class extends Component<
   void,

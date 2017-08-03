@@ -1,8 +1,5 @@
 /* @flow */
 import ExtendableError from "es6-error";
-import { UnexpectedChar } from "./Lexer";
-import { UnexpectedToken } from "./Parser";
-import type { ParserInterface } from "./Parser";
 import type {
   Assign,
   BinOp,

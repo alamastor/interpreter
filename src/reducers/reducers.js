@@ -2,7 +2,6 @@
 import * as Immutable from "immutable";
 import type { Action } from "../actionTypes.js";
 import TokenMiddleware from "../TokenMiddleware";
-import type { Program } from "../interpreter/Parser";
 import type { Token } from "../interpreter/Token";
 import type { ASTNode } from "../interpreter/Parser";
 import Lexer, { UnexpectedChar } from "../interpreter/Lexer";
@@ -37,7 +36,6 @@ const code = (
 ): CodeState => {
   switch (action.type) {
     case "code_update":
-      console.log(action.code);
       let tokenList = [];
       try {
         const ast = new Parser(

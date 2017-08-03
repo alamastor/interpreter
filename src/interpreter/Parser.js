@@ -1,6 +1,5 @@
 /* @flow */
 import ExtendableError from "es6-error";
-import Lexer from "./Lexer";
 import type { LexerInterface } from "./Lexer";
 import type {
   Token,

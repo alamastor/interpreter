@@ -1,10 +1,6 @@
 /* @flow */
 import * as Immutable from "immutable";
 import type { Action } from "../../actionTypes.js";
-import Parser from "../../interpreter/Parser";
-import Lexer from "../../interpreter/Lexer";
-import type { Program } from "../../interpreter/Parser";
-import Interpreter from "../../interpreter/Interpreter";
 import ASTStratifier, { Node } from "../../ASTStratifier";
 
 export const ASTViewState = Immutable.Record(
