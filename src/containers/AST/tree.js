@@ -35,28 +35,6 @@ export const reduceTree = <T>(
   return accumulator;
 };
 
-const visitTree = (root: ViewNode, callback: ViewNode => void) => {
-  callback(root);
-  if (root.children) {
-    root.children.forEach(child => {
-      visitTree(child, callback);
-    });
-  }
-};
-
-export const mapTreeToNewCoords = (tree: ViewNode) => {
-  const minX = treeMinX(tree);
-  const minY = treeMinY(tree);
-  visitTree(tree, (node: ViewNode) => {
-    const oldX = node.x;
-    const oldY = node.y;
-    if (typeof oldX === "number" && typeof oldY === "number") {
-      node.x = oldY - minY;
-      node.y = oldX - minX;
-    }
-  });
-};
-
 const treeMinX = (tree: ViewNode) =>
   reduceTree(
     tree,
@@ -109,15 +87,26 @@ export const treeMaxY = (tree: ViewNode) =>
     0,
   );
 
-const findViewNode = (root: ViewNode, key: string) => {
-  if (viewNodeKey(root) === key) {
-    return root;
+const visitTree = (root: ViewNode, callback: ViewNode => void) => {
+  callback(root);
+  if (root.children) {
+    root.children.forEach(child => {
+      visitTree(child, callback);
+    });
   }
-  if (Array.isArray(root.children)) {
-    return root.children
-      .map(child => findViewNode(child, key))
-      .find(x => x !== undefined);
-  }
+};
+
+export const mapTreeToNewCoords = (tree: ViewNode) => {
+  const minX = treeMinX(tree);
+  const minY = treeMinY(tree);
+  visitTree(tree, (node: ViewNode) => {
+    const oldX = node.x;
+    const oldY = node.y;
+    if (typeof oldX === "number" && typeof oldY === "number") {
+      node.x = oldY - minY;
+      node.y = oldX - minX;
+    }
+  });
 };
 
 export const viewNodeKey = (node: ViewNode): string => {
@@ -138,4 +127,15 @@ export const viewNodeKey = (node: ViewNode): string => {
     }
   }
   return key;
+};
+
+const findViewNode = (root: ViewNode, key: string) => {
+  if (viewNodeKey(root) === key) {
+    return root;
+  }
+  if (Array.isArray(root.children)) {
+    return root.children
+      .map(child => findViewNode(child, key))
+      .find(x => x !== undefined);
+  }
 };

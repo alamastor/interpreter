@@ -1,7 +1,5 @@
 /* @flow */
 
-export type ASTSymbol = BuiltinTypeSymbol | VarSymbol | ProcedureSymbol;
-
 type BuiltinTypeSymbol = {|
   symbolType: "builtin_type",
   name: string,
@@ -18,6 +16,8 @@ export type ProcedureSymbol = {|
   name: string,
   params: Array<VarSymbol>,
 |};
+
+export type ASTSymbol = BuiltinTypeSymbol | VarSymbol | ProcedureSymbol;
 
 export default class ScopedSymbolTable {
   symbols: Map<string, ASTSymbol>;

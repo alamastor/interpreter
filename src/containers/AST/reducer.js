@@ -17,6 +17,30 @@ export const ASTViewState = Immutable.Record(
   }),
 );
 
+const updateChildNode = (root: Node, oldChild: Node, newChild: Node) => {
+  if (!root.children) {
+    return root;
+  }
+  if (root.children.indexOf(oldChild) !== -1) {
+    return root.set(
+      "children",
+      root.children.set(root.children.indexOf(oldChild), newChild),
+    );
+  }
+  return root.set(
+    "children",
+    root.children.map(child => {
+      return updateChildNode(child, oldChild, newChild);
+    }),
+  );
+};
+
+const toggleChildren = (node: Node) => {
+  return node
+    .set("hiddenChildren", node.children)
+    .set("children", node.hiddenChildren);
+};
+
 const ASTView = (state: ASTViewState = new ASTViewState(), action: Action) => {
   switch (action.type) {
     case "ast_node_click":
@@ -42,30 +66,6 @@ const ASTView = (state: ASTViewState = new ASTViewState(), action: Action) => {
     default:
       return state;
   }
-};
-
-const updateChildNode = (root: Node, oldChild: Node, newChild: Node) => {
-  if (!root.children) {
-    return root;
-  }
-  if (root.children.indexOf(oldChild) !== -1) {
-    return root.set(
-      "children",
-      root.children.set(root.children.indexOf(oldChild), newChild),
-    );
-  }
-  return root.set(
-    "children",
-    root.children.map(child => {
-      return updateChildNode(child, oldChild, newChild);
-    }),
-  );
-};
-
-const toggleChildren = (node: Node) => {
-  return node
-    .set("hiddenChildren", node.children)
-    .set("children", node.hiddenChildren);
 };
 
 export default ASTView;
