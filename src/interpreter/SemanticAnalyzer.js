@@ -198,7 +198,7 @@ export default class SemanticAnalyzer {
     const varName = varDecl.varNode.name;
     const varSymbol = { symbolType: "var", name: varName, type: typeSymbol };
 
-    if (this.currentScope.lookup(varName) !== undefined) {
+    if (this.currentScope.lookup(varName, true) !== undefined) {
       throw new SemanticError("Duplicate declaration : " + varName);
     }
 

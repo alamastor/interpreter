@@ -46,11 +46,15 @@ export default class ScopedSymbolTable {
     this.symbols.set(symbol.name, symbol);
   }
 
-  lookup(name: string) {
+  lookup(name: string, currentScopeOnly?: boolean) {
     const symbol = this.symbols.get(name);
 
     if (symbol) {
       return symbol;
+    }
+
+    if (currentScopeOnly) {
+      return;
     }
 
     if (this.enclosingScope) {
