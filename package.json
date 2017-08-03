@@ -65,12 +65,8 @@
     "flow": "flow"
   },
   "jest": {
-    "collectCoverageFrom": [
-      "src/**/*.{js,jsx}"
-    ],
-    "setupFiles": [
-      "<rootDir>/config/polyfills.js"
-    ],
+    "collectCoverageFrom": ["src/**/*.{js,jsx}"],
+    "setupFiles": ["<rootDir>/config/polyfills.js"],
     "testPathIgnorePatterns": [
       "<rootDir>[/\\\\](build|docs|node_modules|scripts)[/\\\\]"
     ],
@@ -81,29 +77,19 @@
       "^.+\\.css$": "<rootDir>/config/jest/cssTransform.js",
       "^(?!.*\\.(js|jsx|css|json)$)": "<rootDir>/config/jest/fileTransform.js"
     },
-    "transformIgnorePatterns": [
-      "[/\\\\]node_modules[/\\\\].+\\.(js|jsx)$"
-    ],
+    "transformIgnorePatterns": ["[/\\\\]node_modules[/\\\\].+\\.(js|jsx)$"],
     "moduleNameMapper": {
       "^react-native$": "react-native-web"
     }
   },
   "babel": {
-    "presets": [
-      "react-app"
-    ]
+    "presets": ["react-app"]
   },
   "eslintConfig": {
     "extends": "react-app",
-    "plugins": [
-      "eslint-plugin-flowtype",
-      "flowtype"
-    ],
+    "plugins": ["eslint-plugin-flowtype", "flowtype"],
     "rules": {
-      "flowtype/boolean-style": [
-        2,
-        "boolean"
-      ],
+      "flowtype/boolean-style": [2, "boolean"],
       "flowtype/define-flow-type": 2,
       "flowtype/use-flow-type": 2,
       "flowtype/valid-syntax": 2

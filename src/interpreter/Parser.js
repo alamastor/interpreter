@@ -13,6 +13,7 @@ import type {
   REAL_CONST,
 } from "./Token";
 
+/* eslint-disable no-use-before-define */
 export type Assign = {|
   type: "assign",
   variable: Var,
@@ -114,6 +115,7 @@ export type VarDecl = {|
   startPos: number,
   stopPos: number,
 |};
+/* eslint-enable no-use-before-define */
 
 export type ASTNode =
   | Assign

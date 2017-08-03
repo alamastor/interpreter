@@ -16,6 +16,7 @@ import type {
 import * as Immutable from "immutable";
 import uuidV4 from "uuid/v4";
 
+/* eslint-disable no-use-before-define */
 const NodeBase = Immutable.Record(
   ({
     id: 0,
@@ -69,6 +70,7 @@ const Node = class extends NodeBase {
     super(values);
   }
 };
+/* eslint-enable no-use-before-define */
 
 class Stratifier {
   ast: ?Program;
