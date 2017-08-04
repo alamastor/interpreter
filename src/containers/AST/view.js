@@ -38,10 +38,10 @@ type Props = {
   nextStrata: Node,
   sourceNode: Node,
   previousStrata: Node,
-  onHoverNode: (node: Node) => void,
+  onHoverNode: Node => void,
   onStopHoverNode: () => void,
-  onClickNode: (node: Node) => void,
-  onReceiveAST: (node: ?ASTNode) => void,
+  onClickNode: Node => void,
+  onReceiveAST: (?ASTNode) => void,
 };
 
 class ASTView extends Component<void, Props, void> {
@@ -297,10 +297,7 @@ const NodeView = class extends Component<
   }
 
   onClick() {
-    this.props.onClickNode(this.props.node.data, {
-      x: this.props.node.x,
-      y: this.props.node.y,
-    });
+    this.props.onClickNode(this.props.node.data);
   }
 
   render() {
