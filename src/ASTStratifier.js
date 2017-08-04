@@ -13,64 +13,16 @@ import type {
   Var,
   VarDecl,
 } from "./interpreter/parser";
-import * as Immutable from "immutable";
 import uuidV4 from "uuid/v4";
 
-/* eslint-disable no-use-before-define */
-const NodeBase = Immutable.Record(
-  ({
-    id: 0,
-    name: "",
-    children: new Immutable.List(),
-    hiddenChildren: new Immutable.List(),
-    startPos: 0,
-    stopPos: 0,
-  }: {|
-    id: number,
-    name: string,
-    children: Immutable.List<Node>,
-    hiddenChildren: Immutable.List<Node>,
-    startPos: number,
-    stopPos: number,
-  |}),
-);
-
-const Node = class extends NodeBase {
-  constructor(
-    values:
-      | {
-          id?: number,
-          name?: string,
-          children?: Immutable.List<Node>,
-          hiddenChildren?: Immutable.List<Node>,
-          startPos?: number,
-          stopPos?: number,
-        }
-      | {
-          id: number,
-          name: string,
-          children: Immutable.List<Node>,
-          hiddenChildren: Immutable.List<Node>,
-          startPos: number,
-          stopPos: number,
-        },
-  ) {
-    // Convert children to this record type to allow deep
-    // convertion to records.
-    if (values && Array.isArray(values.children)) {
-      values.children = Immutable.List(
-        values.children.map(child => new Node(child)),
-      );
-    }
-    if (values && Array.isArray(values.hiddenChildren)) {
-      values.hiddenChildren = Immutable.List(
-        values.hiddenChildren.map(child => new Node(child)),
-      );
-    }
-    super(values);
-  }
+type Node = {
+  id: number,
+  name: string,
+  children?: Array<Node>,
+  hiddenChildren?: Array<Node>,
+  startPos: number,
+  stopPos: number,
 };
-/* eslint-enable no-use-before-define */
 
 class Stratifier {
   ast: ?Program;
@@ -104,13 +56,13 @@ class Stratifier {
       default:
         value = this.visitVar(assign.value);
     }
-    return new Node({
+    return {
       id: uuidV4(),
       name: ":=",
-      children: Immutable.List([variable, value]),
+      children: [variable, value],
       startPos: assign.startPos,
       stopPos: assign.stopPos,
-    });
+    };
   }
 
   visitBinOp(binOp: BinOp): Node {
@@ -142,31 +94,31 @@ class Stratifier {
       default:
         right = this.visitVar(binOp.right);
     }
-    return new Node({
+    return {
       id: uuidV4(),
       name: "BinOp:" + binOp.op.type,
-      children: Immutable.List([left, right]),
+      children: [left, right],
       startPos: binOp.startPos,
       stopPos: binOp.stopPos,
-    });
+    };
   }
 
   visitBlock(block: Block): Node {
-    const declarations = Immutable.List(block.declarations).map(declaration => {
+    const declarations = block.declarations.map(declaration => {
       if (declaration.type === "var_decl") {
         return this.visitVarDecl(declaration);
       } else {
         return this.visitProcedureDecl(declaration);
       }
     });
-    const compoundStatement = this.visitCompound(block.compoundStatement);
-    return new Node({
+    const compoundStatement: Node = this.visitCompound(block.compoundStatement);
+    return {
       id: uuidV4(),
       name: "Block",
-      children: declarations.push(compoundStatement),
+      children: declarations.concat([compoundStatement]),
       startPos: block.startPos,
       stopPos: block.stopPos,
-    });
+    };
   }
 
   visitCompound(compound: Compound): Node {
@@ -180,76 +132,70 @@ class Stratifier {
           return this.visitNoOp(child);
       }
     });
-    return new Node({
+    return {
       id: uuidV4(),
       name: "Compound",
-      children: Immutable.List(childNodes),
+      children: childNodes,
       startPos: childNodes[0].startPos,
       stopPos: childNodes[childNodes.length - 1].stopPos,
-    });
+    };
   }
 
   visitNoOp(noOp: NoOp): Node {
-    return new Node({
+    return {
       id: uuidV4(),
       name: "NoOp",
       startPos: noOp.startPos,
       stopPos: noOp.stopPos,
-    });
+    };
   }
 
   visitNum(num: Num) {
-    return new Node({
+    return {
       id: uuidV4(),
       name: "Num: " + num.token.value,
       startPos: num.startPos,
       stopPos: num.stopPos,
-    });
+    };
   }
 
-  visitProcedureDecl(procedureDecl: ProcedureDecl) {
-    const params = procedureDecl.params.map(
-      param =>
-        new Node({
-          id: uuidV4(),
-          name: "Param",
-          children: Immutable.List([
-            this.visitVar(param.varNode),
-            this.visitType(param.typeNode),
-          ]),
-          startPos: param.startPos,
-          stopPos: param.stopPos,
-        }),
-    );
+  visitProcedureDecl(procedureDecl: ProcedureDecl): Node {
+    const params = procedureDecl.params.map(param => ({
+      id: uuidV4(),
+      name: "Param",
+      children: [this.visitVar(param.varNode), this.visitType(param.typeNode)],
+      startPos: param.startPos,
+      stopPos: param.stopPos,
+    }));
 
     const block = this.visitBlock(procedureDecl.block);
 
-    return new Node({
+    return {
       id: uuidV4(),
       name: "ProcedureDecl: " + procedureDecl.name,
-      children: Immutable.List(params.concat(block)),
+      children: params.concat(block),
       startPos: procedureDecl.startPos,
       stopPos: procedureDecl.stopPos,
-    });
+    };
   }
 
   visitProgram(program: Program): Node {
-    return new Node({
+    return {
       id: uuidV4(),
       name: "Program: " + program.name,
-      children: Immutable.List([this.visitBlock(program.block)]),
+      children: [this.visitBlock(program.block)],
       startPos: program.startPos,
       stopPos: program.stopPos,
-    });
+    };
   }
 
   visitType(type: Type) {
-    return new Node({
+    return {
       id: uuidV4(),
       name: "Type: " + type.value,
       startPos: type.startPos,
       stopPos: type.stopPos,
-    });
+    };
   }
 
   visitUnaryOp(unaryOp: UnaryOp): Node {
@@ -267,37 +213,37 @@ class Stratifier {
       default:
         expr = this.visitVar(unaryOp.expr);
     }
-    return new Node({
+    return {
       id: uuidV4(),
       name: "UnaryOp:" + unaryOp.op.type,
-      children: Immutable.List([expr]),
+      children: [expr],
       startPos: unaryOp.startPos,
       stopPos: unaryOp.stopPos,
-    });
+    };
   }
 
-  visitVar(node: Var) {
-    return new Node({
+  visitVar(node: Var): Node {
+    return {
       id: uuidV4(),
       name: "Var: " + node.token.name,
       startPos: node.startPos,
       stopPos: node.stopPos,
-    });
+    };
   }
 
   visitVarDecl(varDecl: VarDecl): Node {
-    return new Node({
+    return {
       id: uuidV4(),
       name: "VarDecl",
-      children: Immutable.List([
+      children: [
         this.visitVar(varDecl.varNode),
         this.visitType(varDecl.typeNode),
-      ]),
+      ],
       startPos: varDecl.startPos,
       stopPos: varDecl.stopPos,
-    });
+    };
   }
 }
 
-export { Node };
+export type { Node };
 export default Stratifier;

@@ -1,12 +1,11 @@
 /* @flow */
-import { CodeState } from "./reducers/reducers";
 
 export const loadState = () => {
   try {
     const serializedState = localStorage.getItem("state");
     if (serializedState != null) {
       const jsState = JSON.parse(serializedState);
-      return { code: CodeState({ code: jsState.code.code }) };
+      return { code: jsState.code };
     } else {
       return undefined;
     }

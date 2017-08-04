@@ -6,11 +6,15 @@ import astView from "./containers/AST/reducer";
 import { loadState, saveState } from "./localStorage";
 import throttle from "lodash/throttle";
 
-const reducer = combineReducers({
+const reducers = {
   code,
   interpreterView,
   astView,
-});
+};
+const reducer = combineReducers(reducers);
+type Reducers = typeof reducers;
+type $ExtractFunctionReturn = <V>(v: (...args: any) => V) => V;
+export type State = $ObjMap<Reducers, $ExtractFunctionReturn>;
 
 const persistedState = loadState();
 

@@ -1,41 +1,17 @@
 /* @flow */
 import { connect } from "react-redux";
-import type { MapDispatchToProps } from "react-redux";
-import { Node } from "../../ASTStratifier";
-import type { ASTNode } from "../../interpreter/Parser";
-import type { Action } from "../../actionTypes";
 import ASTView from "./view";
+import type { State } from "../../store";
 
-type StateProps = {
-  ast: ASTNode,
-  strata: Node,
-  nextStrata: Node,
-  sourceNode: Node,
-  previousStrata: Node,
-};
+const mapStateToProps = (state: State) => ({
+  ast: state.code.ast,
+  strata: state.astView.strata,
+  nextStrata: state.astView.nextStrata,
+  previousStrata: state.astView.previousStrata,
+  sourceNode: state.astView.sourceNode,
+});
 
-const mapStateToProps = (state): StateProps => {
-  return {
-    ast: state.code.ast,
-    strata: state.astView.strata,
-    nextStrata: state.astView.nextStrata,
-    previousStrata: state.astView.previousStrata,
-    sourceNode: state.astView.sourceNode,
-  };
-};
-
-type DispatchProps = {
-  onHoverNode: Node => () => void,
-  onStopHoverNode: () => () => void,
-  onClickNode: Node => () => void,
-  onReceiveAST: ASTNode => () => void,
-};
-
-const mapDispatchToProps: MapDispatchToProps<
-  Action,
-  *,
-  DispatchProps,
-> = dispatch => ({
+const mapDispatchToProps = (dispatch: *) => ({
   onHoverNode: node =>
     dispatch({
       type: "ast_node_hover",
@@ -45,21 +21,21 @@ const mapDispatchToProps: MapDispatchToProps<
     dispatch({
       type: "ast_node_hover_stop",
     }),
-  onClickNode: (node, nodePosition) =>
+  onClickNode: node =>
     dispatch({
       type: "ast_node_click",
       node: node,
-      nodePosition: nodePosition,
     }),
-  onReceiveAST: ast =>
-    dispatch({
-      type: "ast_received_ast",
-      ast: ast,
-    }),
+  onReceiveAST: ast => {
+    if (ast) {
+      return dispatch({
+        type: "ast_received_ast",
+        ast: ast,
+      });
+    }
+  },
 });
 
 const ASTViewContainer = connect(mapStateToProps, mapDispatchToProps)(ASTView);
-
-export type ASTProps = StateProps & DispatchProps;
 
 export default ASTViewContainer;

@@ -4,9 +4,9 @@ import ReactDOM from "react-dom";
 import TransitionGroup from "react-transition-group/TransitionGroup";
 import * as d3 from "d3";
 import type { Program } from "../../interpreter/parser";
-import { Node } from "../../ASTStratifier";
-import type { ASTProps } from "./index";
+import type { Node } from "../../ASTStratifier";
 import type { ViewNode } from "./tree";
+import type { ASTNode } from "../../interpreter/Parser";
 import {
   getNodeParentX,
   getNodeParentY,
@@ -32,15 +32,26 @@ const findNode = (root: ViewNode, sourceNode: Node): ?ViewNode => {
   }
 };
 
-class ASTView extends Component {
+type Props = {
+  ast: ?ASTNode,
+  strata: Node,
+  nextStrata: Node,
+  sourceNode: Node,
+  previousStrata: Node,
+  onHoverNode: (node: Node) => void,
+  onStopHoverNode: () => void,
+  onClickNode: (node: Node) => void,
+  onReceiveAST: (node: ?ASTNode) => void,
+};
+
+class ASTView extends Component<void, Props, void> {
   ast: Program;
-  props: ASTProps;
 
   componentWillMount() {
     this.props.onReceiveAST(this.props.ast);
   }
 
-  componentWillReceiveProps(nextProps: ASTProps) {
+  componentWillReceiveProps(nextProps: Props) {
     if (nextProps.ast !== this.props.ast) {
       this.props.onReceiveAST(nextProps.ast);
     }
@@ -48,11 +59,9 @@ class ASTView extends Component {
 
   render() {
     if (this.props.strata.name) {
-      const tree = d3.hierarchy(this.props.strata.toJS());
-      const nextTree: ViewNode = d3.hierarchy(this.props.nextStrata.toJS());
-      const previousTree: ViewNode = d3.hierarchy(
-        this.props.previousStrata.toJS(),
-      );
+      const tree = d3.hierarchy(this.props.strata);
+      const nextTree: ViewNode = d3.hierarchy(this.props.nextStrata);
+      const previousTree: ViewNode = d3.hierarchy(this.props.previousStrata);
       let i = 0;
       tree.id = i++;
       const addIds = node => {
@@ -181,23 +190,29 @@ const SVGContainer = class extends Component<
 type NodeViewProps = {
   node: ViewNode,
   id: string,
-  onHoverNode: Node => () => void,
-  onStopHoverNode: () => () => void,
-  onClickNode: Node => () => void,
+  onHoverNode: Node => void,
+  onStopHoverNode: () => void,
+  onClickNode: Node => void,
   sourceNode: ViewNode,
   nextSourceNode: ViewNode,
   previousSourceNode: ViewNode,
 };
 
-const NodeView = class extends Component {
+const NodeView = class extends Component<
+  void,
+  NodeViewProps,
+  {
+    x: number,
+    y: number,
+  },
+> {
   onMouseEnter: () => void;
   onMouseLeave: () => void;
   onClick: () => void;
-  state: {
-    x: number,
-    y: number,
+  state = {
+    x: 0,
+    y: 0,
   };
-  props: NodeViewProps;
 
   constructor(props: NodeViewProps) {
     super(props);
@@ -274,7 +289,7 @@ const NodeView = class extends Component {
   }
 
   onMouseEnter() {
-    this.props.onHoverNode(new Node(this.props.node.data));
+    this.props.onHoverNode(this.props.node.data);
   }
 
   onMouseLeave() {
@@ -282,7 +297,7 @@ const NodeView = class extends Component {
   }
 
   onClick() {
-    this.props.onClickNode(new Node(this.props.node.data), {
+    this.props.onClickNode(this.props.node.data, {
       x: this.props.node.x,
       y: this.props.node.y,
     });

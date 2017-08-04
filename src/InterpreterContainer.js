@@ -1,19 +1,17 @@
 /* @flow */
 import { connect } from "react-redux";
-import * as Immutable from "immutable";
 import InterpreterView from "./InterpreterView";
-import type { MapDispatchToProps } from "react-redux";
-import type { Action } from "./actionTypes";
 import type { Token } from "./interpreter/Token";
 import { UnexpectedChar } from "./interpreter/Lexer";
-import type { ASTSymbol } from "./interpreter/ScopedSymbolTable";
+import type { ASTSymbol } from "./interpreter/ASTSymbol";
+import type { State } from "./store";
 
 type StateProps = {|
   code: string,
-  grammar: Immutable.List<string>,
+  grammar: Array<string>,
   interpreterOutput: string,
-  tokenList: Array<Token>,
-  symbolTable: Map<string, ASTSymbol>,
+  tokenList: Array<Token | UnexpectedChar>,
+  symbolTable: { [string]: ASTSymbol },
   highlightStart: number,
   highlightStop: number,
   grammarMinimized: boolean,
@@ -22,37 +20,31 @@ type StateProps = {|
   astMinimized: boolean,
 |};
 
-const mapStateToProps = (state): StateProps => {
-  return {
-    code: state.code.code,
-    grammar: state.code.grammar,
-    interpreterOutput: state.code.interpreterOutput,
-    tokenList: state.code.tokenList,
-    symbolTable: state.code.symbolTable,
-    highlightStart: state.interpreterView.highlightStart,
-    highlightStop: state.interpreterView.highlightStop,
-    grammarMinimized: state.interpreterView.grammarMinimized,
-    tokensMinimized: state.interpreterView.tokensMinimized,
-    symbolTableMinimized: state.interpreterView.symbolTableMinimized,
-    astMinimized: state.interpreterView.astMinimized,
-  };
-};
+const mapStateToProps = (state: State): StateProps => ({
+  code: state.code.code,
+  grammar: state.code.grammar,
+  interpreterOutput: state.code.interpreterOutput,
+  tokenList: state.code.tokenList,
+  symbolTable: state.code.symbolTable,
+  highlightStart: state.interpreterView.highlightStart,
+  highlightStop: state.interpreterView.highlightStop,
+  grammarMinimized: state.interpreterView.grammarMinimized,
+  tokensMinimized: state.interpreterView.tokensMinimized,
+  symbolTableMinimized: state.interpreterView.symbolTableMinimized,
+  astMinimized: state.interpreterView.astMinimized,
+});
 
 type DispatchProps = {|
-  onSetCode: string => () => void,
-  onHoverToken: (Token | UnexpectedChar) => () => void,
-  onStopHoverToken: () => () => void,
-  onClickGrammarToggle: () => () => void,
-  onClickTokensToggle: () => () => void,
-  onClickASTToggle: () => () => void,
-  onClickSymbolTableToggle: () => () => void,
+  onSetCode: (code: string) => void,
+  onHoverToken: (tokenOrError: Token | UnexpectedChar) => void,
+  onStopHoverToken: () => void,
+  onClickGrammarToggle: () => void,
+  onClickTokensToggle: () => void,
+  onClickASTToggle: () => void,
+  onClickSymbolTableToggle: () => void,
 |};
 
-const mapDispatchToProps: MapDispatchToProps<
-  Action,
-  *,
-  DispatchProps,
-> = dispatch => ({
+const mapDispatchToProps = (dispatch: *) => ({
   onSetCode: code =>
     dispatch({
       type: "code_update",

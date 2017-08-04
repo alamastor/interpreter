@@ -5,9 +5,10 @@ import ASTContainer from "./containers/AST";
 import type { Token } from "./interpreter/Token";
 import { UnexpectedChar } from "./interpreter/Lexer";
 import type { InterpreterProps } from "./InterpreterContainer";
-import type { ASTSymbol } from "./interpreter/ScopedSymbolTable";
+import type { ASTSymbol } from "./interpreter/ASTSymbol";
+import { toASTSymbol } from "./interpreter/ASTSymbol";
 
-class InterpreterView extends Component {
+class InterpreterView extends Component<void, InterpreterProps, void> {
   onSetCode: string => void;
 
   constructor(props: InterpreterProps) {
@@ -21,7 +22,7 @@ class InterpreterView extends Component {
   }
 
   onSetCode({ target }: { target: EventTarget }) {
-    if (target.value) {
+    if (target.value && typeof target.value === "string") {
       this.props.onSetCode(target.value);
     }
   }
@@ -151,30 +152,38 @@ const TokenView = (props: {
   );
 };
 
-const SymbolTableView = (props: { symbolTable: Map<string, ASTSymbol> }) =>
-  <ul>
-    {Array.from(props.symbolTable.values()).map((s, i) => {
+const SymbolTableView = (props: { symbolTable: { [string]: ASTSymbol } }) => {
+  const children = [];
+  Object.values(props.symbolTable).forEach((x, i) => {
+    const s = toASTSymbol(x);
+    if (s) {
       if (s.symbolType === "builtin_type") {
-        return (
+        children.push(
           <li className="symbol-table--line" key={i}>
             {s.name}
-          </li>
+          </li>,
         );
       } else if (s.symbolType === "procedure") {
-        return (
+        children.push(
           <li className="symbol-table--line" key={i}>
             {s.name}
-          </li>
+          </li>,
         );
       } else {
-        return (
+        children.push(
           <li className="symbol-table--line" key={i}>
             {s.name + ": " + s.type.name}
-          </li>
+          </li>,
         );
       }
-    })}
-  </ul>;
+    }
+  });
+  return (
+    <ul>
+      {children}
+    </ul>
+  );
+};
 
 type HighlightViewProps = {
   children?: Element<any>,

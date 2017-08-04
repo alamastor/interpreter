@@ -1,5 +1,4 @@
 /* @flow */
-import * as Immutable from "immutable";
 import type { Action } from "../actionTypes.js";
 import TokenMiddleware from "../TokenMiddleware";
 import type { Token } from "../interpreter/Token";
@@ -10,30 +9,26 @@ import Interpreter, { InterpreterError } from "../interpreter/Interpreter";
 import SemanticAnalyzer, {
   SemanticError,
 } from "../interpreter/SemanticAnalyzer";
-import type { ASTSymbol } from "../interpreter/ScopedSymbolTable";
+import type { ASTSymbol } from "../interpreter/ASTSymbol";
 
-export const CodeState = Immutable.Record(
-  ({
-    grammar: Immutable.List(),
-    code: "",
-    tokenList: Immutable.List(),
-    ast: null,
-    symbolTable: new Map(),
-    interpreterOutput: "",
-  }: {
-    grammar: Immutable.List<string>,
-    code: string,
-    tokenList: Immutable.List<Token>,
-    ast: ?ASTNode,
-    symbolTable: Map<string, ASTSymbol>,
-    interpreterOutput: string,
-  }),
-);
+export type CodeState = {
+  grammar: Array<string>,
+  code: string,
+  tokenList: Array<Token | UnexpectedChar>,
+  ast: ?ASTNode,
+  symbolTable: { [string]: ASTSymbol },
+  interpreterOutput: string,
+};
+const initialState = {
+  grammar: [],
+  code: "",
+  tokenList: [],
+  ast: null,
+  symbolTable: {},
+  interpreterOutput: "",
+};
 
-const code = (
-  state: typeof CodeState = new CodeState(),
-  action: Action,
-): CodeState => {
+const code = (state: CodeState = initialState, action: Action): CodeState => {
   switch (action.type) {
     case "code_update":
       let tokenList = [];
@@ -52,86 +47,108 @@ const code = (
         const semanticAnalyzer = new SemanticAnalyzer();
         semanticAnalyzer.visitProgram(ast);
         const interpreterOutput = new Interpreter(ast).interpret();
-        return state
-          .set("code", action.code)
-          .set("grammar", Immutable.List(Parser.grammar))
-          .set("interpreterOutput", interpreterOutput)
-          .set("tokenList", Immutable.List(tokenList))
-          .set("symbolTable", semanticAnalyzer.currentScope.symbols)
-          .set("ast", ast);
+        return Object.assign({}, state, {
+          code: action.code,
+          grammar: Parser.grammar,
+          interpreterOutput: interpreterOutput,
+          tokenList: tokenList,
+          symbolTable: semanticAnalyzer.currentScope.symbols,
+          ast: ast,
+        });
       } catch (e) {
         if (e instanceof UnexpectedChar) {
-          return state
-            .set("code", action.code)
-            .set("interpreterOutput", "Lexer Error: " + e.message);
+          return Object.assign({}, state, {
+            code: action.code,
+            interpreterOutput: "Lexer Error: " + e.message,
+          });
         }
         if (e instanceof UnexpectedToken) {
-          return state
-            .set("code", action.code)
-            .set("interpreterOutput", "Parser Error: " + e.message);
+          return Object.assign({}, state, {
+            code: action.code,
+            interpreterOutput: "Parser Error: " + e.message,
+          });
         }
         if (e instanceof InterpreterError) {
-          return state
-            .set("code", action.code)
-            .set("interpreterOutput", "Interpreter Error: " + e.message);
+          return Object.assign({}, state, {
+            code: action.code,
+            interpreterOutput: "Interpreter Error: " + e.message,
+          });
         }
         if (e instanceof SemanticError) {
-          return state
-            .set("code", action.code)
-            .set("interpreterOutput", "Name Error: " + e.message);
+          return Object.assign({}, state, {
+            code: action.code,
+            interpreterOutput: "Name Error: " + e.message,
+          });
         }
-        return state
-          .set("code", action.code)
-          .set("interpreterOutput", "Unexpected Error: " + e.message);
+        return Object.assign({}, state, {
+          code: action.code,
+          interpreterOutput: "Unexpected Error: " + e.message,
+        });
       }
     default:
       return state;
   }
 };
 
-const InterpreterViewState = Immutable.Record(
-  ({
-    highlightStart: 0,
-    highlightStop: 0,
-    grammarMinimized: true,
-    tokensMinimized: true,
-    astMinimized: true,
-    symbolTableMinimized: true,
-  }: {
-    highlightStart: number,
-    highlightStop: number,
-    grammarMinimized: boolean,
-    tokensMinimized: boolean,
-    astMinimized: boolean,
-    symbolTableMinimized: boolean,
-  }),
-);
+type InterpreterViewState = {
+  highlightStart: number,
+  highlightStop: number,
+  grammarMinimized: boolean,
+  tokensMinimized: boolean,
+  astMinimized: boolean,
+  symbolTableMinimized: boolean,
+};
+
+const interpreterViewInitialState: InterpreterViewState = {
+  highlightStart: 0,
+  highlightStop: 0,
+  grammarMinimized: true,
+  tokensMinimized: true,
+  astMinimized: true,
+  symbolTableMinimized: true,
+};
 
 const interpreterView = (
-  state: InterpreterViewState = new InterpreterViewState(),
+  state: InterpreterViewState = interpreterViewInitialState,
   action: Action,
 ) => {
   switch (action.type) {
     case "token_hover":
-      return state
-        .set("highlightStart", action.tokenOrError.startPos)
-        .set("highlightStop", action.tokenOrError.stopPos);
+      return Object.assign({}, state, {
+        highlightStart: action.tokenOrError.startPos,
+        highlightStop: action.tokenOrError.stopPos,
+      });
     case "token_hover_stop":
-      return state.set("highlightStart", 0).set("highlightStop", 0);
+      return Object.assign({}, state, {
+        highlightStart: 0,
+        highlightStop: 0,
+      });
     case "ast_node_hover":
-      return state
-        .set("highlightStart", action.node.startPos)
-        .set("highlightStop", action.node.stopPos);
+      return Object.assign({}, state, {
+        highlightStart: action.node.startPos,
+        highlightStop: action.node.stopPos,
+      });
     case "ast_node_hover_stop":
-      return state.set("highlightStart", 0).set("highlightStop", 0);
+      return Object.assign({}, state, {
+        highlightStart: 0,
+        highlightStop: 0,
+      });
     case "interpreter_view_grammar_toggle_click":
-      return state.set("grammarMinimized", !state.grammarMinimized);
+      return Object.assign({}, state, {
+        grammarMinimized: !state.grammarMinimized,
+      });
     case "interpreter_view_tokens_toggle_click":
-      return state.set("tokensMinimized", !state.tokensMinimized);
+      return Object.assign({}, state, {
+        tokensMinimized: !state.tokensMinimized,
+      });
     case "interpreter_view_ast_toggle_click":
-      return state.set("astMinimized", !state.astMinimized);
+      return Object.assign({}, state, {
+        astMinimized: !state.astMinimized,
+      });
     case "interpreter_view_symbol_table_toggle_click":
-      return state.set("symbolTableMinimized", !state.symbolTableMinimized);
+      return Object.assign({}, state, {
+        symbolTableMinimized: !state.symbolTableMinimized,
+      });
     default:
       return state;
   }

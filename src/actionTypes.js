@@ -3,7 +3,7 @@
 import type { Token } from "./interpreter/Token";
 import type { Program } from "./interpreter/Parser";
 import { UnexpectedChar } from "./interpreter/Lexer";
-import { Node } from "./ASTStratifier";
+import type { Node } from "./ASTStratifier";
 
 export type Action =
   | {

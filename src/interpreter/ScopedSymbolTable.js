@@ -1,26 +1,8 @@
 /* @flow */
-
-type BuiltinTypeSymbol = {|
-  symbolType: "builtin_type",
-  name: string,
-|};
-
-export type VarSymbol = {|
-  symbolType: "var",
-  name: string,
-  type: BuiltinTypeSymbol,
-|};
-
-export type ProcedureSymbol = {|
-  symbolType: "procedure",
-  name: string,
-  params: Array<VarSymbol>,
-|};
-
-export type ASTSymbol = BuiltinTypeSymbol | VarSymbol | ProcedureSymbol;
+import type { ASTSymbol } from "./ASTSymbol";
 
 export default class ScopedSymbolTable {
-  symbols: Map<string, ASTSymbol>;
+  symbols: { [string]: ASTSymbol };
   scopeName: string;
   scopeLevel: number;
   enclosingScope: ?ScopedSymbolTable;
@@ -30,7 +12,7 @@ export default class ScopedSymbolTable {
     scopeLevel: number,
     enclosingScope?: ScopedSymbolTable,
   ) {
-    this.symbols = new Map();
+    this.symbols = {};
     this.scopeName = scopeName;
     this.scopeLevel = scopeLevel;
     this.enclosingScope = enclosingScope;
@@ -43,11 +25,11 @@ export default class ScopedSymbolTable {
   }
 
   insert(symbol: ASTSymbol) {
-    this.symbols.set(symbol.name, symbol);
+    this.symbols[symbol.name] = symbol;
   }
 
-  lookup(name: string, currentScopeOnly?: boolean) {
-    const symbol = this.symbols.get(name);
+  lookup(name: string, currentScopeOnly?: boolean): ?ASTSymbol {
+    const symbol: ASTSymbol = this.symbols[name];
 
     if (symbol) {
       return symbol;

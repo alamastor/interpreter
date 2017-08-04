@@ -14,7 +14,7 @@ import type {
   VarDecl,
 } from "./Parser";
 import ScopedSymbolTable from "./ScopedSymbolTable";
-import type { ProcedureSymbol, VarSymbol } from "./ScopedSymbolTable";
+import type { ProcedureSymbol, VarSymbol } from "./ASTSymbol";
 
 export class SemanticError extends ExtendableError {}
 
