@@ -53,6 +53,9 @@ export type Action =
       type: "interpreter_view_ast_toggle_click",
     }
   | {
+      type: "interpreter_view_symbol_table_toggle_click",
+    }
+  | {
       type: "ast_node_click",
       node: Node,
     }
