@@ -9,17 +9,16 @@ import { toASTSymbol } from "../../interpreter/ASTSymbol";
 import { connect } from "react-redux";
 import type { State } from "../../store";
 import type { Dispatch } from "../../store";
+import LexerContainer from "../Lexer";
 
 const mapStateToProps = (state: State) => ({
   code: state.code.code,
   grammar: state.code.grammar,
   interpreterOutput: state.code.interpreterOutput,
-  tokenList: state.code.tokenList,
   symbolTable: state.code.symbolTable,
   highlightStart: state.interpreterView.highlightStart,
   highlightStop: state.interpreterView.highlightStop,
   grammarMinimized: state.interpreterView.grammarMinimized,
-  tokensMinimized: state.interpreterView.tokensMinimized,
   symbolTableMinimized: state.interpreterView.symbolTableMinimized,
   astMinimized: state.interpreterView.astMinimized,
 });
@@ -30,22 +29,9 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
       type: "code_update",
       code: code,
     }),
-  onHoverToken: tokenOrError =>
-    dispatch({
-      type: "token_hover",
-      tokenOrError: tokenOrError,
-    }),
-  onStopHoverToken: () =>
-    dispatch({
-      type: "token_hover_stop",
-    }),
   onClickGrammarToggle: () =>
     dispatch({
       type: "interpreter_view_grammar_toggle_click",
-    }),
-  onClickTokensToggle: () =>
-    dispatch({
-      type: "interpreter_view_tokens_toggle_click",
     }),
   onClickASTToggle: () =>
     dispatch({
@@ -66,7 +52,6 @@ type InterpreterProps = {|
   highlightStart: number,
   highlightStop: number,
   grammarMinimized: boolean,
-  tokensMinimized: boolean,
   symbolTableMinimized: boolean,
   astMinimized: boolean,
   grammar: Array<string>,
@@ -74,9 +59,6 @@ type InterpreterProps = {|
   highlightStop: number,
   onSetCode: string => void,
   onClickGrammarToggle: () => void,
-  onClickTokensToggle: () => void,
-  onHoverToken: (Token | UnexpectedChar) => void,
-  onStopHoverToken: () => void,
   onClickASTToggle: () => void,
   onClickSymbolTableToggle: () => void,
 |};
@@ -130,28 +112,7 @@ class InterpreterView extends Component<void, InterpreterProps, void> {
             </p>,
           )}
         </ul>
-        <h4 className="lexer--header">
-          Token Stream
-          <button
-            className="toggle-button"
-            onClick={this.props.onClickTokensToggle}
-          >
-            {this.props.tokensMinimized ? "+" : "-"}
-          </button>
-        </h4>
-        <ul
-          className="lexer--list"
-          style={{ display: this.props.tokensMinimized ? "none" : "block" }}
-        >
-          {this.props.tokenList.map((tokenOrError, i) =>
-            <TokenView
-              tokenOrError={tokenOrError}
-              onHoverToken={this.props.onHoverToken}
-              onStopHoverToken={this.props.onStopHoverToken}
-              key={i}
-            />,
-          )}
-        </ul>
+        <LexerContainer />
         <h4 className="ast-header">
           AST
           <button
@@ -191,39 +152,6 @@ class InterpreterView extends Component<void, InterpreterProps, void> {
     );
   }
 }
-
-const TokenView = (props: {
-  tokenOrError: Token | UnexpectedChar,
-  onHoverToken: (Token | UnexpectedChar) => void,
-  onStopHoverToken: () => void,
-}) => {
-  const tokenOrError = props.tokenOrError;
-  let result;
-  if (tokenOrError instanceof UnexpectedChar) {
-    const error = tokenOrError;
-    result = error.message;
-  } else {
-    const token = tokenOrError;
-    result = token.type;
-    if (token.hasOwnProperty("value")) {
-      if (typeof token.value === "number") {
-        result += ": " + token.value.toString(10);
-      } else if (typeof token.value === "string") {
-        result += ": " + token.value;
-      }
-    }
-  }
-  const onMouseEnter = () => props.onHoverToken(tokenOrError);
-  return (
-    <li
-      className="lexer--line"
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={props.onStopHoverToken}
-    >
-      {result}
-    </li>
-  );
-};
 
 const SymbolTableView = (props: { symbolTable: { [string]: ASTSymbol } }) => {
   const children = [];

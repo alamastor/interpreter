@@ -137,10 +137,6 @@ const interpreterView = (
       return Object.assign({}, state, {
         grammarMinimized: !state.grammarMinimized,
       });
-    case "interpreter_view_tokens_toggle_click":
-      return Object.assign({}, state, {
-        tokensMinimized: !state.tokensMinimized,
-      });
     case "interpreter_view_ast_toggle_click":
       return Object.assign({}, state, {
         astMinimized: !state.astMinimized,

@@ -2,6 +2,7 @@
 import { combineReducers, createStore, applyMiddleware } from "redux";
 import thunk from "redux-thunk";
 import { code, interpreterView } from "./reducers/reducers";
+import lexer from "./containers/Lexer/reducer";
 import astView from "./containers/AST/reducer";
 import { loadState, saveState } from "./localStorage";
 import type { Action } from "./actionTypes";
@@ -12,6 +13,7 @@ const reducers = {
   code,
   interpreterView,
   astView,
+  lexer,
 };
 const reducer = combineReducers(reducers);
 type Reducers = typeof reducers;
