@@ -11,16 +11,7 @@ import type { Node } from "../../ASTStratifier";
 import NodeView from "./NodeView";
 import LinkView from "./LinkView";
 import type { ViewNode } from "./tree";
-import {
-  getNodeParentX,
-  getNodeParentY,
-  getNodeX,
-  getNodeY,
-  mapTreeToNewCoords,
-  treeMaxX,
-  treeMaxY,
-  viewNodeKey,
-} from "./tree";
+import { mapTreeToNewCoords, treeMaxX, treeMaxY, viewNodeKey } from "./tree";
 import { NODE_RAD, DURATION } from "./consts";
 
 const mapStateToProps = (state: State) => ({

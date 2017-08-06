@@ -1,19 +1,9 @@
 /* @flow */
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
-import type { Node } from "../../ASTStratifier";
 import type { ViewNode } from "./tree";
 import * as d3 from "d3";
-import {
-  getNodeParentX,
-  getNodeParentY,
-  getNodeX,
-  getNodeY,
-  mapTreeToNewCoords,
-  treeMaxX,
-  treeMaxY,
-  viewNodeKey,
-} from "./tree";
+import { getNodeParentX, getNodeParentY, getNodeX, getNodeY } from "./tree";
 import { DURATION, NODE_RAD } from "./consts";
 
 type LinkProps = {

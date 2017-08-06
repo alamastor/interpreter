@@ -7,10 +7,10 @@ import {
   Redirect,
   Switch,
 } from "react-router-dom";
-import "./App.css";
-import InterpreterContainer from "./InterpreterContainer";
+import "../../App.css";
+import InterpreterContainer from "../../InterpreterContainer";
 
-const AppView = () => (
+const AppView = () =>
   <Router>
     <div className="App">
       <section />
@@ -24,7 +24,6 @@ const AppView = () => (
       </Switch>
       <section />
     </div>
-  </Router>
-);
+  </Router>;
 
 export default AppView;
