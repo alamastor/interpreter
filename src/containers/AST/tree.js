@@ -1,3 +1,5 @@
+/* @flow */
+import type { Node } from "../../ASTStratifier";
 export type ViewNode = {
   children?: Array<ViewNode>,
   x?: number,
@@ -6,8 +8,8 @@ export type ViewNode = {
   data: {
     id: number,
     name: string,
-    children: Immutable.List<Node>,
-    hiddenChildren: Immutable.List<Node>,
+    children?: Array<Node>,
+    hiddenChildren?: Array<Node>,
     startPos: number,
     stopPos: number,
   },

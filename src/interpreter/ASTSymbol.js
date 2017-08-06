@@ -23,9 +23,9 @@ const toBuiltinTypeSymbol = (x: mixed): ?BuiltinTypeSymbol => {
   if (
     typeof x === "object" &&
     x &&
-    x.symbolType &&
+    x.hasOwnProperty("symbolType") &&
     x.symbolType === "builtin_type" &&
-    x.name &&
+    x.hasOwnProperty("name") &&
     typeof x.name === "string"
   ) {
     return {
@@ -39,11 +39,11 @@ const toVarSymblol = (x: mixed): ?VarSymbol => {
   if (
     typeof x === "object" &&
     x &&
-    x.symbolType &&
+    x.hasOwnProperty("symbolType") &&
     x.symbolType === "var" &&
-    x.name &&
+    x.hasOwnProperty("name") &&
     typeof x.name === "string" &&
-    x.type
+    x.hasOwnProperty("type")
   ) {
     const name = x.name;
     const maybeType = toBuiltinTypeSymbol(x.type);
@@ -63,11 +63,11 @@ const toProcedureSymbol = (x: mixed): ?ProcedureSymbol => {
   if (
     typeof x === "object" &&
     x &&
-    x.symbolType &&
+    x.hasOwnProperty("symbolType") &&
     x.symbolType === "procedure" &&
-    x.name &&
+    x.hasOwnProperty("name") &&
     typeof x.name === "string" &&
-    x.params &&
+    x.hasOwnProperty("params") &&
     typeof x.params === "object"
   ) {
     const name = x.name;

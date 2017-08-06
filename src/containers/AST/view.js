@@ -304,7 +304,7 @@ const NodeView = class extends Component<
     let color;
     if (
       this.props.node.data.hiddenChildren &&
-      this.props.node.data.hiddenChildren.size > 0
+      this.props.node.data.hiddenChildren.length > 0
     ) {
       color = "lightsteelblue";
     } else {

@@ -133,7 +133,7 @@ export type ASTNode =
 class UnexpectedToken extends ExtendableError {
   constructor(token: Token, expected: ?(string | Array<string>)) {
     let msg = 'Unexpected token "' + token.type;
-    if (expected) {
+    if (expected != null) {
       if (typeof expected === "string") {
         msg += '", expected "' + expected;
       } else if (expected.length === 1) {

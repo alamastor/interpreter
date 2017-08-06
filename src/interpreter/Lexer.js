@@ -185,7 +185,7 @@ class Lexer {
   getNextToken(): Token {
     const text = this.text;
 
-    while (this.currentChar) {
+    while (this.currentChar !== null) {
       const currentChar = text[this.pos];
 
       if (isSpace(this.currentChar)) {

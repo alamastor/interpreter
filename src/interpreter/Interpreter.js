@@ -21,10 +21,10 @@ export class InterpreterError extends ExtendableError {}
 class ImpossibleToken extends InterpreterError {
   constructor(token: Token, allowed: ?(string | Array<string>)) {
     let msg = 'Impossible token "' + token.type + ".";
-    if (allowed) {
+    if (allowed != null) {
       if (typeof allowed === "string") {
         msg += ', only "' + allowed + '" allowed.';
-      } else if (allowed.length === 1) {
+      } else if (Array.isArray(allowed) && allowed.length === 1) {
         msg += token.type + 'only "' + allowed[0] + '" allowed.';
       } else {
         msg +=

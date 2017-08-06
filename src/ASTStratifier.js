@@ -1,4 +1,5 @@
 /* @flow */
+
 import type {
   Assign,
   BinOp,
@@ -15,7 +16,7 @@ import type {
 } from "./interpreter/parser";
 import uuidV4 from "uuid/v4";
 
-type Node = {
+export type Node = {
   id: number,
   name: string,
   children?: Array<Node>,
@@ -245,5 +246,4 @@ class Stratifier {
   }
 }
 
-export type { Node };
 export default Stratifier;

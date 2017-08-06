@@ -22,7 +22,7 @@ class InterpreterView extends Component<void, InterpreterProps, void> {
   }
 
   onSetCode({ target }: { target: EventTarget }) {
-    if (target.value && typeof target.value === "string") {
+    if (target.hasOwnProperty("value") && typeof target.value === "string") {
       this.props.onSetCode(target.value);
     }
   }
@@ -132,7 +132,7 @@ const TokenView = (props: {
   } else {
     const token = tokenOrError;
     result = token.type;
-    if (token.value) {
+    if (token.hasOwnProperty("value")) {
       if (typeof token.value === "number") {
         result += ": " + token.value.toString(10);
       } else if (typeof token.value === "string") {
