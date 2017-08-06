@@ -2,7 +2,7 @@
 "use strict";
 import type { Token } from "./interpreter/Token";
 import { UnexpectedChar } from "./interpreter/Lexer";
-import type { Node } from "./ASTStratifier";
+import type { Node } from "./containers/AST/Stratifier";
 import type { Program } from "./interpreter/Parser";
 
 export type Action =

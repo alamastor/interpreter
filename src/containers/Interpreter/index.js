@@ -1,10 +1,10 @@
 /* @flow */
 import { connect } from "react-redux";
-import InterpreterView from "./InterpreterView";
-import type { Token } from "./interpreter/Token";
-import { UnexpectedChar } from "./interpreter/Lexer";
-import type { ASTSymbol } from "./interpreter/ASTSymbol";
-import type { State } from "./store";
+import InterpreterView from "./view";
+import type { Token } from "../../interpreter/Token";
+import { UnexpectedChar } from "../../interpreter/Lexer";
+import type { ASTSymbol } from "../../interpreter/ASTSymbol";
+import type { State } from "../../store";
 
 type StateProps = {|
   code: string,

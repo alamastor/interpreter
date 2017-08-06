@@ -4,7 +4,7 @@ import React, { Component } from "react";
 import * as d3 from "d3";
 import ReactDOM from "react-dom";
 import { NODE_RAD, DURATION } from "./consts";
-import type { Node } from "../../ASTStratifier";
+import type { Node } from "./Stratifier";
 
 type NodeViewProps = {
   node: ViewNode,

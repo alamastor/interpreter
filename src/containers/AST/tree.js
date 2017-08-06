@@ -1,5 +1,5 @@
 /* @flow */
-import type { Node } from "../../ASTStratifier";
+import type { Node } from "./Stratifier";
 export type ViewNode = {
   children?: Array<ViewNode>,
   x?: number,

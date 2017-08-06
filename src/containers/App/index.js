@@ -7,8 +7,8 @@ import {
   Redirect,
   Switch,
 } from "react-router-dom";
-import "../../App.css";
-import InterpreterContainer from "../../InterpreterContainer";
+import "./index.css";
+import InterpreterContainer from "../Interpreter";
 
 const AppView = () =>
   <Router>

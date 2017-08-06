@@ -1,7 +1,7 @@
 /* @flow */
 import type { Action } from "../../actionTypes.js";
-import ASTStratifier from "../../ASTStratifier";
-import type { Node } from "../../ASTStratifier";
+import ASTStratifier from "./Stratifier";
+import type { Node } from "./Stratifier";
 
 const updateChildNode = (root: Node, oldChild: Node, newChild: Node) => {
   if (!root.children) {

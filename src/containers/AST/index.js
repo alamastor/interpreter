@@ -7,7 +7,7 @@ import ReactDOM from "react-dom";
 import TransitionGroup from "react-transition-group/TransitionGroup";
 import * as d3 from "d3";
 import type { Program } from "../../interpreter/parser";
-import type { Node } from "../../ASTStratifier";
+import type { Node } from "./Stratifier";
 import NodeView from "./NodeView";
 import LinkView from "./LinkView";
 import type { ViewNode } from "./tree";

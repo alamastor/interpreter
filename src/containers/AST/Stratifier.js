@@ -13,7 +13,7 @@ import type {
   UnaryOp,
   Var,
   VarDecl,
-} from "./interpreter/parser";
+} from "../../interpreter/parser";
 import uuidV4 from "uuid/v4";
 
 export type Node = {

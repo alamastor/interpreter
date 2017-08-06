@@ -1,12 +1,12 @@
 /* @flow */
 import React, { Component, Element } from "react";
-import "./Interpreter.css";
-import ASTContainer from "./containers/AST";
-import type { Token } from "./interpreter/Token";
-import { UnexpectedChar } from "./interpreter/Lexer";
-import type { InterpreterProps } from "./InterpreterContainer";
-import type { ASTSymbol } from "./interpreter/ASTSymbol";
-import { toASTSymbol } from "./interpreter/ASTSymbol";
+import "./index.css";
+import ASTContainer from "../AST";
+import type { Token } from "../../interpreter/Token";
+import { UnexpectedChar } from "../../interpreter/Lexer";
+import type { InterpreterProps } from "../Interpreter";
+import type { ASTSymbol } from "../../interpreter/ASTSymbol";
+import { toASTSymbol } from "../../interpreter/ASTSymbol";
 
 class InterpreterView extends Component<void, InterpreterProps, void> {
   onSetCode: string => void;
