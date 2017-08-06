@@ -2,6 +2,7 @@
 import { connect } from "react-redux";
 import ASTView from "./view";
 import type { State } from "../../store";
+import type { Dispatch } from "../../store";
 
 const mapStateToProps = (state: State) => ({
   ast: state.code.ast,
@@ -11,7 +12,7 @@ const mapStateToProps = (state: State) => ({
   sourceNode: state.astView.sourceNode,
 });
 
-const mapDispatchToProps = (dispatch: *) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   onHoverNode: node =>
     dispatch({
       type: "ast_node_hover",
@@ -28,11 +29,17 @@ const mapDispatchToProps = (dispatch: *) => ({
     }),
   onReceiveAST: ast => {
     if (ast) {
-      return dispatch({
+      dispatch({
         type: "ast_received_ast",
         ast: ast,
       });
     }
+  },
+  onReceiveNextStrata: strata => {
+    dispatch({
+      type: "ast_received_next_strata",
+      strata: strata,
+    });
   },
 });
 

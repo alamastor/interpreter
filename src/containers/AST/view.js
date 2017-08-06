@@ -6,7 +6,6 @@ import * as d3 from "d3";
 import type { Program } from "../../interpreter/parser";
 import type { Node } from "../../ASTStratifier";
 import type { ViewNode } from "./tree";
-import type { ASTNode } from "../../interpreter/Parser";
 import {
   getNodeParentX,
   getNodeParentY,
@@ -33,7 +32,7 @@ const findNode = (root: ViewNode, sourceNode: Node): ?ViewNode => {
 };
 
 type Props = {
-  ast: ?ASTNode,
+  ast: ?Program,
   strata: Node,
   nextStrata: Node,
   sourceNode: Node,
@@ -41,7 +40,8 @@ type Props = {
   onHoverNode: Node => void,
   onStopHoverNode: () => void,
   onClickNode: Node => void,
-  onReceiveAST: (?ASTNode) => void,
+  onReceiveAST: (?Program) => void,
+  onReceiveNextStrata: Node => void,
 };
 
 class ASTView extends Component<void, Props, void> {
@@ -54,6 +54,10 @@ class ASTView extends Component<void, Props, void> {
   componentWillReceiveProps(nextProps: Props) {
     if (nextProps.ast !== this.props.ast) {
       this.props.onReceiveAST(nextProps.ast);
+    }
+
+    if (nextProps.nextStrata !== this.props.nextStrata) {
+      this.props.onReceiveNextStrata(nextProps.nextStrata);
     }
   }
 

@@ -92,6 +92,12 @@ const ASTView = (
         return state;
       }
 
+    case "ast_received_next_strata":
+      return Object.assign({}, state, {
+        strata: action.strata,
+        previousStrata: action.strata,
+      });
+
     default:
       return state;
   }

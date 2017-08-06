@@ -1,9 +1,9 @@
 /* @flow */
 "use strict";
 import type { Token } from "./interpreter/Token";
-import type { Program } from "./interpreter/Parser";
 import { UnexpectedChar } from "./interpreter/Lexer";
 import type { Node } from "./ASTStratifier";
+import type { Program } from "./interpreter/Parser";
 
 export type Action =
   | {
@@ -59,4 +59,8 @@ export type Action =
   | {
       type: "ast_received_next_strata",
       strata: Node,
+    }
+  | {
+      type: "ast_received_ast",
+      ast: Program,
     };
