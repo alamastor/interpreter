@@ -3,7 +3,6 @@ import React, { Component, Element } from "react";
 import "./index.css";
 import ASTContainer from "../AST";
 import type { Token } from "../../interpreter/Token";
-import { UnexpectedChar } from "../../interpreter/Lexer";
 import type { ASTSymbol } from "../../interpreter/ASTSymbol";
 import { toASTSymbol } from "../../interpreter/ASTSymbol";
 import { connect } from "react-redux";
@@ -47,7 +46,7 @@ type InterpreterProps = {|
   code: string,
   grammar: Array<string>,
   interpreterOutput: string,
-  tokenList: Array<Token | UnexpectedChar>,
+  tokenList: Array<Token>,
   symbolTable: { [string]: ASTSymbol },
   highlightStart: number,
   highlightStop: number,

@@ -1,6 +1,5 @@
 /* @flow */
 import ExtendableError from "es6-error";
-import type { LexerInterface } from "./Lexer";
 import type {
   Token,
   PLUS,
@@ -155,9 +154,9 @@ export interface ParserInterface {
   parse(): Program,
 }
 class Parser {
-  lexer: LexerInterface;
-
+  tokens: Array<Token>;
   currentToken: Token;
+  tokenIndex: number;
 
   static grammar = [
     "program             : PROGRAM variable SEMI block DOT",
@@ -175,13 +174,14 @@ class Parser {
     "factor              : PLUS factor | MINUS factor | INTEGER_CONST | REAL_CONST | LPAREN expr RPAREN | variable",
   ];
 
-  constructor(lexer: LexerInterface) {
-    this.lexer = lexer;
+  constructor(tokens: Array<Token>) {
+    this.tokens = tokens;
+    this.tokenIndex = 0;
   }
 
   eat(tokenType: string) {
     if (this.currentToken.type === tokenType) {
-      this.currentToken = this.lexer.getNextToken();
+      this.currentToken = this.tokens[this.tokenIndex++];
     } else {
       throw new UnexpectedToken(this.currentToken, tokenType);
     }
@@ -586,7 +586,7 @@ class Parser {
   }
 
   parse(): Program {
-    this.currentToken = this.lexer.getNextToken();
+    this.currentToken = this.tokens[this.tokenIndex++];
     const node = this.program();
     if (this.currentToken.type !== "EOF") {
       throw new UnexpectedToken(this.currentToken, "EOF");

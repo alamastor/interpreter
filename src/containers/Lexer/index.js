@@ -2,7 +2,6 @@
 import React from "react";
 import TokenView from "./TokenView";
 import type { Token } from "../../interpreter/Token";
-import { UnexpectedChar } from "../../interpreter/Lexer";
 import type { State } from "../../store";
 import type { Dispatch } from "../../store";
 import { connect } from "react-redux";
@@ -30,9 +29,9 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
 
 type Props = {|
   minimized: boolean,
-  tokenList: Array<Token | UnexpectedChar>,
+  tokenList: Array<Token>,
   onClickTokensToggle: () => void,
-  onHoverToken: (Token | UnexpectedChar) => void,
+  onHoverToken: Token => void,
   onStopHoverToken: () => void,
 |};
 const LexerView = (props: Props) => {
@@ -48,9 +47,9 @@ const LexerView = (props: Props) => {
         className="lexer--list"
         style={{ display: props.minimized ? "none" : "block" }}
       >
-        {props.tokenList.map((tokenOrError, i) =>
+        {props.tokenList.map((token, i) =>
           <TokenView
-            tokenOrError={tokenOrError}
+            token={token}
             onHoverToken={props.onHoverToken}
             onStopHoverToken={props.onStopHoverToken}
             key={i}

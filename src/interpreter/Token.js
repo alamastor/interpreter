@@ -79,6 +79,11 @@ export type Token =
       stopPos: number,
     }
   | {
+      type: "UNEXPECTED_CHAR",
+      startPos: number,
+      stopPos: number,
+    }
+  | {
       type: "VAR",
       startPos: number,
       stopPos: number,

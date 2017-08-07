@@ -1,332 +1,404 @@
 /* @flow */
-import ExtendableError from "es6-error";
 import type { Token } from "./Token";
 
-export interface LexerInterface {
-  getNextToken(): Token,
-}
+type TextState = {|
+  text: string,
+  position: number,
+|};
 
-const isSpace = (s: string) => s.match(/ |\n/);
+const isSpace = (s: ?string) => {
+  if (s != null) {
+    return s.match(/ |\n/);
+  } else {
+    return false;
+  }
+};
 
-const isDigit = (s: string) => !isNaN(parseInt(s, 10));
+const isDigit = (s: ?string) => {
+  if (s != null) {
+    return !isNaN(parseInt(s, 10));
+  } else {
+    return false;
+  }
+};
 
-const isAlpha = (s: string) => {
+const isAlpha = (s: ?string) => {
+  if (s == null) {
+    return false;
+  }
   if (s.length !== 1) {
     throw new Error("Expected single char, got " + s);
   }
   return s.match(/[A-Z|a-z|_]/);
 };
 
-const isAlphaNum = (s: string) => {
+const isAlphaNum = (s: ?string) => {
+  if (s == null) {
+    return false;
+  }
   if (s.length !== 1) {
     throw new Error("Expected single char, got " + s);
   }
   return s.match(/[A-Z|a-z|0-9|_]/);
 };
 
-class UnexpectedChar extends ExtendableError {
-  startPos: number;
-  stopPos: number;
+const advance = (textState: TextState): TextState => ({
+  text: textState.text,
+  position: textState.position + 1,
+});
 
-  constructor(char: string, startPos: number) {
-    const msg = 'Unexpected char "' + char + '"';
-    super(msg);
-    this.startPos = startPos;
-    this.stopPos = startPos + 1;
+const currentChar = (textState: TextState): ?string => {
+  if (textState.position > textState.text.length - 1) {
+    return null;
+  } else {
+    return textState.text[textState.position];
   }
-}
+};
 
-class Lexer {
-  text: string;
-  pos: number;
-  currentChar: string | null;
-
-  constructor(text: string) {
-    this.text = text;
-    this.pos = 0;
-    this.currentChar = this.text[this.pos];
+const skipWhitespace = (textState: TextState): TextState => {
+  const current = currentChar(textState);
+  if (current != null && isSpace(current)) {
+    return skipWhitespace(advance(textState));
   }
+  return textState;
+};
 
-  advance() {
-    this.pos++;
-    if (this.pos > this.text.length - 1) {
-      this.currentChar = null;
-    } else {
-      this.currentChar = this.text[this.pos];
-    }
+const skipComment = (textState: TextState): TextState => {
+  if (currentChar(textState) !== "}") {
+    return skipComment(advance(textState));
   }
+  return advance(textState);
+};
 
-  skipWhitespace() {
-    while (this.currentChar !== null && isSpace(this.currentChar)) {
-      this.advance();
-    }
+const skipWhitespaceAndComments = (textState: TextState): TextState => {
+  const current = currentChar(textState);
+  if (current != null && isSpace(current)) {
+    textState = skipWhitespace(textState);
+    return skipWhitespaceAndComments(textState);
   }
 
-  skipComment() {
-    while (this.currentChar !== "}") {
-      this.advance();
-    }
-    this.advance();
+  if (currentChar(textState) === "{") {
+    textState = skipComment(textState);
+    return skipWhitespaceAndComments(textState);
   }
+  return textState;
+};
 
-  peek(): ?string {
-    const peekPos = this.pos + 1;
-    if (peekPos > this.text.length + 1) {
-      return null;
-    } else {
-      return this.text[peekPos];
-    }
-  }
+const peek = (textState: TextState): ?string =>
+  currentChar({
+    text: textState.text,
+    position: textState.position + 1,
+  });
 
-  id() {
-    let result = "";
-    const startPos = this.pos;
-    while (this.currentChar !== null && isAlphaNum(this.currentChar)) {
-      result += this.currentChar;
-      this.advance();
-    }
-    switch (result.toUpperCase()) {
-      case "BEGIN":
-        return {
-          type: "BEGIN",
-          startPos: startPos,
-          stopPos: this.pos,
-        };
-      case "DIV":
-        return {
-          type: "INTEGER_DIV",
-          startPos: startPos,
-          stopPos: this.pos,
-        };
-      case "END":
-        return {
-          type: "END",
-          startPos: startPos,
-          stopPos: this.pos,
-        };
-      case "INTEGER":
-        return {
-          type: "INTEGER",
-          startPos: startPos,
-          stopPos: this.pos,
-        };
-      case "PROCEDURE":
-        return {
-          type: "PROCEDURE",
-          startPos: startPos,
-          stopPos: this.pos,
-        };
-      case "PROGRAM":
-        return {
-          type: "PROGRAM",
-          startPos: startPos,
-          stopPos: this.pos,
-        };
-      case "REAL":
-        return {
-          type: "REAL",
-          startPos: startPos,
-          stopPos: this.pos,
-        };
-      case "VAR":
-        return {
-          type: "VAR",
-          startPos: startPos,
-          stopPos: this.pos,
-        };
-      default:
-        return {
-          type: "ID",
-          name: result,
-          startPos: startPos,
-          stopPos: this.pos,
-        };
-    }
-  }
-
-  number() {
-    let result = "";
-    const startPos = this.pos;
-    while (
-      this.currentChar !== null &&
-      isDigit(this.currentChar) &&
-      typeof this.currentChar === "string"
-    ) {
-      result += this.currentChar;
-      this.advance();
-    }
-
-    if (this.currentChar === ".") {
-      result += this.currentChar;
-      this.advance();
-      while (
-        this.currentChar !== null &&
-        isDigit(this.currentChar) &&
-        typeof this.currentChar === "string"
-      ) {
-        result += this.currentChar;
-        this.advance();
-      }
+const idToken = (str: string, startPos: number, stopPos: number): Token => {
+  switch (str.toUpperCase()) {
+    case "BEGIN":
       return {
+        type: "BEGIN",
+        startPos: startPos,
+        stopPos: stopPos,
+      };
+    case "DIV":
+      return {
+        type: "INTEGER_DIV",
+        startPos: startPos,
+        stopPos: stopPos,
+      };
+    case "END":
+      return {
+        type: "END",
+        startPos: startPos,
+        stopPos: stopPos,
+      };
+    case "INTEGER":
+      return {
+        type: "INTEGER",
+        startPos: startPos,
+        stopPos: stopPos,
+      };
+    case "PROCEDURE":
+      return {
+        type: "PROCEDURE",
+        startPos: startPos,
+        stopPos: stopPos,
+      };
+    case "PROGRAM":
+      return {
+        type: "PROGRAM",
+        startPos: startPos,
+        stopPos: stopPos,
+      };
+    case "REAL":
+      return {
+        type: "REAL",
+        startPos: startPos,
+        stopPos: stopPos,
+      };
+    case "VAR":
+      return {
+        type: "VAR",
+        startPos: startPos,
+        stopPos: stopPos,
+      };
+    default:
+      return {
+        type: "ID",
+        name: str,
+        startPos: startPos,
+        stopPos: stopPos,
+      };
+  }
+};
+
+const id = (textState: TextState): { token: Token, textState: TextState } => {
+  let result = "";
+  const startPos = textState.position;
+  for (
+    let current = currentChar(textState);
+    current != null && isAlphaNum(current);
+    current = currentChar(textState)
+  ) {
+    result += current;
+    textState = advance(textState);
+  }
+  return {
+    token: idToken(result, startPos, textState.position),
+    textState: textState,
+  };
+};
+
+const number = (
+  textState: TextState,
+): { token: Token, textState: TextState } => {
+  let result = "";
+  const startPos = textState.position;
+  for (
+    let current = currentChar(textState);
+    current != null && isDigit(current) && typeof current === "string";
+    current = currentChar(textState)
+  ) {
+    result += current;
+    textState = advance(textState);
+  }
+
+  if (currentChar(textState) === ".") {
+    result += ".";
+    textState = advance(textState);
+    for (
+      let current = currentChar(textState);
+      current != null && isDigit(current) && typeof current === "string";
+      current = currentChar(textState)
+    ) {
+      result += current;
+      textState = advance(textState);
+    }
+    return {
+      token: {
         type: "REAL_CONST",
         value: parseFloat(result),
         startPos: startPos,
-        stopPos: this.pos,
-      };
-    }
-    return {
+        stopPos: textState.position,
+      },
+      textState: textState,
+    };
+  }
+  return {
+    token: {
       type: "INTEGER_CONST",
       value: parseInt(result, 10),
       startPos: startPos,
-      stopPos: this.pos,
-    };
-  }
+      stopPos: textState.position,
+    },
+    textState: textState,
+  };
+};
 
-  getNextToken(): Token {
-    const text = this.text;
-
-    while (this.currentChar !== null) {
-      const currentChar = text[this.pos];
-
-      if (isSpace(this.currentChar)) {
-        this.skipWhitespace();
-        continue;
-      }
-
-      if (this.currentChar === "{") {
-        this.skipComment();
-        continue;
-      }
-
-      if (isAlpha(currentChar)) {
-        return this.id();
-      }
-
-      if (isDigit(currentChar)) {
-        return this.number();
-      }
-
-      if (currentChar === ":" && this.peek() === "=") {
-        const startPos = this.pos;
-        this.advance();
-        this.advance();
-        return {
-          type: "ASSIGN",
-          startPos: startPos,
-          stopPos: this.pos,
-        };
-      }
-
-      if (currentChar === ":") {
-        const startPos = this.pos;
-        this.advance();
-        return {
-          type: "COLON",
-          startPos: startPos,
-          stopPos: this.pos,
-        };
-      }
-
-      if (currentChar === ",") {
-        const startPos = this.pos;
-        this.advance();
-        return {
-          type: "COMMA",
-          startPos: startPos,
-          stopPos: this.pos,
-        };
-      }
-
-      if (currentChar === "+") {
-        const startPos = this.pos;
-        this.advance();
-        return {
-          type: "PLUS",
-          startPos: startPos,
-          stopPos: this.pos,
-        };
-      }
-
-      if (currentChar === "-") {
-        const startPos = this.pos;
-        this.advance();
-        return {
-          type: "MINUS",
-          startPos: startPos,
-          stopPos: this.pos,
-        };
-      }
-
-      if (currentChar === "*") {
-        const startPos = this.pos;
-        this.advance();
-        return {
-          type: "MUL",
-          startPos: startPos,
-          stopPos: this.pos,
-        };
-      }
-
-      if (currentChar === "/") {
-        const startPos = this.pos;
-        this.advance();
-        return {
-          type: "FLOAT_DIV",
-          startPos: startPos,
-          stopPos: this.pos,
-        };
-      }
-
-      if (currentChar === "(") {
-        const startPos = this.pos;
-        this.advance();
-        return {
-          type: "LPAREN",
-          startPos: startPos,
-          stopPos: this.pos,
-        };
-      }
-
-      if (currentChar === ")") {
-        const startPos = this.pos;
-        this.advance();
-        return {
-          type: "RPAREN",
-          startPos: startPos,
-          stopPos: this.pos,
-        };
-      }
-
-      if (currentChar === ";") {
-        const startPos = this.pos;
-        this.advance();
-        return {
-          type: "SEMI",
-          startPos: startPos,
-          stopPos: this.pos,
-        };
-      }
-
-      if (currentChar === ".") {
-        const startPos = this.pos;
-        this.advance();
-        return {
-          type: "DOT",
-          startPos: startPos,
-          stopPos: this.pos,
-        };
-      }
-
-      const err = new UnexpectedChar(currentChar, this.pos);
-      throw err;
-    }
+const getNextToken = (
+  textState: TextState,
+): { token: Token, textState: TextState } => {
+  textState = skipWhitespaceAndComments(textState);
+  if (currentChar(textState) == null) {
     return {
-      type: "EOF",
-      startPos: this.pos,
-      stopPos: this.pos + 1,
+      token: {
+        type: "EOF",
+        startPos: textState.position,
+        stopPos: textState.position + 1,
+      },
+      textState: textState,
     };
   }
-}
+  if (isAlpha(currentChar(textState))) {
+    return id(textState);
+  }
 
-export { UnexpectedChar };
-export default Lexer;
+  if (isDigit(currentChar(textState))) {
+    return number(textState);
+  }
+
+  if (currentChar(textState) === ":" && peek(textState) === "=") {
+    const startPos = textState.position;
+    textState = advance(advance(textState));
+    return {
+      token: {
+        type: "ASSIGN",
+        startPos: startPos,
+        stopPos: textState.position,
+      },
+      textState: textState,
+    };
+  }
+
+  if (currentChar(textState) === ":") {
+    const startPos = textState.position;
+    textState = advance(textState);
+    return {
+      token: {
+        type: "COLON",
+        startPos: startPos,
+        stopPos: textState.position,
+      },
+      textState: textState,
+    };
+  }
+
+  if (currentChar(textState) === ",") {
+    const startPos = textState.position;
+    textState = advance(textState);
+    return {
+      token: {
+        type: "COMMA",
+        startPos: startPos,
+        stopPos: textState.position,
+      },
+      textState: textState,
+    };
+  }
+
+  if (currentChar(textState) === "+") {
+    const startPos = textState.position;
+    textState = advance(textState);
+    return {
+      token: {
+        type: "PLUS",
+        startPos: startPos,
+        stopPos: textState.position,
+      },
+      textState: textState,
+    };
+  }
+
+  if (currentChar(textState) === "-") {
+    const startPos = textState.position;
+    textState = advance(textState);
+    return {
+      token: {
+        type: "MINUS",
+        startPos: startPos,
+        stopPos: textState.position,
+      },
+      textState: textState,
+    };
+  }
+
+  if (currentChar(textState) === "*") {
+    const startPos = textState.position;
+    textState = advance(textState);
+    return {
+      token: {
+        type: "MUL",
+        startPos: startPos,
+        stopPos: textState.position,
+      },
+      textState: textState,
+    };
+  }
+
+  if (currentChar(textState) === "/") {
+    const startPos = textState.position;
+    textState = advance(textState);
+    return {
+      token: {
+        type: "FLOAT_DIV",
+        startPos: startPos,
+        stopPos: textState.position,
+      },
+      textState: textState,
+    };
+  }
+
+  if (currentChar(textState) === "(") {
+    const startPos = textState.position;
+    textState = advance(textState);
+    return {
+      token: {
+        type: "LPAREN",
+        startPos: startPos,
+        stopPos: textState.position,
+      },
+      textState: textState,
+    };
+  }
+
+  if (currentChar(textState) === ")") {
+    const startPos = textState.position;
+    textState = advance(textState);
+    return {
+      token: {
+        type: "RPAREN",
+        startPos: startPos,
+        stopPos: textState.position,
+      },
+      textState: textState,
+    };
+  }
+
+  if (currentChar(textState) === ";") {
+    const startPos = textState.position;
+    textState = advance(textState);
+    return {
+      token: {
+        type: "SEMI",
+        startPos: startPos,
+        stopPos: textState.position,
+      },
+      textState: textState,
+    };
+  }
+
+  if (currentChar(textState) === ".") {
+    const startPos = textState.position;
+    textState = advance(textState);
+    return {
+      token: {
+        type: "DOT",
+        startPos: startPos,
+        stopPos: textState.position,
+      },
+      textState: textState,
+    };
+  }
+
+  return {
+    token: {
+      type: "UNEXPECTED_CHAR",
+      startPos: textState.position,
+      stopPos: textState.position + 1,
+    },
+    textState: textState,
+  };
+};
+
+export const lex = (text: string): Array<Token> => {
+  let textState = { text: text, position: 0 };
+  let token: Token;
+  ({ textState, token } = getNextToken(textState));
+  const result = [token];
+  while (
+    result[result.length - 1].type !== "EOF" &&
+    result[result.length - 1].type !== "UNEXPECTED_CHAR"
+  ) {
+    ({ textState, token } = getNextToken(textState));
+    result.push(token);
+  }
+  return result;
+};

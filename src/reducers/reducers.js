@@ -1,9 +1,8 @@
 /* @flow */
 import type { Action } from "../actionTypes.js";
-import TokenMiddleware from "../TokenMiddleware";
 import type { Token } from "../interpreter/Token";
 import type { ASTNode } from "../interpreter/Parser";
-import Lexer, { UnexpectedChar } from "../interpreter/Lexer";
+import { lex } from "../interpreter/Lexer";
 import Parser, { UnexpectedToken } from "../interpreter/Parser";
 import Interpreter, { InterpreterError } from "../interpreter/Interpreter";
 import SemanticAnalyzer, {
@@ -14,7 +13,7 @@ import type { ASTSymbol } from "../interpreter/ASTSymbol";
 export type CodeState = {
   grammar: Array<string>,
   code: string,
-  tokenList: Array<Token | UnexpectedChar>,
+  tokenList: Array<Token>,
   ast: ?ASTNode,
   symbolTable: { [string]: ASTSymbol },
   interpreterOutput: string,
@@ -31,22 +30,13 @@ const initialState = {
 const code = (state: CodeState = initialState, action: Action): CodeState => {
   switch (action.type) {
     case "code_update":
-      let tokenList = [];
       try {
-        const ast = new Parser(
-          new TokenMiddleware(
-            new Lexer(action.code),
-            () => {
-              tokenList = [];
-            },
-            token => {
-              tokenList.push(token);
-            },
-          ),
-        ).parse();
+        const tokenList = lex(action.code);
+        const ast = new Parser(tokenList).parse();
         const semanticAnalyzer = new SemanticAnalyzer();
         semanticAnalyzer.visitProgram(ast);
         const interpreterOutput = new Interpreter(ast).interpret();
+
         return Object.assign({}, state, {
           code: action.code,
           grammar: Parser.grammar,
@@ -56,12 +46,6 @@ const code = (state: CodeState = initialState, action: Action): CodeState => {
           ast: ast,
         });
       } catch (e) {
-        if (e instanceof UnexpectedChar) {
-          return Object.assign({}, state, {
-            code: action.code,
-            interpreterOutput: "Lexer Error: " + e.message,
-          });
-        }
         if (e instanceof UnexpectedToken) {
           return Object.assign({}, state, {
             code: action.code,

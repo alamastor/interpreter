@@ -1,7 +1,6 @@
 /* @flow */
 "use strict";
 import type { Token } from "./interpreter/Token";
-import { UnexpectedChar } from "./interpreter/Lexer";
 import type { Node } from "./containers/AST/Stratifier";
 import type { Program } from "./interpreter/Parser";
 
@@ -19,7 +18,7 @@ export type Action =
     }
   | {
       type: "token_hover",
-      tokenOrError: Token | UnexpectedChar,
+      tokenOrError: Token,
     }
   | {
       type: "token_hover_stop",
