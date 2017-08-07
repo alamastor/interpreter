@@ -55,8 +55,8 @@ export type Action =
       type: "interpreter_view_symbol_table_toggle_click",
     }
   | {
-      type: "interpreter_update_token_list",
-      tokenList: Array<Token>,
+      type: "interpreter_received_ast",
+      ast: Program,
     }
   | {
       type: "ast_node_click",
@@ -67,6 +67,6 @@ export type Action =
       strata: Node,
     }
   | {
-      type: "ast_received_ast",
-      ast: Program,
+      type: "ast_received_token_list",
+      tokenList: Array<Token>,
     };

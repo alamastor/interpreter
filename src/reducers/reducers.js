@@ -1,6 +1,5 @@
 /* @flow */
 import type { Action } from "../actionTypes.js";
-import type { ASTNode } from "../interpreter/Parser";
 import Parser, { UnexpectedToken } from "../interpreter/Parser";
 import Interpreter, { InterpreterError } from "../interpreter/Interpreter";
 import SemanticAnalyzer, {
@@ -11,15 +10,12 @@ import type { ASTSymbol } from "../interpreter/ASTSymbol";
 export type CodeState = {
   grammar: Array<string>,
   code: string,
-  ast: ?ASTNode,
   symbolTable: { [string]: ASTSymbol },
   interpreterOutput: string,
 };
 const initialState = {
   grammar: [],
   code: "",
-  tokenList: [],
-  ast: null,
   symbolTable: {},
   interpreterOutput: "",
 };
@@ -91,18 +87,16 @@ const interpreterView = (
       return Object.assign({}, state, {
         symbolTableMinimized: !state.symbolTableMinimized,
       });
-    case "interpreter_update_token_list":
+    case "interpreter_recieved_ast":
       try {
-        const ast = new Parser(action.tokenList).parse();
         const semanticAnalyzer = new SemanticAnalyzer();
-        semanticAnalyzer.visitProgram(ast);
-        const interpreterOutput = new Interpreter(ast).interpret();
+        semanticAnalyzer.visitProgram(action.ast);
+        const interpreterOutput = new Interpreter(action.ast).interpret();
 
         return Object.assign({}, state, {
           grammar: Parser.grammar,
           interpreterOutput: interpreterOutput,
           symbolTable: semanticAnalyzer.currentScope.symbols,
-          ast: ast,
         });
       } catch (e) {
         if (e instanceof UnexpectedToken) {

@@ -2,13 +2,13 @@
 import React, { Component, Element } from "react";
 import "./index.css";
 import ASTContainer from "../AST";
-import type { Token } from "../../interpreter/Token";
 import type { ASTSymbol } from "../../interpreter/ASTSymbol";
 import { toASTSymbol } from "../../interpreter/ASTSymbol";
 import { connect } from "react-redux";
 import type { State } from "../../store";
 import type { Dispatch } from "../../store";
 import LexerContainer from "../Lexer";
+import type { Program } from "../../interpreter/Parser";
 
 const mapStateToProps = (state: State) => ({
   code: state.code.code,
@@ -41,10 +41,10 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
     dispatch({
       type: "interpreter_view_symbol_table_toggle_click",
     }),
-  updateTokenList: (tokenList: Array<Token>) =>
+  onReceiveAST: (ast: Program) =>
     dispatch({
-      type: "interpreter_update_token_list",
-      tokenList: tokenList,
+      type: "interpreter_received_ast",
+      ast: ast,
     }),
 });
 
@@ -52,7 +52,7 @@ type InterpreterProps = {|
   code: string,
   grammar: Array<string>,
   interpreterOutput: string,
-  tokenList: Array<Token>,
+  ast: Program,
   symbolTable: { [string]: ASTSymbol },
   highlightStart: number,
   highlightStop: number,
@@ -66,7 +66,7 @@ type InterpreterProps = {|
   onClickGrammarToggle: () => void,
   onClickASTToggle: () => void,
   onClickSymbolTableToggle: () => void,
-  updateTokenList: (Array<Token>) => void,
+  onReceiveAST: Program => void,
 |};
 
 class InterpreterView extends Component<void, InterpreterProps, void> {
@@ -79,8 +79,8 @@ class InterpreterView extends Component<void, InterpreterProps, void> {
   }
 
   componentWillReceiveProps(nextProps: InterpreterProps) {
-    if (nextProps.tokenList !== this.props.tokenList) {
-      this.props.updateTokenList(nextProps.tokenList);
+    if (nextProps.ast !== this.props.ast) {
+      this.props.onReceiveAST(nextProps.ast);
     }
   }
 

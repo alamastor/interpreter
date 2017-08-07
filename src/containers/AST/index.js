@@ -13,13 +13,15 @@ import LinkView from "./LinkView";
 import type { ViewNode } from "./tree";
 import { mapTreeToNewCoords, treeMaxX, treeMaxY, viewNodeKey } from "./tree";
 import { NODE_RAD, DURATION } from "./consts";
+import type { Token } from "../../interpreter/Token";
 
 const mapStateToProps = (state: State) => ({
-  ast: state.code.ast,
+  ast: state.astView.ast,
   strata: state.astView.strata,
   nextStrata: state.astView.nextStrata,
   previousStrata: state.astView.previousStrata,
   sourceNode: state.astView.sourceNode,
+  tokenList: state.lexer.tokenList,
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
@@ -37,13 +39,11 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
       type: "ast_node_click",
       node: node,
     }),
-  onReceiveAST: ast => {
-    if (ast) {
-      dispatch({
-        type: "ast_received_ast",
-        ast: ast,
-      });
-    }
+  onReceiveTokenList: tokenList => {
+    dispatch({
+      type: "ast_received_token_list",
+      tokenList: tokenList,
+    });
   },
   onReceiveNextStrata: strata => {
     dispatch({
@@ -70,10 +70,11 @@ type Props = {
   nextStrata: Node,
   sourceNode: Node,
   previousStrata: Node,
+  tokenList: Array<Token>,
   onHoverNode: Node => void,
   onStopHoverNode: () => void,
   onClickNode: Node => void,
-  onReceiveAST: (?Program) => void,
+  onReceiveTokenList: (Array<Token>) => void,
   onReceiveNextStrata: Node => void,
 };
 
@@ -81,12 +82,12 @@ class ASTView extends Component<void, Props, void> {
   ast: Program;
 
   componentWillMount() {
-    this.props.onReceiveAST(this.props.ast);
+    this.props.onReceiveTokenList(this.props.tokenList);
   }
 
   componentWillReceiveProps(nextProps: Props) {
-    if (nextProps.ast !== this.props.ast) {
-      this.props.onReceiveAST(nextProps.ast);
+    if (nextProps.tokenList !== this.props.tokenList) {
+      this.props.onReceiveTokenList(nextProps.tokenList);
     }
 
     if (nextProps.nextStrata !== this.props.nextStrata) {

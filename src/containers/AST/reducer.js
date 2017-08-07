@@ -1,5 +1,7 @@
 /* @flow */
 import type { Action } from "../../actionTypes.js";
+import type { ASTNode } from "../../interpreter/Parser";
+import Parser from "../../interpreter/Parser";
 import ASTStratifier from "./Stratifier";
 import type { Node } from "./Stratifier";
 
@@ -33,6 +35,7 @@ const toggleChildren = (node: Node): Node =>
   });
 
 type ASTViewState = {
+  ast: ?ASTNode,
   strata: Node,
   nextStrata: Node,
   sourceNode: Node,
@@ -40,6 +43,7 @@ type ASTViewState = {
 };
 
 const initialState: ASTViewState = {
+  ast: null,
   strata: {
     id: 0,
     name: "",
@@ -81,21 +85,19 @@ const ASTView = (
         sourceNode: action.node,
       });
 
-    case "ast_received_ast":
-      if (action.ast) {
-        const strata = new ASTStratifier(action.ast).build();
-        return Object.assign({}, state, {
-          strata: strata,
-          previousStrata: strata,
-        });
-      } else {
-        return state;
-      }
-
     case "ast_received_next_strata":
       return Object.assign({}, state, {
         strata: action.strata,
         previousStrata: state.strata,
+      });
+
+    case "ast_received_token_list":
+      const ast = new Parser(action.tokenList).parse();
+      const strata = new ASTStratifier(ast).build();
+      return Object.assign({}, state, {
+        ast: ast,
+        strata: strata,
+        previousStrata: strata,
       });
 
     default:
