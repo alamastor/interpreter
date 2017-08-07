@@ -20,6 +20,7 @@ const mapStateToProps = (state: State) => ({
   grammarMinimized: state.interpreterView.grammarMinimized,
   symbolTableMinimized: state.interpreterView.symbolTableMinimized,
   astMinimized: state.interpreterView.astMinimized,
+  tokenList: state.lexer.tokenList,
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
@@ -39,6 +40,11 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
   onClickSymbolTableToggle: () =>
     dispatch({
       type: "interpreter_view_symbol_table_toggle_click",
+    }),
+  updateTokenList: (tokenList: Array<Token>) =>
+    dispatch({
+      type: "interpreter_update_token_list",
+      tokenList: tokenList,
     }),
 });
 
@@ -60,6 +66,7 @@ type InterpreterProps = {|
   onClickGrammarToggle: () => void,
   onClickASTToggle: () => void,
   onClickSymbolTableToggle: () => void,
+  updateTokenList: (Array<Token>) => void,
 |};
 
 class InterpreterView extends Component<void, InterpreterProps, void> {
@@ -71,12 +78,18 @@ class InterpreterView extends Component<void, InterpreterProps, void> {
     this.onSetCode = this.onSetCode.bind(this);
   }
 
+  componentWillReceiveProps(nextProps: InterpreterProps) {
+    if (nextProps.tokenList !== this.props.tokenList) {
+      this.props.updateTokenList(nextProps.tokenList);
+    }
+  }
+
   componentWillMount() {
     this.props.onSetCode(this.props.code);
   }
 
   onSetCode({ target }: { target: EventTarget }) {
-    if (target.hasOwnProperty("value") && typeof target.value === "string") {
+    if (target.value != null && typeof target.value === "string") {
       this.props.onSetCode(target.value);
     }
   }

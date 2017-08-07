@@ -8,7 +8,7 @@ import { connect } from "react-redux";
 
 const mapStateToProps = (state: State) => ({
   minimized: state.lexer.minimized,
-  tokenList: state.code.tokenList,
+  tokenList: state.lexer.tokenList,
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({

@@ -135,7 +135,7 @@ export type REAL_CONST = {
 
 export type ID = {
   type: "ID",
-  name: string,
+  value: string,
   startPos: number,
   stopPos: number,
 };

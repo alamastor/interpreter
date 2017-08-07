@@ -7,7 +7,7 @@ export default (props: {
   onHoverToken: Token => void,
   onStopHoverToken: () => void,
 }) => {
-  let result = "";
+  let result = props.token.type;
   if (props.token.hasOwnProperty("value")) {
     if (typeof props.token.value === "number") {
       result += ": " + props.token.value.toString(10);
@@ -15,7 +15,6 @@ export default (props: {
       result += ": " + props.token.value;
     }
   }
-
   const onMouseEnter = () => props.onHoverToken(props.token);
   return (
     <li

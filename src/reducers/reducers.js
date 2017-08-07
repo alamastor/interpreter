@@ -1,8 +1,6 @@
 /* @flow */
 import type { Action } from "../actionTypes.js";
-import type { Token } from "../interpreter/Token";
 import type { ASTNode } from "../interpreter/Parser";
-import { lex } from "../interpreter/Lexer";
 import Parser, { UnexpectedToken } from "../interpreter/Parser";
 import Interpreter, { InterpreterError } from "../interpreter/Interpreter";
 import SemanticAnalyzer, {
@@ -13,7 +11,6 @@ import type { ASTSymbol } from "../interpreter/ASTSymbol";
 export type CodeState = {
   grammar: Array<string>,
   code: string,
-  tokenList: Array<Token>,
   ast: ?ASTNode,
   symbolTable: { [string]: ASTSymbol },
   interpreterOutput: string,
@@ -30,45 +27,10 @@ const initialState = {
 const code = (state: CodeState = initialState, action: Action): CodeState => {
   switch (action.type) {
     case "code_update":
-      try {
-        const tokenList = lex(action.code);
-        const ast = new Parser(tokenList).parse();
-        const semanticAnalyzer = new SemanticAnalyzer();
-        semanticAnalyzer.visitProgram(ast);
-        const interpreterOutput = new Interpreter(ast).interpret();
+      return Object.assign({}, state, {
+        code: action.code,
+      });
 
-        return Object.assign({}, state, {
-          code: action.code,
-          grammar: Parser.grammar,
-          interpreterOutput: interpreterOutput,
-          tokenList: tokenList,
-          symbolTable: semanticAnalyzer.currentScope.symbols,
-          ast: ast,
-        });
-      } catch (e) {
-        if (e instanceof UnexpectedToken) {
-          return Object.assign({}, state, {
-            code: action.code,
-            interpreterOutput: "Parser Error: " + e.message,
-          });
-        }
-        if (e instanceof InterpreterError) {
-          return Object.assign({}, state, {
-            code: action.code,
-            interpreterOutput: "Interpreter Error: " + e.message,
-          });
-        }
-        if (e instanceof SemanticError) {
-          return Object.assign({}, state, {
-            code: action.code,
-            interpreterOutput: "Name Error: " + e.message,
-          });
-        }
-        return Object.assign({}, state, {
-          code: action.code,
-          interpreterOutput: "Unexpected Error: " + e.message,
-        });
-      }
     default:
       return state;
   }
@@ -129,6 +91,39 @@ const interpreterView = (
       return Object.assign({}, state, {
         symbolTableMinimized: !state.symbolTableMinimized,
       });
+    case "interpreter_update_token_list":
+      try {
+        const ast = new Parser(action.tokenList).parse();
+        const semanticAnalyzer = new SemanticAnalyzer();
+        semanticAnalyzer.visitProgram(ast);
+        const interpreterOutput = new Interpreter(ast).interpret();
+
+        return Object.assign({}, state, {
+          grammar: Parser.grammar,
+          interpreterOutput: interpreterOutput,
+          symbolTable: semanticAnalyzer.currentScope.symbols,
+          ast: ast,
+        });
+      } catch (e) {
+        if (e instanceof UnexpectedToken) {
+          return Object.assign({}, state, {
+            interpreterOutput: "Parser Error: " + e.message,
+          });
+        }
+        if (e instanceof InterpreterError) {
+          return Object.assign({}, state, {
+            interpreterOutput: "Interpreter Error: " + e.message,
+          });
+        }
+        if (e instanceof SemanticError) {
+          return Object.assign({}, state, {
+            interpreterOutput: "Name Error: " + e.message,
+          });
+        }
+        return Object.assign({}, state, {
+          interpreterOutput: "Unexpected Error: " + e.message,
+        });
+      }
     default:
       return state;
   }

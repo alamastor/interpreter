@@ -243,7 +243,7 @@ class Parser {
       this.eat("PROCEDURE");
       let procName: string;
       if (this.currentToken.type === "ID") {
-        procName = this.currentToken.name;
+        procName = this.currentToken.value;
         this.eat("ID");
       } else {
         throw new UnexpectedToken(this.currentToken, "ID");
@@ -434,7 +434,7 @@ class Parser {
       const res: Var = {
         type: "var",
         token: token,
-        name: token.name,
+        name: token.value,
         startPos: token.startPos,
         stopPos: token.stopPos,
       };

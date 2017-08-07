@@ -226,7 +226,7 @@ class Stratifier {
   visitVar(node: Var): Node {
     return {
       id: uuidV4(),
-      name: "Var: " + node.token.name,
+      name: "Var: " + node.token.value,
       startPos: node.startPos,
       stopPos: node.stopPos,
     };

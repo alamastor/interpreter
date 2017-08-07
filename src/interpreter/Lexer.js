@@ -143,7 +143,7 @@ const idToken = (str: string, startPos: number, stopPos: number): Token => {
     default:
       return {
         type: "ID",
-        name: str,
+        value: str,
         startPos: startPos,
         stopPos: stopPos,
       };

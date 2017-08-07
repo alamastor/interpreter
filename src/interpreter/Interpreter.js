@@ -57,7 +57,7 @@ class Interpreter {
 
   visitAssign(assign: Assign) {
     if (assign.variable.token.type === "ID") {
-      const varName = assign.variable.token.name;
+      const varName = assign.variable.token.value;
       let value;
       switch (assign.value.type) {
         case "bin_op":
@@ -192,7 +192,7 @@ class Interpreter {
   }
 
   visitVar(var_: Var): number {
-    const varName = var_.token.name;
+    const varName = var_.token.value;
     const val = this.globalScope.get(varName);
     if (val !== undefined && val !== null) {
       return val;

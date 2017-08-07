@@ -55,6 +55,10 @@ export type Action =
       type: "interpreter_view_symbol_table_toggle_click",
     }
   | {
+      type: "interpreter_update_token_list",
+      tokenList: Array<Token>,
+    }
+  | {
       type: "ast_node_click",
       node: Node,
     }
