@@ -1,7 +1,7 @@
 /* @flow */
 import type { Action } from "../../actionTypes.js";
 import type { ASTNode } from "../../interpreter/Parser";
-import Parser from "../../interpreter/Parser";
+import Parser, { UnexpectedToken } from "../../interpreter/Parser";
 import ASTStratifier from "./Stratifier";
 import type { Node } from "./Stratifier";
 
@@ -35,39 +35,26 @@ const toggleChildren = (node: Node): Node =>
   });
 
 type ASTViewState = {
-  ast: ?ASTNode,
+  ast: ?ASTNode | UnexpectedToken,
   strata: Node,
   nextStrata: Node,
   sourceNode: Node,
   previousStrata: Node,
 };
 
+const emptyStrata: Node = {
+  id: 0,
+  name: "",
+  startPos: 0,
+  stopPos: 0,
+};
+
 const initialState: ASTViewState = {
   ast: null,
-  strata: {
-    id: 0,
-    name: "",
-    startPos: 0,
-    stopPos: 0,
-  },
-  nextStrata: {
-    id: 0,
-    name: "",
-    startPos: 0,
-    stopPos: 0,
-  },
-  sourceNode: {
-    id: 0,
-    name: "",
-    startPos: 0,
-    stopPos: 0,
-  },
-  previousStrata: {
-    id: 0,
-    name: "",
-    startPos: 0,
-    stopPos: 0,
-  },
+  strata: emptyStrata,
+  nextStrata: emptyStrata,
+  sourceNode: emptyStrata,
+  previousStrata: emptyStrata,
 };
 
 const ASTView = (
@@ -93,11 +80,17 @@ const ASTView = (
 
     case "ast_received_token_list":
       const ast = new Parser(action.tokenList).parse();
+      if (ast instanceof UnexpectedToken || ast == null) {
+        return Object.assign({}, state, {
+          ast: ast,
+          strata: emptyStrata,
+        });
+      }
       const strata = new ASTStratifier(ast).build();
       return Object.assign({}, state, {
         ast: ast,
         strata: strata,
-        previousStrata: strata,
+        previousstrata: strata,
       });
 
     default:

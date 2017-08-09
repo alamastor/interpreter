@@ -8,18 +8,19 @@ import { connect } from "react-redux";
 import type { State } from "../../store";
 import type { Dispatch } from "../../store";
 import LexerContainer from "../Lexer";
+import Parser, { UnexpectedToken } from "../../interpreter/Parser";
 import type { Program } from "../../interpreter/Parser";
 
 const mapStateToProps = (state: State) => ({
   code: state.code.code,
-  grammar: state.code.grammar,
-  interpreterOutput: state.code.interpreterOutput,
+  ast: state.ast.ast,
+  interpreterOutput: state.interpreter.interpreterOutput,
   symbolTable: state.code.symbolTable,
-  highlightStart: state.interpreterView.highlightStart,
-  highlightStop: state.interpreterView.highlightStop,
-  grammarMinimized: state.interpreterView.grammarMinimized,
-  symbolTableMinimized: state.interpreterView.symbolTableMinimized,
-  astMinimized: state.interpreterView.astMinimized,
+  highlightStart: state.interpreter.highlightStart,
+  highlightStop: state.interpreter.highlightStop,
+  grammarMinimized: state.interpreter.grammarMinimized,
+  symbolTableMinimized: state.interpreter.symbolTableMinimized,
+  astMinimized: state.interpreter.astMinimized,
   tokenList: state.lexer.tokenList,
 });
 
@@ -41,7 +42,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
     dispatch({
       type: "interpreter_view_symbol_table_toggle_click",
     }),
-  onReceiveAST: (ast: Program) =>
+  onReceiveAST: (ast: Program | UnexpectedToken) =>
     dispatch({
       type: "interpreter_received_ast",
       ast: ast,
@@ -52,7 +53,7 @@ type InterpreterProps = {|
   code: string,
   grammar: Array<string>,
   interpreterOutput: string,
-  ast: Program,
+  ast: Program | UnexpectedToken,
   symbolTable: { [string]: ASTSymbol },
   highlightStart: number,
   highlightStop: number,
@@ -66,7 +67,7 @@ type InterpreterProps = {|
   onClickGrammarToggle: () => void,
   onClickASTToggle: () => void,
   onClickSymbolTableToggle: () => void,
-  onReceiveAST: Program => void,
+  onReceiveAST: (Program | UnexpectedToken) => void,
 |};
 
 class InterpreterView extends Component<void, InterpreterProps, void> {
@@ -118,7 +119,7 @@ class InterpreterView extends Component<void, InterpreterProps, void> {
           className="grammar--list"
           style={{ display: this.props.grammarMinimized ? "none" : "block" }}
         >
-          {this.props.grammar.map((s, i) =>
+          {Parser.grammar.map((s, i) =>
             <p key={i} className="grammar--line">
               {s}
             </p>,

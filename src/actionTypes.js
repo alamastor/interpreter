@@ -3,6 +3,7 @@
 import type { Token } from "./interpreter/Token";
 import type { Node } from "./containers/AST/Stratifier";
 import type { Program } from "./interpreter/Parser";
+import { UnexpectedToken } from "./interpreter/Parser";
 
 export type Action =
   | {
@@ -56,7 +57,7 @@ export type Action =
     }
   | {
       type: "interpreter_received_ast",
-      ast: Program,
+      ast: Program | UnexpectedToken,
     }
   | {
       type: "ast_node_click",

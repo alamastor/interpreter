@@ -159,7 +159,7 @@ class Parser {
   tokenIndex: number;
 
   static grammar = [
-    "program             : PROGRAM variable SEMI block DOT",
+    "program             : PROGRAM variable SEMI block DOT EOF",
     "block               : declarations compound_statement",
     "declarations        : VAR (variable_declaration SEMI)+ | (PROCEDURE ID SEMI block SEMI)* | empty",
     "variable_declaration: ID (COMMA ID)* COLON type_spec",
@@ -188,7 +188,7 @@ class Parser {
   }
 
   /**
-   * program : PROGRAM variable SEMI block DOT
+   * program : PROGRAM variable SEMI block DOT EOF
    */
   program(): Program {
     const startPos = this.currentToken.startPos;
@@ -463,7 +463,6 @@ class Parser {
    *        | LPAREN expr RPAREN
    *        | variable
    */
-  //factor(): UnaryOp | Num | BinOp | Var {
   factor(): BinOp | Num | UnaryOp | Var {
     const startPos = this.currentToken.startPos;
     const token = this.currentToken;
@@ -585,13 +584,22 @@ class Parser {
     return node;
   }
 
-  parse(): Program {
+  parse(): ?Program {
     this.currentToken = this.tokens[this.tokenIndex++];
-    const node = this.program();
-    if (this.currentToken.type !== "EOF") {
-      throw new UnexpectedToken(this.currentToken, "EOF");
+    if (this.currentToken.type === "EOF") {
+      return;
     }
-    return node;
+    try {
+      const program = this.program();
+      this.eat("EOF");
+      return program;
+    } catch (e) {
+      if (e instanceof UnexpectedToken) {
+        return e;
+      } else {
+        throw e;
+      }
+    }
   }
 }
 

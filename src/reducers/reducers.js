@@ -8,16 +8,12 @@ import SemanticAnalyzer, {
 import type { ASTSymbol } from "../interpreter/ASTSymbol";
 
 export type CodeState = {
-  grammar: Array<string>,
   code: string,
   symbolTable: { [string]: ASTSymbol },
-  interpreterOutput: string,
 };
 const initialState = {
-  grammar: [],
   code: "",
   symbolTable: {},
-  interpreterOutput: "",
 };
 
 const code = (state: CodeState = initialState, action: Action): CodeState => {
@@ -39,6 +35,7 @@ type InterpreterViewState = {
   tokensMinimized: boolean,
   astMinimized: boolean,
   symbolTableMinimized: boolean,
+  interpreterOutput: string,
 };
 
 const interpreterViewInitialState: InterpreterViewState = {
@@ -48,9 +45,10 @@ const interpreterViewInitialState: InterpreterViewState = {
   tokensMinimized: true,
   astMinimized: true,
   symbolTableMinimized: true,
+  interpreterOutput: "",
 };
 
-const interpreterView = (
+const interpreter = (
   state: InterpreterViewState = interpreterViewInitialState,
   action: Action,
 ) => {
@@ -87,23 +85,28 @@ const interpreterView = (
       return Object.assign({}, state, {
         symbolTableMinimized: !state.symbolTableMinimized,
       });
-    case "interpreter_recieved_ast":
+    case "interpreter_received_ast":
       try {
-        const semanticAnalyzer = new SemanticAnalyzer();
-        semanticAnalyzer.visitProgram(action.ast);
-        const interpreterOutput = new Interpreter(action.ast).interpret();
-
-        return Object.assign({}, state, {
-          grammar: Parser.grammar,
-          interpreterOutput: interpreterOutput,
-          symbolTable: semanticAnalyzer.currentScope.symbols,
-        });
-      } catch (e) {
-        if (e instanceof UnexpectedToken) {
+        const ast = action.ast;
+        if (ast == null) {
+          return state;
+        }
+        if (ast instanceof UnexpectedToken) {
           return Object.assign({}, state, {
-            interpreterOutput: "Parser Error: " + e.message,
+            interpreterOutput: ast.message,
+          });
+        } else {
+          const semanticAnalyzer = new SemanticAnalyzer();
+          semanticAnalyzer.visitProgram(ast);
+          const interpreterOutput = new Interpreter(ast).interpret();
+
+          return Object.assign({}, state, {
+            grammar: Parser.grammar,
+            interpreterOutput: interpreterOutput,
+            symbolTable: semanticAnalyzer.currentScope.symbols,
           });
         }
+      } catch (e) {
         if (e instanceof InterpreterError) {
           return Object.assign({}, state, {
             interpreterOutput: "Interpreter Error: " + e.message,
@@ -123,4 +126,4 @@ const interpreterView = (
   }
 };
 
-export { code, interpreterView };
+export { code, interpreter };

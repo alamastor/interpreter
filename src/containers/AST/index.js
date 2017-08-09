@@ -16,11 +16,11 @@ import { NODE_RAD, DURATION } from "./consts";
 import type { Token } from "../../interpreter/Token";
 
 const mapStateToProps = (state: State) => ({
-  ast: state.astView.ast,
-  strata: state.astView.strata,
-  nextStrata: state.astView.nextStrata,
-  previousStrata: state.astView.previousStrata,
-  sourceNode: state.astView.sourceNode,
+  ast: state.ast.ast,
+  strata: state.ast.strata,
+  nextStrata: state.ast.nextStrata,
+  previousStrata: state.ast.previousStrata,
+  sourceNode: state.ast.sourceNode,
   tokenList: state.lexer.tokenList,
 });
 

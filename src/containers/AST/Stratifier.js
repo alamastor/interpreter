@@ -26,19 +26,17 @@ export type Node = {
 };
 
 class Stratifier {
-  ast: ?Program;
+  ast: Program;
   root: Node;
 
-  constructor(ast: ?Program) {
+  constructor(ast: Program) {
     this.ast = ast;
   }
 
   build() {
-    if (this.ast) {
-      const root = this.visitProgram(this.ast);
-      this.root = root;
-      return root;
-    }
+    const root = this.visitProgram(this.ast);
+    this.root = root;
+    return root;
   }
 
   visitAssign(assign: Assign): Node {
