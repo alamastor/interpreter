@@ -1,6 +1,6 @@
 /* @flow */
 import type { Action } from "../../actionTypes.js";
-import type { ASTNode } from "../../interpreter/Parser";
+import type { Program } from "../../interpreter/Parser";
 import Parser, { UnexpectedToken } from "../../interpreter/Parser";
 import ASTStratifier from "./Stratifier";
 import type { Node } from "./Stratifier";
@@ -35,7 +35,7 @@ const toggleChildren = (node: Node): Node =>
   });
 
 type ASTViewState = {
-  ast: ?ASTNode | UnexpectedToken,
+  ast: ?Program | UnexpectedToken,
   strata: Node,
   nextStrata: Node,
   sourceNode: Node,

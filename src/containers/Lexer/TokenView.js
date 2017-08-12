@@ -1,11 +1,12 @@
 /* @flow */
 import React from "react";
+import type { Action } from "../../actionTypes";
 import type { Token } from "../../interpreter/Token";
 
 export default (props: {
   token: Token,
-  onHoverToken: Token => void,
-  onStopHoverToken: () => void,
+  onHoverToken: Token => Action,
+  onStopHoverToken: () => Action,
 }) => {
   let result = props.token.type;
   if (props.token.hasOwnProperty("value")) {

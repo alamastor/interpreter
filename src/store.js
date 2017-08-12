@@ -1,7 +1,7 @@
 /* @flow */
 import { combineReducers, createStore, applyMiddleware } from "redux";
 import thunk from "redux-thunk";
-import { code, interpreter } from "./reducers/reducers";
+import interpreterPage from "./containers/InterpreterPage/reducer";
 import lexer from "./containers/Lexer/reducer";
 import ast from "./containers/AST/reducer";
 import { loadState, saveState } from "./localStorage";
@@ -10,8 +10,7 @@ import type { Dispatch as ReduxDispatch } from "redux";
 import throttle from "lodash/throttle";
 
 const reducers = {
-  code,
-  interpreter,
+  interpreterPage,
   ast,
   lexer,
 };

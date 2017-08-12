@@ -19,7 +19,7 @@ export type Action =
     }
   | {
       type: "token_hover",
-      tokenOrError: Token,
+      token: Token,
     }
   | {
       type: "token_hover_stop",
@@ -57,7 +57,7 @@ export type Action =
     }
   | {
       type: "interpreter_received_ast",
-      ast: Program | UnexpectedToken,
+      ast: ?Program | UnexpectedToken,
     }
   | {
       type: "ast_node_click",

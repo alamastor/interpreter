@@ -1,34 +1,15 @@
 /* @flow */
-import type { Action } from "../actionTypes.js";
-import Parser, { UnexpectedToken } from "../interpreter/Parser";
-import Interpreter, { InterpreterError } from "../interpreter/Interpreter";
+import type { Action } from "../../actionTypes.js";
+import Parser, { UnexpectedToken } from "../../interpreter/Parser";
+import Interpreter, { InterpreterError } from "../../interpreter/Interpreter";
 import SemanticAnalyzer, {
   SemanticError,
-} from "../interpreter/SemanticAnalyzer";
-import type { ASTSymbol } from "../interpreter/ASTSymbol";
+} from "../../interpreter/SemanticAnalyzer";
+import type { ASTSymbol } from "../../interpreter/ASTSymbol";
 
-export type CodeState = {
+type InterpreterPageState = {
   code: string,
   symbolTable: { [string]: ASTSymbol },
-};
-const initialState = {
-  code: "",
-  symbolTable: {},
-};
-
-const code = (state: CodeState = initialState, action: Action): CodeState => {
-  switch (action.type) {
-    case "code_update":
-      return Object.assign({}, state, {
-        code: action.code,
-      });
-
-    default:
-      return state;
-  }
-};
-
-type InterpreterViewState = {
   highlightStart: number,
   highlightStop: number,
   grammarMinimized: boolean,
@@ -38,7 +19,9 @@ type InterpreterViewState = {
   interpreterOutput: string,
 };
 
-const interpreterViewInitialState: InterpreterViewState = {
+const interpreterPageInitialState: InterpreterPageState = {
+  code: "",
+  symbolTable: {},
   highlightStart: 0,
   highlightStop: 0,
   grammarMinimized: true,
@@ -48,15 +31,19 @@ const interpreterViewInitialState: InterpreterViewState = {
   interpreterOutput: "",
 };
 
-const interpreter = (
-  state: InterpreterViewState = interpreterViewInitialState,
+export default (
+  state: InterpreterPageState = interpreterPageInitialState,
   action: Action,
 ) => {
   switch (action.type) {
+    case "code_update":
+      return Object.assign({}, state, {
+        code: action.code,
+      });
     case "token_hover":
       return Object.assign({}, state, {
-        highlightStart: action.tokenOrError.startPos,
-        highlightStop: action.tokenOrError.stopPos,
+        highlightStart: action.token.startPos,
+        highlightStop: action.token.stopPos,
       });
     case "token_hover_stop":
       return Object.assign({}, state, {
@@ -125,5 +112,3 @@ const interpreter = (
       return state;
   }
 };
-
-export { code, interpreter };

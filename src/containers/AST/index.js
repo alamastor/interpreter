@@ -14,6 +14,16 @@ import type { ViewNode } from "./tree";
 import { mapTreeToNewCoords, treeMaxX, treeMaxY, viewNodeKey } from "./tree";
 import { NODE_RAD, DURATION } from "./consts";
 import type { Token } from "../../interpreter/Token";
+import { bindActionCreators } from "redux";
+import type { Action } from "../../actionTypes";
+import { UnexpectedToken } from "../../interpreter/Parser";
+import {
+  onHoverNode,
+  onStopHoverNode,
+  onClickNode,
+  onReceiveTokenList,
+  onReceiveNextStrata,
+} from "./actions";
 
 const mapStateToProps = (state: State) => ({
   ast: state.ast.ast,
@@ -24,34 +34,17 @@ const mapStateToProps = (state: State) => ({
   tokenList: state.lexer.tokenList,
 });
 
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  onHoverNode: node =>
-    dispatch({
-      type: "ast_node_hover",
-      node: node,
-    }),
-  onStopHoverNode: () =>
-    dispatch({
-      type: "ast_node_hover_stop",
-    }),
-  onClickNode: node =>
-    dispatch({
-      type: "ast_node_click",
-      node: node,
-    }),
-  onReceiveTokenList: tokenList => {
-    dispatch({
-      type: "ast_received_token_list",
-      tokenList: tokenList,
-    });
-  },
-  onReceiveNextStrata: strata => {
-    dispatch({
-      type: "ast_received_next_strata",
-      strata: strata,
-    });
-  },
-});
+const mapDispatchToProps = (dispatch: *) =>
+  bindActionCreators(
+    {
+      onHoverNode,
+      onStopHoverNode,
+      onClickNode,
+      onReceiveTokenList,
+      onReceiveNextStrata,
+    },
+    dispatch,
+  );
 
 const findNode = (root: ViewNode, sourceNode: Node): ?ViewNode => {
   const data = root.data;
@@ -65,17 +58,17 @@ const findNode = (root: ViewNode, sourceNode: Node): ?ViewNode => {
 };
 
 type Props = {
-  ast: ?Program,
+  ast: ?Program | UnexpectedToken,
   strata: Node,
   nextStrata: Node,
   sourceNode: Node,
   previousStrata: Node,
   tokenList: Array<Token>,
-  onHoverNode: Node => void,
-  onStopHoverNode: () => void,
-  onClickNode: Node => void,
-  onReceiveTokenList: (Array<Token>) => void,
-  onReceiveNextStrata: Node => void,
+  onHoverNode: Node => Action,
+  onStopHoverNode: () => Action,
+  onClickNode: Node => Action,
+  onReceiveTokenList: (Array<Token>) => Action,
+  onReceiveNextStrata: Node => Action,
 };
 
 class ASTView extends Component<void, Props, void> {

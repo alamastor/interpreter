@@ -8,7 +8,7 @@ import {
   Switch,
 } from "react-router-dom";
 import "./index.css";
-import InterpreterContainer from "../Interpreter";
+import InterpreterContainer from "../InterpreterPage";
 
 const AppView = () =>
   <Router>

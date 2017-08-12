@@ -4,71 +4,66 @@ import "./index.css";
 import ASTContainer from "../AST";
 import type { ASTSymbol } from "../../interpreter/ASTSymbol";
 import { toASTSymbol } from "../../interpreter/ASTSymbol";
+import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
 import type { State } from "../../store";
 import type { Dispatch } from "../../store";
 import LexerContainer from "../Lexer";
 import Parser, { UnexpectedToken } from "../../interpreter/Parser";
-import type { Program } from "../../interpreter/Parser";
+import type { ASTNode, Program } from "../../interpreter/Parser";
+import Code from "../../components/code";
+import type { Action } from "../../actionTypes";
+import {
+  onSetCode,
+  onClickGrammarToggle,
+  onClickASTToggle,
+  onClickSymbolTableToggle,
+  onReceiveAST,
+} from "./actions";
 
 const mapStateToProps = (state: State) => ({
-  code: state.code.code,
+  code: state.interpreterPage.code,
   ast: state.ast.ast,
-  interpreterOutput: state.interpreter.interpreterOutput,
-  symbolTable: state.code.symbolTable,
-  highlightStart: state.interpreter.highlightStart,
-  highlightStop: state.interpreter.highlightStop,
-  grammarMinimized: state.interpreter.grammarMinimized,
-  symbolTableMinimized: state.interpreter.symbolTableMinimized,
-  astMinimized: state.interpreter.astMinimized,
+  interpreterOutput: state.interpreterPage.interpreterOutput,
+  symbolTable: state.interpreterPage.symbolTable,
+  highlightStart: state.interpreterPage.highlightStart,
+  highlightStop: state.interpreterPage.highlightStop,
+  grammarMinimized: state.interpreterPage.grammarMinimized,
+  symbolTableMinimized: state.interpreterPage.symbolTableMinimized,
+  astMinimized: state.interpreterPage.astMinimized,
   tokenList: state.lexer.tokenList,
 });
 
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  onSetCode: code =>
-    dispatch({
-      type: "code_update",
-      code: code,
-    }),
-  onClickGrammarToggle: () =>
-    dispatch({
-      type: "interpreter_view_grammar_toggle_click",
-    }),
-  onClickASTToggle: () =>
-    dispatch({
-      type: "interpreter_view_ast_toggle_click",
-    }),
-  onClickSymbolTableToggle: () =>
-    dispatch({
-      type: "interpreter_view_symbol_table_toggle_click",
-    }),
-  onReceiveAST: (ast: Program | UnexpectedToken) =>
-    dispatch({
-      type: "interpreter_received_ast",
-      ast: ast,
-    }),
-});
+const mapDispatchToProps = (dispatch: *) =>
+  bindActionCreators(
+    {
+      onSetCode,
+      onClickGrammarToggle,
+      onClickASTToggle,
+      onClickSymbolTableToggle,
+      onReceiveAST,
+    },
+    dispatch,
+  );
 
-type InterpreterProps = {|
+type InterpreterProps = {
   code: string,
-  grammar: Array<string>,
   interpreterOutput: string,
-  ast: Program | UnexpectedToken,
+  ast: ?Program | UnexpectedToken,
   symbolTable: { [string]: ASTSymbol },
   highlightStart: number,
   highlightStop: number,
   grammarMinimized: boolean,
   symbolTableMinimized: boolean,
   astMinimized: boolean,
-  grammar: Array<string>,
   highlightStart: number,
   highlightStop: number,
-  onSetCode: string => void,
-  onClickGrammarToggle: () => void,
-  onClickASTToggle: () => void,
-  onClickSymbolTableToggle: () => void,
-  onReceiveAST: (Program | UnexpectedToken) => void,
-|};
+  onSetCode: string => Action,
+  onClickGrammarToggle: () => Action,
+  onClickASTToggle: () => Action,
+  onClickSymbolTableToggle: () => Action,
+  onReceiveAST: (?Program | UnexpectedToken) => Action,
+};
 
 class InterpreterView extends Component<void, InterpreterProps, void> {
   onSetCode: string => void;
@@ -199,84 +194,4 @@ const SymbolTableView = (props: { symbolTable: { [string]: ASTSymbol } }) => {
   );
 };
 
-type HighlightViewProps = {
-  children?: Element<any>,
-  highlightStart: number,
-  highlightStop: number,
-  onSetCode: string => void,
-};
-
-const Code = class extends Component {
-  props: HighlightViewProps;
-  onScroll: UIEvent => void;
-  state: {
-    scrollTop: number,
-    scrollLeft: number,
-  };
-
-  constructor(props: HighlightViewProps) {
-    super(props);
-
-    this.onScroll = this.onScroll.bind(this);
-    this.state = {
-      scrollTop: 0,
-      scrollLeft: 0,
-    };
-  }
-
-  componentDidUpdate() {
-    this.refs.highlightsContainer.scrollTop = this.state.scrollTop;
-    this.refs.highlightsContainer.scrollLeft = this.state.scrollLeft;
-  }
-
-  onScroll(event: UIEvent) {
-    this.setState({
-      scrollTop: this.refs.textArea.scrollTop,
-      scrollLeft: this.refs.textArea.scrollLeft,
-    });
-  }
-
-  render() {
-    let code;
-    typeof this.props.children === "string"
-      ? (code = this.props.children)
-      : (code = "");
-
-    const highlightText = code + " "; // One space on end to allow highligh EOF.
-    const beforeHightlight = highlightText.slice(0, this.props.highlightStart);
-    const highlight = highlightText.slice(
-      this.props.highlightStart,
-      this.props.highlightStop,
-    );
-    const afterHighlight = highlightText.slice(this.props.highlightStop);
-
-    return (
-      <div className="code">
-        <textarea
-          className="code-text"
-          spellCheck="false"
-          value={code}
-          onChange={this.props.onSetCode}
-          onScroll={this.onScroll}
-          ref="textArea"
-        />
-
-        <div className="highlights-container" ref="highlightsContainer">
-          <div className="highlights">
-            {beforeHightlight}
-            <mark>
-              {highlight}
-            </mark>
-            {afterHighlight}
-          </div>
-        </div>
-      </div>
-    );
-  }
-};
-
-const InterpreterViewContainer = connect(mapStateToProps, mapDispatchToProps)(
-  InterpreterView,
-);
-
-export default InterpreterViewContainer;
+export default connect(mapStateToProps, mapDispatchToProps)(InterpreterView);

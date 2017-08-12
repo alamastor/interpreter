@@ -5,13 +5,14 @@ import * as d3 from "d3";
 import ReactDOM from "react-dom";
 import { NODE_RAD, DURATION } from "./consts";
 import type { Node } from "./Stratifier";
+import type { Action } from "../../actionTypes";
 
 type NodeViewProps = {
   node: ViewNode,
   id: string,
-  onHoverNode: Node => void,
-  onStopHoverNode: () => void,
-  onClickNode: Node => void,
+  onHoverNode: Node => Action,
+  onStopHoverNode: () => Action,
+  onClickNode: Node => Action,
   sourceNode: ViewNode,
   nextSourceNode: ViewNode,
   previousSourceNode: ViewNode,

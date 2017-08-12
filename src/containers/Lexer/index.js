@@ -5,35 +5,32 @@ import type { Token } from "../../interpreter/Token";
 import type { State } from "../../store";
 import type { Dispatch } from "../../store";
 import { connect } from "react-redux";
+import { bindActionCreators } from "redux";
+import { onClickTokensToggle, onHoverToken, onStopHoverToken } from "./actions";
+import type { Action } from "../../actionTypes";
 
 const mapStateToProps = (state: State) => ({
   minimized: state.lexer.minimized,
   tokenList: state.lexer.tokenList,
 });
 
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  onClickTokensToggle: () =>
-    dispatch({
-      type: "interpreter_view_tokens_toggle_click",
-    }),
-  onHoverToken: tokenOrError =>
-    dispatch({
-      type: "token_hover",
-      tokenOrError: tokenOrError,
-    }),
-  onStopHoverToken: () =>
-    dispatch({
-      type: "token_hover_stop",
-    }),
-});
+const mapDispatchToProps = (dispatch: *) =>
+  bindActionCreators(
+    {
+      onClickTokensToggle,
+      onHoverToken,
+      onStopHoverToken,
+    },
+    dispatch,
+  );
 
-type Props = {|
+type Props = {
   minimized: boolean,
   tokenList: Array<Token>,
-  onClickTokensToggle: () => void,
-  onHoverToken: Token => void,
-  onStopHoverToken: () => void,
-|};
+  onClickTokensToggle: () => Action,
+  onHoverToken: Token => Action,
+  onStopHoverToken: () => Action,
+};
 const LexerView = (props: Props) => {
   return (
     <div>
