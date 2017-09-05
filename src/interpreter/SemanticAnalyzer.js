@@ -25,12 +25,18 @@ export default class SemanticAnalyzer {
     this.currentScope = new ScopedSymbolTable("empty", 0);
   }
 
+  getError(program: Program): ?string {
+    try {
+      this.visitProgram(program);
+    } catch (e) {
+      if (e instanceof SemanticError) {
+        return "Semantic Error: " + e.message;
+      }
+    }
+  }
+
   visitAssign(assign: Assign) {
     const varName = assign.variable.name;
-    const varSymbol = this.currentScope.lookup(varName);
-    if (!varSymbol) {
-      throw new SemanticError(varName);
-    }
 
     switch (assign.value.type) {
       case "bin_op":

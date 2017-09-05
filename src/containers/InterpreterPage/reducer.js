@@ -84,7 +84,14 @@ export default (
           });
         } else {
           const semanticAnalyzer = new SemanticAnalyzer();
-          semanticAnalyzer.visitProgram(ast);
+          const semanticError = semanticAnalyzer.getError(ast);
+          if (semanticError != null) {
+            return Object.assign({}, state, {
+              grammar: Parser.grammar,
+              interpreterOutput: semanticError,
+              symbolTable: semanticAnalyzer.currentScope.symbols,
+            });
+          }
           const interpreterOutput = new Interpreter(ast).interpret();
 
           return Object.assign({}, state, {
@@ -97,11 +104,6 @@ export default (
         if (e instanceof InterpreterError) {
           return Object.assign({}, state, {
             interpreterOutput: "Interpreter Error: " + e.message,
-          });
-        }
-        if (e instanceof SemanticError) {
-          return Object.assign({}, state, {
-            interpreterOutput: "Name Error: " + e.message,
           });
         }
         return Object.assign({}, state, {
