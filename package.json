@@ -45,7 +45,7 @@
     "whatwg-fetch": "2.0.2"
   },
   "dependencies": {
-    "d3": "^4.8.0",
+    "d3": "4.8.0",
     "es6-error": "^4.0.2",
     "lodash": "^4.17.4",
     "react": "^15.5.4",
