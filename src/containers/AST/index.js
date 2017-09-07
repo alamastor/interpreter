@@ -1,7 +1,6 @@
 /* @flow */
 import { connect } from "react-redux";
 import type { State } from "../../store";
-import type { Dispatch } from "../../store";
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
 import TransitionGroup from "react-transition-group/TransitionGroup";
@@ -22,7 +21,7 @@ import {
   onStopHoverNode,
   onClickNode,
   onReceiveTokenList,
-  onReceiveNextStrata,
+  onReceiveNextStrata
 } from "./actions";
 
 const mapStateToProps = (state: State) => ({
@@ -31,7 +30,7 @@ const mapStateToProps = (state: State) => ({
   nextStrata: state.ast.nextStrata,
   previousStrata: state.ast.previousStrata,
   sourceNode: state.ast.sourceNode,
-  tokenList: state.lexer.tokenList,
+  tokenList: state.lexer.tokenList
 });
 
 const mapDispatchToProps = (dispatch: *) =>
@@ -41,9 +40,9 @@ const mapDispatchToProps = (dispatch: *) =>
       onStopHoverNode,
       onClickNode,
       onReceiveTokenList,
-      onReceiveNextStrata,
+      onReceiveNextStrata
     },
-    dispatch,
+    dispatch
   );
 
 const findNode = (root: ViewNode, sourceNode: Node): ?ViewNode => {
@@ -68,7 +67,7 @@ type Props = {
   onStopHoverNode: () => Action,
   onClickNode: Node => Action,
   onReceiveTokenList: (Array<Token>) => Action,
-  onReceiveNextStrata: Node => Action,
+  onReceiveNextStrata: Node => Action
 };
 
 class ASTView extends Component<void, Props, void> {
@@ -141,16 +140,16 @@ class ASTView extends Component<void, Props, void> {
             >
               {nodes
                 .slice(1)
-                .map(node =>
+                .map(node => (
                   <LinkView
                     key={viewNodeKey(node)}
                     node={node}
                     sourceNode={sourceNode}
                     nextSourceNode={nextSourceNode}
                     previousSourceNode={previousSourceNode}
-                  />,
-                )}
-              {nodes.map(node =>
+                  />
+                ))}
+              {nodes.map(node => (
                 <NodeView
                   node={node}
                   key={viewNodeKey(node)}
@@ -161,8 +160,8 @@ class ASTView extends Component<void, Props, void> {
                   sourceNode={sourceNode}
                   nextSourceNode={nextSourceNode}
                   previousSourceNode={previousSourceNode}
-                />,
-              )}
+                />
+              ))}
             </TransitionGroup>
           </SVGContainer>
         </TransitionGroup>
@@ -176,14 +175,14 @@ class ASTView extends Component<void, Props, void> {
 const SVGContainer = class extends Component<
   void,
   { width: number, height: number, children?: React.Element<*> },
-  { width: number, height: number },
+  { width: number, height: number }
 > {
   state = { width: 0, height: 0 };
   constructor(props) {
     super(props);
     this.state = {
       width: this.props.width,
-      height: this.props.height,
+      height: this.props.height
     };
   }
 
@@ -202,9 +201,9 @@ const SVGContainer = class extends Component<
           .on("end", () => {
             this.setState({
               width: nextProps.width,
-              height: nextProps.height,
+              height: nextProps.height
             });
-          }),
+          })
       );
     }
   }

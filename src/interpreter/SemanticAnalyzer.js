@@ -11,7 +11,7 @@ import type {
   Program,
   UnaryOp,
   Var,
-  VarDecl,
+  VarDecl
 } from "./Parser";
 import ScopedSymbolTable from "./ScopedSymbolTable";
 import type { ProcedureSymbol, VarSymbol } from "./ASTSymbol";
@@ -36,8 +36,6 @@ export default class SemanticAnalyzer {
   }
 
   visitAssign(assign: Assign) {
-    const varName = assign.variable.name;
-
     switch (assign.value.type) {
       case "bin_op":
         this.visitBinOp(assign.value);
@@ -121,14 +119,14 @@ export default class SemanticAnalyzer {
     const procSymbol: ProcedureSymbol = {
       symbolType: "procedure",
       name: procName,
-      params: [],
+      params: []
     };
     this.currentScope.insert(procSymbol);
 
     const procedureScope = new ScopedSymbolTable(
       procName,
       2,
-      this.currentScope,
+      this.currentScope
     );
     this.currentScope = procedureScope;
 
@@ -138,18 +136,18 @@ export default class SemanticAnalyzer {
         throw SemanticError(
           "Expected built in type " +
             param.typeNode.value +
-            " not found in scope.",
+            " not found in scope."
         );
       } else if (paramType.symbolType !== "builtin_type") {
         throw SemanticError(
-          "Expected built in type, got : " + paramType.symbolType,
+          "Expected built in type, got : " + paramType.symbolType
         );
       } else {
         const paramName = param.varNode.name;
         const varSymbol: VarSymbol = {
           symbolType: "var",
           name: paramName,
-          type: paramType,
+          type: paramType
         };
         this.currentScope.insert(varSymbol);
         procSymbol.params.push(varSymbol);

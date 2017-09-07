@@ -3,7 +3,6 @@ import React from "react";
 import TokenView from "./TokenView";
 import type { Token } from "../../interpreter/Token";
 import type { State } from "../../store";
-import type { Dispatch } from "../../store";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { onClickTokensToggle, onHoverToken, onStopHoverToken } from "./actions";
@@ -11,7 +10,7 @@ import type { Action } from "../../actionTypes";
 
 const mapStateToProps = (state: State) => ({
   minimized: state.lexer.minimized,
-  tokenList: state.lexer.tokenList,
+  tokenList: state.lexer.tokenList
 });
 
 const mapDispatchToProps = (dispatch: *) =>
@@ -19,9 +18,9 @@ const mapDispatchToProps = (dispatch: *) =>
     {
       onClickTokensToggle,
       onHoverToken,
-      onStopHoverToken,
+      onStopHoverToken
     },
-    dispatch,
+    dispatch
   );
 
 type Props = {
@@ -29,7 +28,7 @@ type Props = {
   tokenList: Array<Token>,
   onClickTokensToggle: () => Action,
   onHoverToken: Token => Action,
-  onStopHoverToken: () => Action,
+  onStopHoverToken: () => Action
 };
 const LexerView = (props: Props) => {
   return (
@@ -44,14 +43,14 @@ const LexerView = (props: Props) => {
         className="lexer--list"
         style={{ display: props.minimized ? "none" : "block" }}
       >
-        {props.tokenList.map((token, i) =>
+        {props.tokenList.map((token, i) => (
           <TokenView
             token={token}
             onHoverToken={props.onHoverToken}
             onStopHoverToken={props.onStopHoverToken}
             key={i}
-          />,
-        )}
+          />
+        ))}
       </ul>
     </div>
   );

@@ -1,5 +1,5 @@
 /* @flow */
-import React, { Component, Element } from "react";
+import React, { Component } from "react";
 import "./index.css";
 import ASTContainer from "../AST";
 import type { ASTSymbol } from "../../interpreter/ASTSymbol";
@@ -7,10 +7,9 @@ import { toASTSymbol } from "../../interpreter/ASTSymbol";
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
 import type { State } from "../../store";
-import type { Dispatch } from "../../store";
 import LexerContainer from "../Lexer";
 import Parser, { UnexpectedToken } from "../../interpreter/Parser";
-import type { ASTNode, Program } from "../../interpreter/Parser";
+import type { Program } from "../../interpreter/Parser";
 import Code from "../../components/code";
 import type { Action } from "../../actionTypes";
 import {
@@ -18,7 +17,7 @@ import {
   onClickGrammarToggle,
   onClickASTToggle,
   onClickSymbolTableToggle,
-  onReceiveAST,
+  onReceiveAST
 } from "./actions";
 
 const mapStateToProps = (state: State) => ({
@@ -31,7 +30,7 @@ const mapStateToProps = (state: State) => ({
   grammarMinimized: state.interpreterPage.grammarMinimized,
   symbolTableMinimized: state.interpreterPage.symbolTableMinimized,
   astMinimized: state.interpreterPage.astMinimized,
-  tokenList: state.lexer.tokenList,
+  tokenList: state.lexer.tokenList
 });
 
 const mapDispatchToProps = (dispatch: *) =>
@@ -41,9 +40,9 @@ const mapDispatchToProps = (dispatch: *) =>
       onClickGrammarToggle,
       onClickASTToggle,
       onClickSymbolTableToggle,
-      onReceiveAST,
+      onReceiveAST
     },
-    dispatch,
+    dispatch
   );
 
 type InterpreterProps = {
@@ -62,7 +61,7 @@ type InterpreterProps = {
   onClickGrammarToggle: () => Action,
   onClickASTToggle: () => Action,
   onClickSymbolTableToggle: () => Action,
-  onReceiveAST: (?Program | UnexpectedToken) => Action,
+  onReceiveAST: (?Program | UnexpectedToken) => Action
 };
 
 class InterpreterView extends Component<void, InterpreterProps, void> {
@@ -114,11 +113,11 @@ class InterpreterView extends Component<void, InterpreterProps, void> {
           className="grammar--list"
           style={{ display: this.props.grammarMinimized ? "none" : "block" }}
         >
-          {Parser.grammar.map((s, i) =>
+          {Parser.grammar.map((s, i) => (
             <p key={i} className="grammar--line">
               {s}
-            </p>,
-          )}
+            </p>
+          ))}
         </ul>
         <LexerContainer />
         <h4 className="ast-header">
@@ -146,16 +145,14 @@ class InterpreterView extends Component<void, InterpreterProps, void> {
           </button>
           <div
             style={{
-              display: this.props.symbolTableMinimized ? "none" : "block",
+              display: this.props.symbolTableMinimized ? "none" : "block"
             }}
           >
             <SymbolTableView symbolTable={this.props.symbolTable} />
           </div>
         </h4>
         <h4 className="interpreter--header">Interpreter Output:</h4>
-        <p className="interpreter--line">
-          {this.props.interpreterOutput}
-        </p>
+        <p className="interpreter--line">{this.props.interpreterOutput}</p>
       </main>
     );
   }
@@ -170,28 +167,24 @@ const SymbolTableView = (props: { symbolTable: { [string]: ASTSymbol } }) => {
         children.push(
           <li className="symbol-table--line" key={i}>
             {s.name}
-          </li>,
+          </li>
         );
       } else if (s.symbolType === "procedure") {
         children.push(
           <li className="symbol-table--line" key={i}>
             {s.name}
-          </li>,
+          </li>
         );
       } else {
         children.push(
           <li className="symbol-table--line" key={i}>
             {s.name + ": " + s.type.name}
-          </li>,
+          </li>
         );
       }
     }
   });
-  return (
-    <ul>
-      {children}
-    </ul>
-  );
+  return <ul>{children}</ul>;
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(InterpreterView);
