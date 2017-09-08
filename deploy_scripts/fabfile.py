@@ -15,7 +15,7 @@ def _update_source(site_dir):
     if exists(f'{site_dir}/.git'):
         run(f'cd {site_dir} && git fetch')
     else:
-        run(f'git clone {REPO_URL} {site_dir}') 
+        run(f'git clone {REPO_URL} {site_dir}')
     current_commit = local('git log -n 1 --format=%H', capture=True)
     run(f'cd {site_dir} && git reset --hard {current_commit}')
 
