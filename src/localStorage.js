@@ -5,11 +5,10 @@ export const loadState = () => {
     const serializedState = localStorage.getItem("state");
     if (serializedState != null) {
       return JSON.parse(serializedState);
-    } else {
-      return undefined;
     }
   } catch (err) {
-    return undefined;
+    console.log("Error loading saved state from localstorage.");
+    return;
   }
 };
 
