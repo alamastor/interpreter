@@ -4,6 +4,7 @@ import Parser, { UnexpectedToken } from "../../interpreter/Parser";
 import Interpreter, { InterpreterError } from "../../interpreter/Interpreter";
 import SemanticAnalyzer from "../../interpreter/SemanticAnalyzer";
 import type { ASTSymbol } from "../../interpreter/ASTSymbol";
+import defaultPascalCode from "./defaultPascalCode";
 
 type InterpreterPageState = {
   code: string,
@@ -18,7 +19,7 @@ type InterpreterPageState = {
 };
 
 const interpreterPageInitialState: InterpreterPageState = {
-  code: "",
+  code: defaultPascalCode,
   symbolTable: {},
   highlightStart: 0,
   highlightStop: 0,
