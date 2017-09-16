@@ -6,6 +6,7 @@ import ReactDOM from "react-dom";
 import { NODE_RAD, DURATION } from "./consts";
 import type { Node } from "./Stratifier";
 import type { Action } from "../../actionTypes";
+import "./index.css";
 
 type NodeViewProps = {
   node: ViewNode,
@@ -15,7 +16,7 @@ type NodeViewProps = {
   onClickNode: Node => Action,
   sourceNode: ViewNode,
   nextSourceNode: ViewNode,
-  previousSourceNode: ViewNode,
+  previousSourceNode: ViewNode
 };
 
 export default class extends Component<
@@ -23,15 +24,15 @@ export default class extends Component<
   NodeViewProps,
   {
     x: number,
-    y: number,
-  },
+    y: number
+  }
 > {
   onMouseEnter: () => void;
   onMouseLeave: () => void;
   onClick: () => void;
   state = {
     x: 0,
-    y: 0,
+    y: 0
   };
 
   constructor(props: NodeViewProps) {
@@ -43,7 +44,7 @@ export default class extends Component<
 
     this.state = {
       x: this.props.previousSourceNode.x || 0,
-      y: this.props.previousSourceNode.y || 0,
+      y: this.props.previousSourceNode.y || 0
     };
   }
 
@@ -97,12 +98,12 @@ export default class extends Component<
           (this.props.nextSourceNode.x || 0) +
           "," +
           (this.props.nextSourceNode.y || 0) +
-          ")",
+          ")"
       )
       .on("end", () => {
         this.setState({
           x: 0,
-          y: 0,
+          y: 0
         });
         callback();
       });
@@ -142,12 +143,14 @@ export default class extends Component<
           onMouseLeave={this.onMouseLeave}
         >
           <circle
+            className="node--circle"
+            stroke="steelblue"
             r={NODE_RAD}
             fill={color}
-            stroke="steelblue"
             onClick={this.onClick}
           />
           <text
+            className="node--text"
             textAnchor="end"
             alignmentBaseline="middle"
             fontSize="10"
