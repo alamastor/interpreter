@@ -4,8 +4,7 @@ export const loadState = () => {
   try {
     const serializedState = localStorage.getItem("state");
     if (serializedState != null) {
-      const jsState = JSON.parse(serializedState);
-      return { interpreterPage: jsState.interpreterPage };
+      return JSON.parse(serializedState);
     } else {
       return undefined;
     }

@@ -25,7 +25,7 @@ const interpreterPageInitialState: InterpreterPageState = {
   highlightStop: 0,
   grammarMinimized: true,
   tokensMinimized: true,
-  astMinimized: true,
+  astMinimized: false,
   symbolTableMinimized: true,
   interpreterOutput: ""
 };
