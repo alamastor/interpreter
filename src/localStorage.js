@@ -4,7 +4,7 @@ export const loadState = () => {
   try {
     const serializedState = localStorage.getItem("state");
     if (serializedState != null) {
-      return JSON.parse(serializedState);
+      return { interpreterPage: JSON.parse(serializedState).interpreterPage };
     }
   } catch (err) {
     console.log("Error loading saved state from localstorage.");
