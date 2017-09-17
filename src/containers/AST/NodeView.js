@@ -54,13 +54,19 @@ export default class extends Component<
     if (this.props.node.x !== undefined && this.props.node.y !== undefined) {
       const x = this.props.node.x;
       const y = this.props.node.y;
-      ele
-        .transition(d3.transition().duration(DURATION))
+      const eleTransition = ele
+        .transition()
+        .duration(DURATION)
         .attr("transform", "translate(" + x + "," + y + ")")
         .on("end", () => {
           this.setState({ x, y });
           callback();
         });
+      eleTransition.select("g > text").style("fill-opacity", 1);
+      eleTransition
+        .select("g > circle")
+        .style("fill-opacity", 1)
+        .style("stroke-opacity", 1);
     }
   }
 
@@ -89,9 +95,10 @@ export default class extends Component<
   }
 
   componentWillLeave(callback: () => void) {
-    let ele = d3.select(ReactDOM.findDOMNode(this));
-    ele
-      .transition(d3.transition().duration(DURATION))
+    const eleTransition = d3
+      .select(ReactDOM.findDOMNode(this))
+      .transition()
+      .duration(DURATION)
       .attr(
         "transform",
         "translate(" +
@@ -107,6 +114,11 @@ export default class extends Component<
         });
         callback();
       });
+    eleTransition.select("g > text").style("fill-opacity", 1e-6);
+    eleTransition
+      .select("g > circle")
+      .style("fill-opacity", 1e-6)
+      .style("stroke-opacity", 1e-6);
   }
 
   onMouseEnter() {
@@ -148,6 +160,8 @@ export default class extends Component<
             r={NODE_RAD}
             fill={color}
             onClick={this.onClick}
+            fillOpacity="1e-6"
+            strokeOpacity="1e-6"
           />
           <text
             className="node--text"
@@ -155,6 +169,7 @@ export default class extends Component<
             alignmentBaseline="middle"
             fontSize="10"
             dx="-10"
+            fillOpacity="1e-6"
           >
             {this.props.node.data.name}
           </text>

@@ -61,15 +61,16 @@ export default class extends Component<void, LinkProps, LinkState> {
 
     // Transition stuff here.
     ele
-      .transition(d3.transition().duration(DURATION))
+      .transition()
+      .duration(DURATION)
       .attr(
         "d",
         this.pathShape(
           getNodeParentX(this.props.node),
           getNodeParentY(this.props.node),
           getNodeX(this.props.node),
-          getNodeY(this.props.node),
-        ),
+          getNodeY(this.props.node)
+        )
       )
       .on("end", () => {
         this.setState({
@@ -92,8 +93,8 @@ export default class extends Component<void, LinkProps, LinkState> {
           getNodeParentX(nextProps.node),
           getNodeParentY(nextProps.node),
           getNodeX(nextProps.node),
-          getNodeY(nextProps.node),
-        ),
+          getNodeY(nextProps.node)
+        )
       );
   }
 
@@ -104,15 +105,16 @@ export default class extends Component<void, LinkProps, LinkState> {
   componentWillLeave(callback: () => void) {
     let ele = d3.select(ReactDOM.findDOMNode(this));
     ele
-      .transition(d3.transition().duration(DURATION))
+      .transition()
+      .duration(DURATION)
       .attr(
         "d",
         this.pathShape(
           this.props.nextSourceNode.x || 0,
           this.props.nextSourceNode.y || 0,
           this.props.nextSourceNode.x || 0,
-          this.props.nextSourceNode.y || 0,
-        ),
+          this.props.nextSourceNode.y || 0
+        )
       )
       .on("end", () => {
         this.setState({
@@ -156,7 +158,7 @@ export default class extends Component<void, LinkProps, LinkState> {
           this.state.startX,
           this.state.startY,
           this.state.endX,
-          this.state.endY,
+          this.state.endY
         )}
         stroke="darkgrey"
         fill="none"
