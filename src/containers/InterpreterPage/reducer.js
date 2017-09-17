@@ -15,7 +15,7 @@ type InterpreterPageState = {
   tokensMinimized: boolean,
   astMinimized: boolean,
   symbolTableMinimized: boolean,
-  interpreterOutput: string
+  interpreterOutput: string,
 };
 
 const interpreterPageInitialState: InterpreterPageState = {
@@ -27,49 +27,49 @@ const interpreterPageInitialState: InterpreterPageState = {
   tokensMinimized: true,
   astMinimized: false,
   symbolTableMinimized: true,
-  interpreterOutput: ""
+  interpreterOutput: "",
 };
 
 export default (
   state: InterpreterPageState = interpreterPageInitialState,
-  action: Action
+  action: Action,
 ) => {
   switch (action.type) {
     case "code_update":
       return Object.assign({}, state, {
-        code: action.code
+        code: action.code,
       });
     case "token_hover":
       return Object.assign({}, state, {
         highlightStart: action.token.startPos,
-        highlightStop: action.token.stopPos
+        highlightStop: action.token.stopPos,
       });
     case "token_hover_stop":
       return Object.assign({}, state, {
         highlightStart: 0,
-        highlightStop: 0
+        highlightStop: 0,
       });
     case "ast_node_hover":
       return Object.assign({}, state, {
         highlightStart: action.node.startPos,
-        highlightStop: action.node.stopPos
+        highlightStop: action.node.stopPos,
       });
     case "ast_node_hover_stop":
       return Object.assign({}, state, {
         highlightStart: 0,
-        highlightStop: 0
+        highlightStop: 0,
       });
     case "interpreter_view_grammar_toggle_click":
       return Object.assign({}, state, {
-        grammarMinimized: !state.grammarMinimized
+        grammarMinimized: !state.grammarMinimized,
       });
     case "interpreter_view_ast_toggle_click":
       return Object.assign({}, state, {
-        astMinimized: !state.astMinimized
+        astMinimized: !state.astMinimized,
       });
     case "interpreter_view_symbol_table_toggle_click":
       return Object.assign({}, state, {
-        symbolTableMinimized: !state.symbolTableMinimized
+        symbolTableMinimized: !state.symbolTableMinimized,
       });
     case "interpreter_received_ast":
       try {
@@ -79,7 +79,7 @@ export default (
         }
         if (ast instanceof UnexpectedToken) {
           return Object.assign({}, state, {
-            interpreterOutput: ast.message
+            interpreterOutput: ast.message,
           });
         } else {
           const semanticAnalyzer = new SemanticAnalyzer();
@@ -88,7 +88,7 @@ export default (
             return Object.assign({}, state, {
               grammar: Parser.grammar,
               interpreterOutput: semanticError,
-              symbolTable: semanticAnalyzer.currentScope.symbols
+              symbolTable: semanticAnalyzer.currentScope.symbols,
             });
           }
           const interpreterOutput = new Interpreter(ast).interpret();
@@ -96,17 +96,17 @@ export default (
           return Object.assign({}, state, {
             grammar: Parser.grammar,
             interpreterOutput: interpreterOutput,
-            symbolTable: semanticAnalyzer.currentScope.symbols
+            symbolTable: semanticAnalyzer.currentScope.symbols,
           });
         }
       } catch (e) {
         if (e instanceof InterpreterError) {
           return Object.assign({}, state, {
-            interpreterOutput: "Interpreter Error: " + e.message
+            interpreterOutput: "Interpreter Error: " + e.message,
           });
         }
         return Object.assign({}, state, {
-          interpreterOutput: "Unexpected Error: " + e.message
+          interpreterOutput: "Unexpected Error: " + e.message,
         });
       }
     default:
