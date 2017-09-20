@@ -5,14 +5,7 @@ export type ViewNode = {
   x?: number,
   y?: number,
   parent: ?ViewNode,
-  data: {
-    id: number,
-    name: string,
-    children?: Array<Node>,
-    hiddenChildren?: Array<Node>,
-    startPos: number,
-    stopPos: number,
-  },
+  data: Node,
 };
 
 export const getNodeX = (node: ViewNode): number => node.x || 0;

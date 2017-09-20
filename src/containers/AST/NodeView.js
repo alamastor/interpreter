@@ -6,6 +6,7 @@ import ReactDOM from "react-dom";
 import { NODE_RAD, DURATION } from "./consts";
 import type { Node } from "./Stratifier";
 import type { Action } from "../../actionTypes";
+import { Transition } from "react-transition-group";
 import "./index.css";
 
 type NodeViewProps = {
@@ -16,7 +17,7 @@ type NodeViewProps = {
   onClickNode: Node => Action,
   sourceNode: ViewNode,
   nextSourceNode: ViewNode,
-  previousSourceNode: ViewNode
+  previousSourceNode: ViewNode,
 };
 
 export default class extends Component<
@@ -24,15 +25,15 @@ export default class extends Component<
   NodeViewProps,
   {
     x: number,
-    y: number
-  }
+    y: number,
+  },
 > {
   onMouseEnter: () => void;
   onMouseLeave: () => void;
   onClick: () => void;
   state = {
     x: 0,
-    y: 0
+    y: 0,
   };
 
   constructor(props: NodeViewProps) {
@@ -44,7 +45,7 @@ export default class extends Component<
 
     this.state = {
       x: this.props.previousSourceNode.x || 0,
-      y: this.props.previousSourceNode.y || 0
+      y: this.props.previousSourceNode.y || 0,
     };
   }
 
@@ -105,12 +106,12 @@ export default class extends Component<
           (this.props.nextSourceNode.x || 0) +
           "," +
           (this.props.nextSourceNode.y || 0) +
-          ")"
+          ")",
       )
       .on("end", () => {
         this.setState({
           x: 0,
-          y: 0
+          y: 0,
         });
         callback();
       });
@@ -149,31 +150,37 @@ export default class extends Component<
       typeof this.props.node.x === "number"
     ) {
       return (
-        <g
-          transform={"translate(" + this.state.x + "," + this.state.y + ")"}
-          onMouseEnter={this.onMouseEnter}
-          onMouseLeave={this.onMouseLeave}
+        <Transition
+          timeout={DURATION}
+          onEntering={this.componentWillEnter}
+          {...this.props}
         >
-          <circle
-            className="node--circle"
-            stroke="steelblue"
-            r={NODE_RAD}
-            fill={color}
-            onClick={this.onClick}
-            fillOpacity="1e-6"
-            strokeOpacity="1e-6"
-          />
-          <text
-            className="node--text"
-            textAnchor="end"
-            alignmentBaseline="middle"
-            fontSize="10"
-            dx="-10"
-            fillOpacity="1e-6"
+          <g
+            transform={"translate(" + this.state.x + "," + this.state.y + ")"}
+            onMouseEnter={this.onMouseEnter}
+            onMouseLeave={this.onMouseLeave}
           >
-            {this.props.node.data.name}
-          </text>
-        </g>
+            <circle
+              className="node--circle"
+              stroke="steelblue"
+              r={NODE_RAD}
+              fill={color}
+              onClick={this.onClick}
+              fillOpacity="1e-6"
+              strokeOpacity="1e-6"
+            />
+            <text
+              className="node--text"
+              textAnchor="end"
+              alignmentBaseline="middle"
+              fontSize="10"
+              dx="-10"
+              fillOpacity="1e-6"
+            >
+              {this.props.node.data.name}
+            </text>
+          </g>
+        </Transition>
       );
     }
     return null;
