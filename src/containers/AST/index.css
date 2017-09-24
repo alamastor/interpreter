@@ -1,3 +1,8 @@
+svg {
+  margin: 1em 0;
+  display: block;
+}
+
 .node-circle {
   stroke: #333;
   stroke-width: 1px;

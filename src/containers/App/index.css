@@ -10,11 +10,11 @@ main {
 }
 
 section {
-  width: 10%;
-  padding: 0 4rem;
+  width: 10vw;
 }
 
-h4, h5 {
+h4,
+h5 {
   margin: 0;
 }
 

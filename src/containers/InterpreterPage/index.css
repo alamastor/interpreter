@@ -109,7 +109,8 @@ h4 {
 }
 
 .ast-container {
-  width: 100%;
+  width: 80vw;
+  max-height: 30em;
   overflow-x: auto;
 }
 

@@ -146,7 +146,7 @@ class ASTView extends Component<void, Props, void> {
 
       svg
         .transition()
-        .delay(DURATION)
+        .duration(DURATION)
         .attr("width", svgWidth)
         .attr("height", svgHeight);
 
