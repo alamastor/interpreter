@@ -52,15 +52,12 @@ const findNode = (root: ViewNode, sourceNode: Node): ?ViewNode => {
 type Props = {
   ast: ?Program | UnexpectedToken,
   strata: Node,
-  nextStrata: Node,
   sourceNode: Node,
-  previousStrata: Node,
   tokenList: Array<Token>,
   onHoverNode: Node => Action,
   onStopHoverNode: () => Action,
   onClickNode: Node => Action,
   onReceiveTokenList: (Array<Token>) => Action,
-  onReceiveNextStrata: Node => Action,
 };
 
 class ASTView extends Component<void, Props, void> {
@@ -69,11 +66,15 @@ class ASTView extends Component<void, Props, void> {
   containerGroup: any;
   setupAST: (?Props) => void;
   clickNode: Node => void;
+  hoverNode: Node => void;
+  stopHoverNode: Node => void;
 
   constructor(props) {
     super(props);
     this.setupAST = this.setupAST.bind(this);
     this.clickNode = this.clickNode.bind(this);
+    this.hoverNode = this.hoverNode.bind(this);
+    this.stopHoverNode = this.stopHoverNode.bind(this);
   }
 
   componentWillMount() {
@@ -92,6 +93,14 @@ class ASTView extends Component<void, Props, void> {
 
   clickNode(node) {
     this.props.onClickNode(node.data);
+  }
+
+  hoverNode(node) {
+    this.props.onHoverNode(node.data);
+  }
+
+  stopHoverNode() {
+    this.props.onStopHoverNode();
   }
 
   setupAST(prevProps: Props) {
@@ -164,7 +173,9 @@ class ASTView extends Component<void, Props, void> {
             (previousSourceNode.y || 0) +
             ")",
         )
-        .on("click", this.clickNode);
+        .on("click", this.clickNode)
+        .on("mouseover", this.hoverNode)
+        .on("mouseout", this.stopHoverNode);
 
       nodeEnter
         .append("circle")
