@@ -21,8 +21,3 @@ export const onReceiveTokenList = (tokenList: Array<Token>) => ({
   type: "ast_received_token_list",
   tokenList: tokenList,
 });
-
-export const onReceiveNextStrata = (strata: Node) => ({
-  type: "ast_received_next_strata",
-  strata: strata,
-});

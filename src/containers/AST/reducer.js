@@ -37,9 +37,7 @@ const toggleChildren = (node: Node): Node =>
 type ASTViewState = {
   ast: ?Program | UnexpectedToken,
   strata: Node,
-  nextStrata: Node,
   sourceNode: Node,
-  previousStrata: Node,
 };
 
 const emptyStrata: Node = {
@@ -52,9 +50,7 @@ const emptyStrata: Node = {
 const initialState: ASTViewState = {
   ast: null,
   strata: emptyStrata,
-  nextStrata: emptyStrata,
   sourceNode: emptyStrata,
-  previousStrata: emptyStrata,
 };
 
 const ASTView = (
@@ -64,18 +60,12 @@ const ASTView = (
   switch (action.type) {
     case "ast_node_click":
       return Object.assign({}, state, {
-        nextStrata: updateChildNode(
+        strata: updateChildNode(
           state.strata,
           action.node,
           toggleChildren(action.node),
         ),
         sourceNode: action.node,
-      });
-
-    case "ast_received_next_strata":
-      return Object.assign({}, state, {
-        strata: action.strata,
-        previousStrata: state.strata,
       });
 
     case "ast_received_token_list":
@@ -90,7 +80,6 @@ const ASTView = (
       return Object.assign({}, state, {
         ast: ast,
         strata: strata,
-        previousStrata: strata,
       });
 
     default:

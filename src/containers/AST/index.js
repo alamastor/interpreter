@@ -17,15 +17,12 @@ import {
   onStopHoverNode,
   onClickNode,
   onReceiveTokenList,
-  onReceiveNextStrata,
 } from "./actions";
 import "./index.css";
 
 const mapStateToProps = (state: State) => ({
   ast: state.ast.ast,
   strata: state.ast.strata,
-  nextStrata: state.ast.nextStrata,
-  previousStrata: state.ast.previousStrata,
   sourceNode: state.ast.sourceNode,
   tokenList: state.lexer.tokenList,
 });
@@ -37,7 +34,6 @@ const mapDispatchToProps = (dispatch: *) =>
       onStopHoverNode,
       onClickNode,
       onReceiveTokenList,
-      onReceiveNextStrata,
     },
     dispatch,
   );
@@ -87,10 +83,6 @@ class ASTView extends Component<void, Props, void> {
   componentWillReceiveProps(nextProps: Props) {
     if (nextProps.tokenList !== this.props.tokenList) {
       this.props.onReceiveTokenList(nextProps.tokenList);
-    }
-
-    if (nextProps.nextStrata !== this.props.nextStrata) {
-      this.props.onReceiveNextStrata(nextProps.nextStrata);
     }
   }
 

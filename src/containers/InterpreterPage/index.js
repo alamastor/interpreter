@@ -17,7 +17,7 @@ import {
   onClickGrammarToggle,
   onClickASTToggle,
   onClickSymbolTableToggle,
-  onReceiveAST
+  onReceiveAST,
 } from "./actions";
 
 const mapStateToProps = (state: State) => ({
@@ -30,7 +30,7 @@ const mapStateToProps = (state: State) => ({
   grammarMinimized: state.interpreterPage.grammarMinimized,
   symbolTableMinimized: state.interpreterPage.symbolTableMinimized,
   astMinimized: state.interpreterPage.astMinimized,
-  tokenList: state.lexer.tokenList
+  tokenList: state.lexer.tokenList,
 });
 
 const mapDispatchToProps = (dispatch: *) =>
@@ -40,9 +40,9 @@ const mapDispatchToProps = (dispatch: *) =>
       onClickGrammarToggle,
       onClickASTToggle,
       onClickSymbolTableToggle,
-      onReceiveAST
+      onReceiveAST,
     },
-    dispatch
+    dispatch,
   );
 
 type InterpreterProps = {
@@ -61,7 +61,7 @@ type InterpreterProps = {
   onClickGrammarToggle: () => Action,
   onClickASTToggle: () => Action,
   onClickSymbolTableToggle: () => Action,
-  onReceiveAST: (?Program | UnexpectedToken) => Action
+  onReceiveAST: (?Program | UnexpectedToken) => Action,
 };
 
 class InterpreterView extends Component<void, InterpreterProps, void> {
@@ -145,7 +145,7 @@ class InterpreterView extends Component<void, InterpreterProps, void> {
           </button>
           <div
             style={{
-              display: this.props.symbolTableMinimized ? "none" : "block"
+              display: this.props.symbolTableMinimized ? "none" : "block",
             }}
           >
             <SymbolTableView symbolTable={this.props.symbolTable} />
@@ -167,19 +167,19 @@ const SymbolTableView = (props: { symbolTable: { [string]: ASTSymbol } }) => {
         children.push(
           <li className="symbol-table--line" key={i}>
             {s.name}
-          </li>
+          </li>,
         );
       } else if (s.symbolType === "procedure") {
         children.push(
           <li className="symbol-table--line" key={i}>
             {s.name}
-          </li>
+          </li>,
         );
       } else {
         children.push(
           <li className="symbol-table--line" key={i}>
             {s.name + ": " + s.type.name}
-          </li>
+          </li>,
         );
       }
     }
