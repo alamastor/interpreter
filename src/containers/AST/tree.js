@@ -82,7 +82,7 @@ export const treeMaxY = (tree: ViewNode) =>
     0,
   );
 
-const visitTree = (root: ViewNode, callback: ViewNode => void) => {
+export const visitTree = (root: ViewNode, callback: ViewNode => void) => {
   callback(root);
   if (root.children) {
     root.children.forEach(child => {

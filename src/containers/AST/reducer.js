@@ -90,7 +90,7 @@ const ASTView = (
       return Object.assign({}, state, {
         ast: ast,
         strata: strata,
-        previousstrata: strata,
+        previousStrata: strata,
       });
 
     default:

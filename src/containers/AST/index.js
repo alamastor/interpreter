@@ -2,13 +2,9 @@
 import { connect } from "react-redux";
 import type { State } from "../../store";
 import React, { Component } from "react";
-import ReactDOM from "react-dom";
-import TransitionGroup from "react-transition-group/TransitionGroup";
 import * as d3 from "d3";
-import type { Program } from "../../interpreter/parser";
+import type { Program } from "../../interpreter/Parser";
 import type { Node } from "./Stratifier";
-import NodeView from "./NodeView";
-import LinkView from "./LinkView";
 import type { ViewNode } from "./tree";
 import { mapTreeToNewCoords, treeMaxX, treeMaxY, viewNodeKey } from "./tree";
 import { NODE_RAD, DURATION } from "./consts";
@@ -21,8 +17,9 @@ import {
   onStopHoverNode,
   onClickNode,
   onReceiveTokenList,
-  onReceiveNextStrata
+  onReceiveNextStrata,
 } from "./actions";
+import "./index.css";
 
 const mapStateToProps = (state: State) => ({
   ast: state.ast.ast,
@@ -30,7 +27,7 @@ const mapStateToProps = (state: State) => ({
   nextStrata: state.ast.nextStrata,
   previousStrata: state.ast.previousStrata,
   sourceNode: state.ast.sourceNode,
-  tokenList: state.lexer.tokenList
+  tokenList: state.lexer.tokenList,
 });
 
 const mapDispatchToProps = (dispatch: *) =>
@@ -40,9 +37,9 @@ const mapDispatchToProps = (dispatch: *) =>
       onStopHoverNode,
       onClickNode,
       onReceiveTokenList,
-      onReceiveNextStrata
+      onReceiveNextStrata,
     },
-    dispatch
+    dispatch,
   );
 
 const findNode = (root: ViewNode, sourceNode: Node): ?ViewNode => {
@@ -67,11 +64,21 @@ type Props = {
   onStopHoverNode: () => Action,
   onClickNode: Node => Action,
   onReceiveTokenList: (Array<Token>) => Action,
-  onReceiveNextStrata: Node => Action
+  onReceiveNextStrata: Node => Action,
 };
 
 class ASTView extends Component<void, Props, void> {
   ast: Program;
+  svg: any;
+  containerGroup: any;
+  setupAST: (?Props) => void;
+  clickNode: Node => void;
+
+  constructor(props) {
+    super(props);
+    this.setupAST = this.setupAST.bind(this);
+    this.clickNode = this.clickNode.bind(this);
+  }
 
   componentWillMount() {
     this.props.onReceiveTokenList(this.props.tokenList);
@@ -87,135 +94,178 @@ class ASTView extends Component<void, Props, void> {
     }
   }
 
-  render() {
+  componentDidUpdate(prevProps: Props) {
+    this.setupAST(prevProps);
+  }
+
+  clickNode(node) {
+    this.props.onClickNode(node.data);
+  }
+
+  setupAST(prevProps: Props) {
     if (this.props.strata.name) {
       const tree = d3.hierarchy(this.props.strata);
-      const nextTree: ViewNode = d3.hierarchy(this.props.nextStrata);
-      const previousTree: ViewNode = d3.hierarchy(this.props.previousStrata);
-      let i = 0;
-      tree.id = i++;
-      const addIds = node => {
-        node.id = i++;
-        if (node.children) {
-          node.children.forEach(addIds);
-        }
-      };
-      if (tree.hasOwnProperty("children")) {
-        tree.children.forEach(addIds);
+      let previousTree;
+      if (prevProps) {
+        previousTree = d3.hierarchy(prevProps.strata);
+      } else {
+        previousTree = tree;
       }
 
       const nodes = tree.descendants();
-      let layoutTree = d3
+      const layoutTree = d3
         .tree()
         .nodeSize([NODE_RAD * 5, NODE_RAD * 25])
         .separation(() => 1);
 
       layoutTree(tree);
-      layoutTree(nextTree);
       layoutTree(previousTree);
 
       mapTreeToNewCoords(tree);
-      mapTreeToNewCoords(nextTree);
       mapTreeToNewCoords(previousTree);
+
       const treeWidth = treeMaxX(tree);
       const treeHeight = treeMaxY(tree);
+      const previousTreeWidth = treeMaxX(previousTree);
+      const previousTreeHeight = treeMaxY(previousTree);
 
       const svgWidth = treeWidth + (NODE_RAD + 1) * 2 + NODE_RAD * 25;
       const svgHeight = treeHeight + (NODE_RAD + 1) * 2;
+      const previousSvgWidth =
+        previousTreeWidth + (NODE_RAD + 1) * 2 + NODE_RAD * 25;
+      const previousSvgHeight = previousTreeHeight + (NODE_RAD + 1) * 2;
 
       const sourceNode = findNode(tree, this.props.sourceNode) || tree;
-      const nextSourceNode =
-        findNode(nextTree, this.props.sourceNode) || nextTree;
       const previousSourceNode =
         findNode(previousTree, this.props.sourceNode) || tree;
 
-      return (
-        <TransitionGroup component="div">
-          <SVGContainer width={svgWidth} height={svgHeight}>
-            <TransitionGroup
-              component="g"
-              transform={
-                "translate(" + (NODE_RAD + 1) + "," + (NODE_RAD + 1) + ")"
-              }
-            >
-              {nodes
-                .slice(1)
-                .map(node => (
-                  <LinkView
-                    key={viewNodeKey(node)}
-                    node={node}
-                    sourceNode={sourceNode}
-                    nextSourceNode={nextSourceNode}
-                    previousSourceNode={previousSourceNode}
-                  />
-                ))}
-              {nodes.map(node => (
-                <NodeView
-                  node={node}
-                  key={viewNodeKey(node)}
-                  id={viewNodeKey(node)}
-                  onHoverNode={this.props.onHoverNode}
-                  onStopHoverNode={this.props.onStopHoverNode}
-                  onClickNode={this.props.onClickNode}
-                  sourceNode={sourceNode}
-                  nextSourceNode={nextSourceNode}
-                  previousSourceNode={previousSourceNode}
-                />
-              ))}
-            </TransitionGroup>
-          </SVGContainer>
-        </TransitionGroup>
+      const svg = d3
+        .select(this.svg)
+        .attr("width", Math.max(svgWidth, previousSvgWidth))
+        .attr("height", Math.max(svgHeight, previousSvgHeight));
+
+      const containerGroup = d3
+        .select(this.containerGroup)
+        .attr("class", "svg-container")
+        .attr(
+          "transform",
+          "translate(" + (NODE_RAD + 1) + "," + (NODE_RAD + 1) + ")",
+        );
+
+      svg
+        .transition()
+        .delay(DURATION)
+        .attr("width", svgWidth)
+        .attr("height", svgHeight);
+
+      const node = containerGroup.selectAll("g.node").data(nodes, viewNodeKey);
+
+      const nodeEnter = node
+        .enter()
+        .append("g")
+        .attr("class", "node")
+        .attr(
+          "transform",
+          "translate(" +
+            (previousSourceNode.x || 0) +
+            "," +
+            (previousSourceNode.y || 0) +
+            ")",
+        )
+        .on("click", this.clickNode);
+
+      nodeEnter
+        .append("circle")
+        .classed("node-circle", true)
+        .attr("r", NODE_RAD);
+
+      nodeEnter
+        .append("text")
+        .attr("class", "node-text")
+        .attr("x", "1em")
+        .attr("dy", "0.35em")
+        .style("fill-opacity", 1e-6)
+        .text(d => d.data.name);
+
+      const nodeUpdate = nodeEnter.merge(node);
+
+      nodeUpdate.classed(
+        "hidden-children",
+        d => (d.hiddenChildren ? true : false),
       );
-    } else {
-      return null;
+      nodeUpdate
+        .transition()
+        .duration(DURATION)
+        .attr("transform", d => "translate(" + d.x + "," + d.y + ")");
+      nodeUpdate
+        .select("text")
+        .transition()
+        .duration(DURATION)
+        .style("fill-opacity", 1);
+      nodeUpdate
+        .select("circle")
+        .attr("fill", d => (d.data.hiddenChildren ? "#999" : "#333"));
+
+      const nodeExit = node
+        .exit()
+        .transition()
+        .duration(DURATION)
+        .attr(
+          "transform",
+          "translate(" + (sourceNode.x || 0) + "," + (sourceNode.y || 0) + ")",
+        )
+        .remove();
+      nodeExit.select("text").style("fill-opacity", 1e-6);
+      nodeExit.style("fill-opacity", 1e-6).style("stroke-opacity", 1e-6);
+
+      const link = containerGroup
+        .selectAll("path.link")
+        .data(nodes.slice(1), viewNodeKey);
+
+      const linkEnter = link
+        .enter()
+        .insert("path", "g")
+        .attr("class", "link")
+        .attr("d", this.path(previousSourceNode, previousSourceNode));
+
+      const linkUpdate = linkEnter.merge(link);
+      linkUpdate
+        .transition()
+        .duration(DURATION)
+        .attr("d", d => this.path(d.parent, d));
+
+      link
+        .exit()
+        .transition()
+        .duration(DURATION)
+        .attr("d", this.path(sourceNode, sourceNode))
+        .remove();
     }
   }
-}
 
-const SVGContainer = class extends Component<
-  void,
-  { width: number, height: number, children?: React.Element<*> },
-  { width: number, height: number }
-> {
-  state = { width: 0, height: 0 };
-  constructor(props) {
-    super(props);
-    this.state = {
-      width: this.props.width,
-      height: this.props.height
-    };
-  }
-
-  componentWillReceiveProps(nextProps) {
-    let ele = d3.select(ReactDOM.findDOMNode(this));
-    if (
-      nextProps.height < this.props.height ||
-      nextProps.width < this.props.width
-    ) {
-      ele.transition(
-        d3
-          .transition()
-          .delay(DURATION)
-          .attr("height", nextProps.height)
-          .attr("width", nextProps.width)
-          .on("end", () => {
-            this.setState({
-              width: nextProps.width,
-              height: nextProps.height
-            });
-          })
-      );
-    }
+  path(source, dest) {
+    return `M ${source.x || 0} ${source.y || 0}
+            C ${(source.x + dest.x) / 2} ${source.y || 0},
+              ${(source.x + dest.x) / 2} ${dest.y || 0},
+              ${dest.x || 0} ${dest.y || 0}`;
   }
 
   render() {
     return (
-      <svg width={this.state.width} height={this.state.height}>
-        {this.props.children}
+      <svg
+        ref={self => {
+          this.svg = self;
+        }}
+      >
+        <g
+          ref={self => {
+            this.containerGroup = self;
+          }}
+        />
       </svg>
     );
   }
-};
+}
 
 const ASTViewContainer = connect(mapStateToProps, mapDispatchToProps)(ASTView);
 
