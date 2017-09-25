@@ -134,3 +134,26 @@ const findViewNode = (root: ViewNode, key: string) => {
       .find(x => x !== undefined);
   }
 };
+
+export const updateChildNode = (root: Node, oldChild: Node, newChild: Node) => {
+  if (!root.children) {
+    return root;
+  }
+  const oldChildren = root.children;
+  const oldChildIndex = oldChildren.indexOf(oldChild);
+  if (oldChildIndex !== -1) {
+    const newChildren = [
+      ...oldChildren.slice(0, oldChildIndex),
+      newChild,
+      ...oldChildren.slice(oldChildIndex + 1),
+    ];
+    return Object.assign({}, root, {
+      children: newChildren,
+    });
+  }
+  return Object.assign({}, root, {
+    children: oldChildren.map(child =>
+      updateChildNode(child, oldChild, newChild),
+    ),
+  });
+};
