@@ -20,6 +20,10 @@ def _update_source(site_dir):
     run(f'cd {site_dir} && git reset --hard {current_commit}')
 
 
+def _npm_install(site_dir):
+    run(f'cd {site_dir} && npm install')
+
+
 def _npm_update(site_dir):
     run(f'cd {site_dir} && npm update')
 
