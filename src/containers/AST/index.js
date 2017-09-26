@@ -19,6 +19,7 @@ import {
   onReceiveTokenList,
 } from "./actions";
 import "./index.css";
+import { emptyStrata } from "./reducer";
 
 const mapStateToProps = (state: State) => ({
   ast: state.ast.ast,
@@ -62,16 +63,16 @@ type Props = {
 
 class ASTView extends Component<void, Props, void> {
   ast: Program;
-  svg: any;
-  containerGroup: any;
-  setupAST: (?Props) => void;
+  svg: ?HTMLElement;
+  containerGroup: ?HTMLElement;
+  redrawAST: (?Props) => void;
   clickNode: Node => void;
   hoverNode: Node => void;
   stopHoverNode: Node => void;
 
   constructor(props) {
     super(props);
-    this.setupAST = this.setupAST.bind(this);
+    this.redrawAST = this.redrawAST.bind(this);
     this.clickNode = this.clickNode.bind(this);
     this.hoverNode = this.hoverNode.bind(this);
     this.stopHoverNode = this.stopHoverNode.bind(this);
@@ -84,11 +85,24 @@ class ASTView extends Component<void, Props, void> {
   componentWillReceiveProps(nextProps: Props) {
     if (nextProps.tokenList !== this.props.tokenList) {
       this.props.onReceiveTokenList(nextProps.tokenList);
+      d3
+        .select(this.svg)
+        .attr("width", 0)
+        .attr("height", 0);
+      d3
+        .select(this.containerGroup)
+        .selectAll("*")
+        .remove();
     }
   }
 
   componentDidUpdate(prevProps: Props) {
-    this.setupAST(prevProps);
+    if (
+      this.props.strata !== prevProps.strata &&
+      this.props.strata !== emptyStrata
+    ) {
+      this.redrawAST(prevProps);
+    }
   }
 
   clickNode(node) {
@@ -103,147 +117,145 @@ class ASTView extends Component<void, Props, void> {
     this.props.onStopHoverNode();
   }
 
-  setupAST(prevProps: Props) {
-    if (this.props.strata.name) {
-      const tree = d3.hierarchy(this.props.strata);
-      let previousTree;
-      if (prevProps) {
-        previousTree = d3.hierarchy(prevProps.strata);
-      } else {
-        previousTree = tree;
-      }
-
-      const nodes = tree.descendants();
-      const layoutTree = d3
-        .tree()
-        .nodeSize([NODE_RAD * 5, NODE_RAD * 25])
-        .separation(() => 1);
-
-      layoutTree(tree);
-      layoutTree(previousTree);
-
-      mapTreeToNewCoords(tree);
-      mapTreeToNewCoords(previousTree);
-
-      const treeWidth = treeMaxX(tree);
-      const treeHeight = treeMaxY(tree);
-      const previousTreeWidth = treeMaxX(previousTree);
-      const previousTreeHeight = treeMaxY(previousTree);
-
-      const svgWidth = treeWidth + (NODE_RAD + 1) * 2 + NODE_RAD * 25;
-      const svgHeight = treeHeight + (NODE_RAD + 1) * 2;
-      const previousSvgWidth =
-        previousTreeWidth + (NODE_RAD + 1) * 2 + NODE_RAD * 25;
-      const previousSvgHeight = previousTreeHeight + (NODE_RAD + 1) * 2;
-
-      const sourceNode = findNode(tree, this.props.sourceNode) || tree;
-      const previousSourceNode =
-        findNode(previousTree, this.props.sourceNode) || tree;
-
-      const svg = d3
-        .select(this.svg)
-        .attr("width", Math.max(svgWidth, previousSvgWidth))
-        .attr("height", Math.max(svgHeight, previousSvgHeight));
-
-      const containerGroup = d3
-        .select(this.containerGroup)
-        .attr("class", "svg-container")
-        .attr(
-          "transform",
-          "translate(" + (NODE_RAD + 1) + "," + (NODE_RAD + 1) + ")",
-        );
-
-      svg
-        .transition()
-        .duration(DURATION)
-        .attr("width", svgWidth)
-        .attr("height", svgHeight);
-
-      const node = containerGroup.selectAll("g.node").data(nodes, viewNodeKey);
-
-      const nodeEnter = node
-        .enter()
-        .append("g")
-        .attr("class", "node")
-        .attr(
-          "transform",
-          "translate(" +
-            (previousSourceNode.x || 0) +
-            "," +
-            (previousSourceNode.y || 0) +
-            ")",
-        )
-        .on("click", this.clickNode)
-        .on("mouseover", this.hoverNode)
-        .on("mouseout", this.stopHoverNode);
-
-      nodeEnter
-        .append("circle")
-        .classed("node-circle", true)
-        .attr("r", NODE_RAD);
-
-      nodeEnter
-        .append("text")
-        .attr("class", "node-text")
-        .attr("x", "1em")
-        .attr("dy", "0.35em")
-        .style("fill-opacity", 1e-6)
-        .text(d => d.data.name);
-
-      const nodeUpdate = nodeEnter.merge(node);
-
-      nodeUpdate.classed(
-        "hidden-children",
-        d => (d.hiddenChildren ? true : false),
-      );
-      nodeUpdate
-        .transition()
-        .duration(DURATION)
-        .attr("transform", d => "translate(" + d.x + "," + d.y + ")");
-      nodeUpdate
-        .select("text")
-        .transition()
-        .duration(DURATION)
-        .style("fill-opacity", 1);
-      nodeUpdate
-        .select("circle")
-        .attr("fill", d => (d.data.hiddenChildren ? "#999" : "#333"));
-
-      const nodeExit = node
-        .exit()
-        .transition()
-        .duration(DURATION)
-        .attr(
-          "transform",
-          "translate(" + (sourceNode.x || 0) + "," + (sourceNode.y || 0) + ")",
-        )
-        .remove();
-      nodeExit.select("text").style("fill-opacity", 1e-6);
-      nodeExit.style("fill-opacity", 1e-6).style("stroke-opacity", 1e-6);
-
-      const link = containerGroup
-        .selectAll("path.link")
-        .data(nodes.slice(1), viewNodeKey);
-
-      const linkEnter = link
-        .enter()
-        .insert("path", "g")
-        .attr("class", "link")
-        .attr("d", this.path(previousSourceNode, previousSourceNode));
-
-      const linkUpdate = linkEnter.merge(link);
-      linkUpdate
-        .transition()
-        .duration(DURATION)
-        .attr("d", d => this.path(d.parent, d));
-
-      link
-        .exit()
-        .transition()
-        .duration(DURATION)
-        .attr("d", this.path(sourceNode, sourceNode))
-        .remove();
+  redrawAST(prevProps: Props) {
+    const tree = d3.hierarchy(this.props.strata);
+    let previousTree;
+    if (prevProps) {
+      previousTree = d3.hierarchy(prevProps.strata);
+    } else {
+      previousTree = tree;
     }
+
+    const nodes = tree.descendants();
+    const layoutTree = d3
+      .tree()
+      .nodeSize([NODE_RAD * 5, NODE_RAD * 25])
+      .separation(() => 1);
+
+    layoutTree(tree);
+    layoutTree(previousTree);
+
+    mapTreeToNewCoords(tree);
+    mapTreeToNewCoords(previousTree);
+
+    const treeWidth = treeMaxX(tree);
+    const treeHeight = treeMaxY(tree);
+    const previousTreeWidth = treeMaxX(previousTree);
+    const previousTreeHeight = treeMaxY(previousTree);
+
+    const svgWidth = treeWidth + (NODE_RAD + 1) * 2 + NODE_RAD * 25;
+    const svgHeight = treeHeight + (NODE_RAD + 1) * 2;
+    const previousSvgWidth =
+      previousTreeWidth + (NODE_RAD + 1) * 2 + NODE_RAD * 25;
+    const previousSvgHeight = previousTreeHeight + (NODE_RAD + 1) * 2;
+
+    const sourceNode = findNode(tree, this.props.sourceNode) || tree;
+    const previousSourceNode =
+      findNode(previousTree, this.props.sourceNode) || tree;
+
+    const svg = d3
+      .select(this.svg)
+      .attr("width", Math.max(svgWidth, previousSvgWidth))
+      .attr("height", Math.max(svgHeight, previousSvgHeight));
+
+    const containerGroup = d3
+      .select(this.containerGroup)
+      .attr("class", "svg-container")
+      .attr(
+        "transform",
+        "translate(" + (NODE_RAD + 1) + "," + (NODE_RAD + 1) + ")",
+      );
+
+    svg
+      .transition()
+      .duration(DURATION)
+      .attr("width", svgWidth)
+      .attr("height", svgHeight);
+
+    const node = containerGroup.selectAll("g.node").data(nodes, viewNodeKey);
+
+    const nodeEnter = node
+      .enter()
+      .append("g")
+      .attr("class", "node")
+      .attr(
+        "transform",
+        "translate(" +
+          (previousSourceNode.x || 0) +
+          "," +
+          (previousSourceNode.y || 0) +
+          ")",
+      )
+      .on("click", this.clickNode)
+      .on("mouseover", this.hoverNode)
+      .on("mouseout", this.stopHoverNode);
+
+    nodeEnter
+      .append("circle")
+      .classed("node-circle", true)
+      .attr("r", NODE_RAD);
+
+    nodeEnter
+      .append("text")
+      .attr("class", "node-text")
+      .attr("x", "1em")
+      .attr("dy", "0.35em")
+      .style("fill-opacity", 1e-6)
+      .text(d => d.data.name);
+
+    const nodeUpdate = nodeEnter.merge(node);
+
+    nodeUpdate.classed(
+      "hidden-children",
+      d => (d.hiddenChildren ? true : false),
+    );
+    nodeUpdate
+      .transition()
+      .duration(DURATION)
+      .attr("transform", d => "translate(" + d.x + "," + d.y + ")");
+    nodeUpdate
+      .select("text")
+      .transition()
+      .duration(DURATION)
+      .style("fill-opacity", 1);
+    nodeUpdate
+      .select("circle")
+      .attr("fill", d => (d.data.hiddenChildren ? "#999" : "#333"));
+
+    const nodeExit = node
+      .exit()
+      .transition()
+      .duration(DURATION)
+      .attr(
+        "transform",
+        "translate(" + (sourceNode.x || 0) + "," + (sourceNode.y || 0) + ")",
+      )
+      .remove();
+    nodeExit.select("text").style("fill-opacity", 1e-6);
+    nodeExit.style("fill-opacity", 1e-6).style("stroke-opacity", 1e-6);
+
+    const link = containerGroup
+      .selectAll("path.link")
+      .data(nodes.slice(1), viewNodeKey);
+
+    const linkEnter = link
+      .enter()
+      .insert("path", "g")
+      .attr("class", "link")
+      .attr("d", this.path(previousSourceNode, previousSourceNode));
+
+    const linkUpdate = linkEnter.merge(link);
+    linkUpdate
+      .transition()
+      .duration(DURATION)
+      .attr("d", d => this.path(d.parent, d));
+
+    link
+      .exit()
+      .transition()
+      .duration(DURATION)
+      .attr("d", this.path(sourceNode, sourceNode))
+      .remove();
   }
 
   path(source, dest) {
@@ -256,13 +268,13 @@ class ASTView extends Component<void, Props, void> {
   render() {
     return (
       <svg
-        ref={self => {
-          this.svg = self;
+        ref={svg => {
+          this.svg = svg;
         }}
       >
         <g
-          ref={self => {
-            this.containerGroup = self;
+          ref={g => {
+            this.containerGroup = g;
           }}
         />
       </svg>

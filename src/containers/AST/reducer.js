@@ -18,7 +18,7 @@ type ASTViewState = {
   sourceNode: Node,
 };
 
-const emptyStrata: Node = {
+export const emptyStrata: Node = {
   id: "",
   name: "",
   startPos: 0,
@@ -52,12 +52,14 @@ const ASTView = (
         return Object.assign({}, state, {
           ast: ast,
           strata: emptyStrata,
+          sourceNode: emptyStrata,
         });
       }
       const strata = new ASTStratifier(ast).build();
       return Object.assign({}, state, {
         ast: ast,
         strata: strata,
+        sourceNode: emptyStrata,
       });
 
     default:
