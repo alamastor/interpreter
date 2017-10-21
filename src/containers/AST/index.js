@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import type { State } from "../../store";
 import React, { Component } from "react";
 import * as d3 from "d3";
-import type { Program } from "../../interpreter/Parser";
+import type { ParserOutput } from "../../interpreter/Parser";
 import type { Node } from "./Stratifier";
 import type { ViewNode } from "./tree";
 import { mapTreeToNewCoords, treeMaxX, treeMaxY, viewNodeKey } from "./tree";
@@ -11,7 +11,6 @@ import { NODE_RAD, DURATION } from "./consts";
 import type { Token } from "../../interpreter/Token";
 import { bindActionCreators } from "redux";
 import type { Action } from "../../actionTypes";
-import { UnexpectedToken } from "../../interpreter/Parser";
 import {
   onHoverNode,
   onStopHoverNode,
@@ -22,7 +21,7 @@ import "./index.css";
 import { emptyStrata } from "./reducer";
 
 const mapStateToProps = (state: State) => ({
-  ast: state.ast.ast,
+  parserOutput: state.ast.parserOutput,
   strata: state.ast.strata,
   sourceNode: state.ast.sourceNode,
   tokenList: state.lexer.tokenList,
@@ -51,7 +50,7 @@ const findNode = (root: ViewNode, sourceNode: Node): ?ViewNode => {
 };
 
 type Props = {
-  ast: ?Program | UnexpectedToken,
+  parserOutput: ParserOutput,
   strata: Node,
   sourceNode: Node,
   tokenList: Array<Token>,
@@ -62,7 +61,7 @@ type Props = {
 };
 
 class ASTView extends Component<void, Props, void> {
-  ast: Program;
+  parserOutput: ParserOutput;
   svg: ?HTMLElement;
   containerGroup: ?HTMLElement;
   redrawAST: (?Props) => void;

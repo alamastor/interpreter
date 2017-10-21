@@ -2,8 +2,7 @@
 "use strict";
 import type { Token } from "./interpreter/Token";
 import type { Node } from "./containers/AST/Stratifier";
-import type { Program } from "./interpreter/Parser";
-import { UnexpectedToken } from "./interpreter/Parser";
+import type { ParserOutput } from "./interpreter/Parser";
 
 export type Action =
   | {
@@ -33,10 +32,6 @@ export type Action =
       grammar: Array<string>,
     }
   | {
-      type: "parser_ast_update",
-      ast: Program,
-    }
-  | {
       type: "ast_node_hover",
       node: Node,
     }
@@ -56,8 +51,8 @@ export type Action =
       type: "interpreter_view_symbol_table_toggle_click",
     }
   | {
-      type: "interpreter_received_ast",
-      ast: ?Program | UnexpectedToken,
+      type: "interpreter_received_parser_output",
+      parserOutput: ParserOutput,
     }
   | {
       type: "ast_node_click",

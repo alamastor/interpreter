@@ -150,9 +150,6 @@ class UnexpectedToken extends ExtendableError {
   }
 }
 
-export interface ParserInterface {
-  parse(): Program,
-}
 class Parser {
   tokens: Array<Token>;
   currentToken: Token;
@@ -584,18 +581,27 @@ class Parser {
     return node;
   }
 
-  parse(): ?Program {
+  parse(): ParserOutput {
     this.currentToken = this.tokens[this.tokenIndex++];
     if (this.currentToken.type === "EOF") {
-      return;
+      return {
+        ast: null,
+        error: "",
+      };
     }
     try {
       const program = this.program();
       this.eat("EOF");
-      return program;
+      return {
+        ast: program,
+        error: "",
+      };
     } catch (e) {
       if (e instanceof UnexpectedToken) {
-        return e;
+        return {
+          ast: null,
+          error: e.message,
+        };
       } else {
         throw e;
       }
@@ -603,5 +609,9 @@ class Parser {
   }
 }
 
-export { UnexpectedToken };
+export type ParserOutput = {|
+  ast: ?Program,
+  error: "",
+|};
+
 export default Parser;

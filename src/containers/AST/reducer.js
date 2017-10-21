@@ -1,7 +1,7 @@
 /* @flow */
 import type { Action } from "../../actionTypes.js";
-import type { Program } from "../../interpreter/Parser";
-import Parser, { UnexpectedToken } from "../../interpreter/Parser";
+import type { ParserOutput } from "../../interpreter/Parser";
+import Parser from "../../interpreter/Parser";
 import ASTStratifier from "./Stratifier";
 import type { Node } from "./Stratifier";
 import { updateChildNode } from "./tree";
@@ -13,7 +13,7 @@ const toggleChildren = (node: Node): Node =>
   });
 
 type ASTViewState = {
-  ast: ?Program | UnexpectedToken,
+  parserOutput: ParserOutput,
   strata: Node,
   sourceNode: Node,
 };
@@ -26,7 +26,10 @@ export const emptyStrata: Node = {
 };
 
 const initialState: ASTViewState = {
-  ast: null,
+  parserOutput: {
+    ast: null,
+    error: "",
+  },
   strata: emptyStrata,
   sourceNode: emptyStrata,
 };
@@ -47,17 +50,17 @@ const ASTView = (
       });
 
     case "ast_received_token_list":
-      const ast = new Parser(action.tokenList).parse();
-      if (ast instanceof UnexpectedToken || ast == null) {
+      const parserOutput = new Parser(action.tokenList).parse();
+      if (parserOutput.ast == null) {
         return Object.assign({}, state, {
-          ast: ast,
+          parserOuput: parserOutput,
           strata: emptyStrata,
           sourceNode: emptyStrata,
         });
       }
-      const strata = new ASTStratifier(ast).build();
+      const strata = new ASTStratifier(parserOutput.ast).build();
       return Object.assign({}, state, {
-        ast: ast,
+        parserOutput: parserOutput,
         strata: strata,
         sourceNode: emptyStrata,
       });

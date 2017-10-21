@@ -203,9 +203,17 @@ class Interpreter {
 
   visitVarDecl(varDecl: VarDecl) {}
 
-  interpret() {
-    this.visitProgram(this.program);
-    return "";
+  interpret(): string {
+    try {
+      this.visitProgram(this.program);
+      return "";
+    } catch (e) {
+      if (e instanceof NameError) {
+        return e.message;
+      } else {
+        throw e;
+      }
+    }
   }
 }
 

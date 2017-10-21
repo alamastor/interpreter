@@ -8,8 +8,8 @@ import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
 import type { State } from "../../store";
 import LexerContainer from "../Lexer";
-import Parser, { UnexpectedToken } from "../../interpreter/Parser";
-import type { Program } from "../../interpreter/Parser";
+import Parser from "../../interpreter/Parser";
+import type { ParserOutput } from "../../interpreter/Parser";
 import Code from "../../components/code";
 import type { Action } from "../../actionTypes";
 import {
@@ -17,12 +17,12 @@ import {
   onClickGrammarToggle,
   onClickASTToggle,
   onClickSymbolTableToggle,
-  onReceiveAST,
+  onReceiveParserOutput,
 } from "./actions";
 
 const mapStateToProps = (state: State) => ({
   code: state.interpreterPage.code,
-  ast: state.ast.ast,
+  parserOutput: state.ast.parserOutput,
   interpreterOutput: state.interpreterPage.interpreterOutput,
   symbolTable: state.interpreterPage.symbolTable,
   highlightStart: state.interpreterPage.highlightStart,
@@ -40,7 +40,7 @@ const mapDispatchToProps = (dispatch: *) =>
       onClickGrammarToggle,
       onClickASTToggle,
       onClickSymbolTableToggle,
-      onReceiveAST,
+      onReceiveParserOutput,
     },
     dispatch,
   );
@@ -48,7 +48,7 @@ const mapDispatchToProps = (dispatch: *) =>
 type InterpreterProps = {
   code: string,
   interpreterOutput: string,
-  ast: ?Program | UnexpectedToken,
+  parserOutput: ParserOutput,
   symbolTable: { [string]: ASTSymbol },
   highlightStart: number,
   highlightStop: number,
@@ -61,7 +61,7 @@ type InterpreterProps = {
   onClickGrammarToggle: () => Action,
   onClickASTToggle: () => Action,
   onClickSymbolTableToggle: () => Action,
-  onReceiveAST: (?Program | UnexpectedToken) => Action,
+  onReceiveParserOutput: ParserOutput => Action,
 };
 
 class InterpreterView extends Component<void, InterpreterProps, void> {
@@ -74,8 +74,8 @@ class InterpreterView extends Component<void, InterpreterProps, void> {
   }
 
   componentWillReceiveProps(nextProps: InterpreterProps) {
-    if (nextProps.ast !== this.props.ast) {
-      this.props.onReceiveAST(nextProps.ast);
+    if (nextProps.parserOutput !== this.props.parserOutput) {
+      this.props.onReceiveParserOutput(nextProps.parserOutput);
     }
   }
 
