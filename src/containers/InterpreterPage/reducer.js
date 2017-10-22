@@ -1,6 +1,9 @@
 /* @flow */
 import type { Action } from "../../actionTypes.js";
 import Parser from "../../interpreter/Parser";
+import type { Program } from "../../interpreter/Parser";
+import { lex } from "../../interpreter/Lexer";
+import type { Token } from "../../interpreter/Token";
 import Interpreter from "../../interpreter/Interpreter";
 import SemanticAnalyzer from "../../interpreter/SemanticAnalyzer";
 import type { ASTSymbol } from "../../interpreter/ASTSymbol";
@@ -8,6 +11,8 @@ import defaultPascalCode from "./defaultPascalCode";
 
 type InterpreterPageState = {
   code: string,
+  tokenList: Array<Token>,
+  ast: ?Program,
   symbolTable: { [string]: ASTSymbol },
   highlightStart: number,
   highlightStop: number,
@@ -20,6 +25,8 @@ type InterpreterPageState = {
 
 const interpreterPageInitialState: InterpreterPageState = {
   code: defaultPascalCode,
+  tokenList: [],
+  ast: null,
   symbolTable: {},
   highlightStart: 0,
   highlightStop: 0,
@@ -35,11 +42,6 @@ export default (
   action: Action,
 ) => {
   switch (action.type) {
-    case "code_update":
-      return Object.assign({}, state, {
-        code: action.code,
-      });
-
     case "token_hover":
       return Object.assign({}, state, {
         highlightStart: action.token.startPos,
@@ -52,13 +54,13 @@ export default (
         highlightStop: 0,
       });
 
-    case "ast_node_hover":
+    case "ast_view_node_hover":
       return Object.assign({}, state, {
         highlightStart: action.node.startPos,
         highlightStop: action.node.stopPos,
       });
 
-    case "ast_node_hover_stop":
+    case "ast_view_node_hover_stop":
       return Object.assign({}, state, {
         highlightStart: 0,
         highlightStop: 0,
@@ -79,35 +81,40 @@ export default (
         symbolTableMinimized: !state.symbolTableMinimized,
       });
 
-    case "interpreter_received_parser_output":
-      const parserOutput = action.parserOutput;
-      if (parserOutput.error !== "") {
-        return Object.assign({}, state, {
-          interpreterOutput: parserOutput.error,
-        });
-      }
+    case "code_update":
+      const tokenList = lex(action.code);
+      const parserOutput = new Parser(tokenList).parse();
       const ast = parserOutput.ast;
       if (ast == null) {
         return Object.assign({}, state, {
-          interpreterOutput: "",
+          code: action.code,
+          tokenList: tokenList,
+          ast: ast,
+          interpreterOutput: parserOutput.error,
+          symbolTable: {},
         });
       }
       const semanticAnalyzer = new SemanticAnalyzer();
       const semanticError = semanticAnalyzer.check(ast);
       if (semanticError != null) {
         return Object.assign({}, state, {
-          grammar: Parser.grammar,
+          code: action.code,
+          tokenList: tokenList,
+          ast: ast,
           interpreterOutput: semanticError,
-          symbolTable: semanticAnalyzer.currentScope.symbols,
+          symbolTable: {},
         });
       }
       const interpreterOutput = new Interpreter(ast).interpret();
 
       return Object.assign({}, state, {
-        grammar: Parser.grammar,
+        code: action.code,
+        tokenList: tokenList,
+        ast: ast,
         interpreterOutput: interpreterOutput,
-        symbolTable: semanticAnalyzer.currentScope.symbols,
+        symbolTable: {},
       });
+
     default:
       return state;
   }

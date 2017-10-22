@@ -1,8 +1,8 @@
 /* @flow */
 "use strict";
 import type { Token } from "./interpreter/Token";
-import type { Node } from "./containers/AST/Stratifier";
-import type { ParserOutput } from "./interpreter/Parser";
+import type { Node } from "./containers/ASTView/Stratifier";
+import type { ParserOutput, Program } from "./interpreter/Parser";
 
 export type Action =
   | {
@@ -32,13 +32,6 @@ export type Action =
       grammar: Array<string>,
     }
   | {
-      type: "ast_node_hover",
-      node: Node,
-    }
-  | {
-      type: "ast_node_hover_stop",
-    }
-  | {
       type: "interpreter_view_grammar_toggle_click",
     }
   | {
@@ -55,14 +48,17 @@ export type Action =
       parserOutput: ParserOutput,
     }
   | {
-      type: "ast_node_click",
+      type: "ast_view_node_hover",
       node: Node,
     }
   | {
-      type: "ast_received_next_strata",
-      strata: Node,
+      type: "ast_view_node_hover_stop",
     }
   | {
-      type: "ast_received_token_list",
-      tokenList: Array<Token>,
+      type: "ast_view_node_click",
+      node: Node,
+    }
+  | {
+      type: "ast_view_received_ast",
+      ast: ?Program,
     };

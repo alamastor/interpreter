@@ -9,8 +9,8 @@ import { onClickTokensToggle, onHoverToken, onStopHoverToken } from "./actions";
 import type { Action } from "../../actionTypes";
 
 const mapStateToProps = (state: State) => ({
-  minimized: state.lexer.minimized,
-  tokenList: state.lexer.tokenList
+  minimized: state.lexerView.minimized,
+  tokenList: state.interpreterPage.tokenList,
 });
 
 const mapDispatchToProps = (dispatch: *) =>
@@ -18,9 +18,9 @@ const mapDispatchToProps = (dispatch: *) =>
     {
       onClickTokensToggle,
       onHoverToken,
-      onStopHoverToken
+      onStopHoverToken,
     },
-    dispatch
+    dispatch,
   );
 
 type Props = {
@@ -28,7 +28,7 @@ type Props = {
   tokenList: Array<Token>,
   onClickTokensToggle: () => Action,
   onHoverToken: Token => Action,
-  onStopHoverToken: () => Action
+  onStopHoverToken: () => Action,
 };
 const LexerView = (props: Props) => {
   return (

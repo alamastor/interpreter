@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import type { State } from "../../store";
 import React, { Component } from "react";
 import * as d3 from "d3";
-import type { ParserOutput } from "../../interpreter/Parser";
+import type { Program } from "../../interpreter/Parser";
 import type { Node } from "./Stratifier";
 import type { ViewNode } from "./tree";
 import { mapTreeToNewCoords, treeMaxX, treeMaxY, viewNodeKey } from "./tree";
@@ -15,25 +15,25 @@ import {
   onHoverNode,
   onStopHoverNode,
   onClickNode,
-  onReceiveTokenList,
+  onReceiveAST,
 } from "./actions";
 import "./index.css";
 import { emptyStrata } from "./reducer";
 
 const mapStateToProps = (state: State) => ({
-  parserOutput: state.ast.parserOutput,
-  strata: state.ast.strata,
-  sourceNode: state.ast.sourceNode,
-  tokenList: state.lexer.tokenList,
+  ast: state.interpreterPage.ast,
+  strata: state.astView.strata,
+  sourceNode: state.astView.sourceNode,
+  tokenList: state.lexerView.tokenList,
 });
 
 const mapDispatchToProps = (dispatch: *) =>
   bindActionCreators(
     {
+      onReceiveAST,
       onHoverNode,
       onStopHoverNode,
       onClickNode,
-      onReceiveTokenList,
     },
     dispatch,
   );
@@ -50,18 +50,17 @@ const findNode = (root: ViewNode, sourceNode: Node): ?ViewNode => {
 };
 
 type Props = {
-  parserOutput: ParserOutput,
+  ast: ?Program,
   strata: Node,
   sourceNode: Node,
   tokenList: Array<Token>,
   onHoverNode: Node => Action,
   onStopHoverNode: () => Action,
   onClickNode: Node => Action,
-  onReceiveTokenList: (Array<Token>) => Action,
+  onReceiveAST: (?Program) => Action,
 };
 
 class ASTView extends Component<void, Props, void> {
-  parserOutput: ParserOutput;
   svg: ?HTMLElement;
   containerGroup: ?HTMLElement;
   redrawAST: (?Props) => void;
@@ -78,12 +77,12 @@ class ASTView extends Component<void, Props, void> {
   }
 
   componentWillMount() {
-    this.props.onReceiveTokenList(this.props.tokenList);
+    this.props.onReceiveAST(this.props.ast);
   }
 
   componentWillReceiveProps(nextProps: Props) {
-    if (nextProps.tokenList !== this.props.tokenList) {
-      this.props.onReceiveTokenList(nextProps.tokenList);
+    if (nextProps.ast !== this.props.ast) {
+      this.props.onReceiveAST(nextProps.ast);
       d3
         .select(this.svg)
         .attr("width", 0)

@@ -1,13 +1,13 @@
 /* @flow */
 import React, { Component } from "react";
 import "./index.css";
-import ASTContainer from "../AST";
+import ASTContainer from "../ASTView";
 import type { ASTSymbol } from "../../interpreter/ASTSymbol";
 import { toASTSymbol } from "../../interpreter/ASTSymbol";
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
 import type { State } from "../../store";
-import LexerContainer from "../Lexer";
+import LexerContainer from "../LexerView";
 import Parser from "../../interpreter/Parser";
 import type { ParserOutput } from "../../interpreter/Parser";
 import Code from "../../components/code";
@@ -22,7 +22,6 @@ import {
 
 const mapStateToProps = (state: State) => ({
   code: state.interpreterPage.code,
-  parserOutput: state.ast.parserOutput,
   interpreterOutput: state.interpreterPage.interpreterOutput,
   symbolTable: state.interpreterPage.symbolTable,
   highlightStart: state.interpreterPage.highlightStart,
@@ -30,7 +29,7 @@ const mapStateToProps = (state: State) => ({
   grammarMinimized: state.interpreterPage.grammarMinimized,
   symbolTableMinimized: state.interpreterPage.symbolTableMinimized,
   astMinimized: state.interpreterPage.astMinimized,
-  tokenList: state.lexer.tokenList,
+  tokenList: state.lexerView.tokenList,
 });
 
 const mapDispatchToProps = (dispatch: *) =>
@@ -48,7 +47,6 @@ const mapDispatchToProps = (dispatch: *) =>
 type InterpreterProps = {
   code: string,
   interpreterOutput: string,
-  parserOutput: ParserOutput,
   symbolTable: { [string]: ASTSymbol },
   highlightStart: number,
   highlightStop: number,
@@ -71,12 +69,6 @@ class InterpreterView extends Component<void, InterpreterProps, void> {
     super(props);
 
     this.onSetCode = this.onSetCode.bind(this);
-  }
-
-  componentWillReceiveProps(nextProps: InterpreterProps) {
-    if (nextProps.parserOutput !== this.props.parserOutput) {
-      this.props.onReceiveParserOutput(nextProps.parserOutput);
-    }
   }
 
   componentWillMount() {
