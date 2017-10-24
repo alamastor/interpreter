@@ -66,6 +66,14 @@ export type Param = {|
   stopPos: number,
 |};
 
+export type ProcedureCall = {|
+  type: "procedure_call",
+  name: string,
+  params: Array<BinOp | Num | UnaryOp | Var>,
+  startPos: number,
+  stopPos: number,
+|};
+
 export type ProcedureDecl = {|
   type: "procedure_decl",
   name: string,
@@ -163,8 +171,10 @@ class Parser {
     "type_spec           : INTEGER",
     "compound_statement  : BEGIN statement_list END",
     "statement_list      : statement | statement SEMI statement_list",
-    "statement           : compound_statement | assignment_statement | empty",
-    "assignment_statemnet: variable ASSIGN expr",
+    "statement           : procedure_statement | compound_statement | assignment_statement | empty",
+    "assignment_statement: variable ASSIGN expr",
+    "procedure_statement : variable | variable LPAREN expr_list RPAREN",
+    "expr_list           : expr (COMMA expr)*",
     "empty               :",
     "expr                : term ((PLUS | MINUS) term)*",
     "term                : factor ((MUL | INTEGER_DIV | FLOAT_DIV) factor)*",
@@ -182,6 +192,10 @@ class Parser {
     } else {
       throw new UnexpectedToken(this.currentToken, tokenType);
     }
+  }
+
+  peek(): Token {
+    return this.tokens[this.tokenIndex + 1];
   }
 
   /**
@@ -392,16 +406,57 @@ class Parser {
   }
 
   /**
-   * statement : compound_statement | assignment_statement | empty
+   * statement : procedure_statement | compound_statement | assignment_statement | empty
    */
   statement(): Compound | Assign | NoOp {
     if (this.currentToken.type === "BEGIN") {
       return this.compoundStatement();
     } else if (this.currentToken.type === "ID") {
-      return this.assignmentStatement();
+      const peekToken = this.peek();
+      if (peekToken && peekToken.type === "ASSIGN") {
+        return this.assignmentStatement();
+      } else {
+        return this.procedureStatement();
+      }
     } else {
       return this.empty();
     }
+  }
+
+  /**
+   * procedure_statement : variable | variable LPAREN expr_list RPAREN
+   */
+  procedureStatement(): ProcedureCall {
+    const startPos = this.currentToken.startPos;
+    const variable = this.variable();
+    let params;
+    let stopPos;
+    if (this.currentToken.type === "LPAREN") {
+      this.eat("LPAREN");
+      params = this.exprList();
+      stopPos = this.currentToken.stopPos;
+      this.eat("RPAREN");
+    } else {
+      params = [];
+      stopPos = variable.stopPos;
+    }
+
+    return {
+      type: "procedure_call",
+      name: variable,
+      params: params,
+      startPos: startPos,
+      stopPos: stopPos,
+    };
+  }
+
+  exprList(): Array<BinOp | Num | UnaryOp | Var> {
+    const expressions = [this.expr()];
+    if (this.currentToken.type === "COMMA") {
+      this.eat("COMMA");
+      this.expression.push(this.expr());
+    }
+    return expressions;
   }
 
   /**
