@@ -121,10 +121,6 @@ export const viewNodeKey = (node: ViewNode): string => {
       throw new Error("Parent must have children");
     }
   }
-  if (node.data.name.indexOf("BinOp:INTEGER_DIV") !== -1) {
-    console.log(node.data.name);
-    console.log(key);
-  }
   return key;
 };
 
