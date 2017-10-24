@@ -18,7 +18,6 @@ import {
   onReceiveAST,
 } from "./actions";
 import "./index.css";
-import { emptyStrata } from "./reducer";
 
 const mapStateToProps = (state: State) => ({
   ast: state.interpreterPage.ast,
