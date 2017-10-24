@@ -83,22 +83,11 @@ class ASTView extends Component<void, Props, void> {
   componentWillReceiveProps(nextProps: Props) {
     if (nextProps.ast !== this.props.ast) {
       this.props.onReceiveAST(nextProps.ast);
-      d3
-        .select(this.svg)
-        .attr("width", 0)
-        .attr("height", 0);
-      d3
-        .select(this.containerGroup)
-        .selectAll("*")
-        .remove();
     }
   }
 
   componentDidUpdate(prevProps: Props) {
-    if (
-      this.props.strata !== prevProps.strata &&
-      this.props.strata !== emptyStrata
-    ) {
+    if (this.props.strata !== prevProps.strata) {
       this.redrawAST(prevProps);
     }
   }
@@ -215,7 +204,8 @@ class ASTView extends Component<void, Props, void> {
       .select("text")
       .transition()
       .duration(DURATION)
-      .style("fill-opacity", 1);
+      .style("fill-opacity", 1)
+      .text(d => d.data.name);
     nodeUpdate
       .select("circle")
       .attr("fill", d => (d.data.hiddenChildren ? "#999" : "#333"));

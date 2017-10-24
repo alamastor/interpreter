@@ -107,19 +107,23 @@ export const mapTreeToNewCoords = (tree: ViewNode) => {
 export const viewNodeKey = (node: ViewNode): string => {
   let key: string;
   if (!node.parent) {
-    key = node.data.name;
+    key = "root";
   } else {
     const parent = node.parent;
     if (Array.isArray(parent.children)) {
       const siblings = parent.children;
       const twins = siblings.filter(
-        sibling => sibling.data.name === node.data.name,
+        sibling => sibling.data.type === node.data.type,
       );
       const twinNumber = twins.findIndex(sibling => sibling === node);
-      key = viewNodeKey(parent) + ":" + node.data.name + "." + twinNumber;
+      key = viewNodeKey(parent) + ":" + node.data.type + "." + twinNumber;
     } else {
       throw new Error("Parent must have children");
     }
+  }
+  if (node.data.name.indexOf("BinOp:INTEGER_DIV") !== -1) {
+    console.log(node.data.name);
+    console.log(key);
   }
   return key;
 };

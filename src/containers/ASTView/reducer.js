@@ -18,6 +18,7 @@ type ASTViewState = {
 export const emptyStrata: Node = {
   id: "",
   name: "",
+  type: "",
   startPos: 0,
   stopPos: 0,
 };

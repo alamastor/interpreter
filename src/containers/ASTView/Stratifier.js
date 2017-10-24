@@ -19,6 +19,7 @@ import uuidV4 from "uuid/v4";
 export type Node = {
   id: string,
   name: string,
+  type: string,
   children?: Array<Node>,
   hiddenChildren?: Array<Node>,
   startPos: number,
@@ -58,6 +59,7 @@ class Stratifier {
     return {
       id: uuidV4(),
       name: ":=",
+      type: "Assign",
       children: [variable, value],
       startPos: assign.startPos,
       stopPos: assign.stopPos,
@@ -96,6 +98,7 @@ class Stratifier {
     return {
       id: uuidV4(),
       name: "BinOp:" + binOp.op.type,
+      type: "BinOp",
       children: [left, right],
       startPos: binOp.startPos,
       stopPos: binOp.stopPos,
@@ -114,6 +117,7 @@ class Stratifier {
     return {
       id: uuidV4(),
       name: "Block",
+      type: "Block",
       children: declarations.concat([compoundStatement]),
       startPos: block.startPos,
       stopPos: block.stopPos,
@@ -134,6 +138,7 @@ class Stratifier {
     return {
       id: uuidV4(),
       name: "Compound",
+      type: "Compound",
       children: childNodes,
       startPos: childNodes[0].startPos,
       stopPos: childNodes[childNodes.length - 1].stopPos,
@@ -144,6 +149,7 @@ class Stratifier {
     return {
       id: uuidV4(),
       name: "NoOp",
+      type: "NoOp",
       startPos: noOp.startPos,
       stopPos: noOp.stopPos,
     };
@@ -153,6 +159,7 @@ class Stratifier {
     return {
       id: uuidV4(),
       name: "Num: " + num.token.value,
+      type: "Num",
       startPos: num.startPos,
       stopPos: num.stopPos,
     };
@@ -162,6 +169,7 @@ class Stratifier {
     const params = procedureDecl.params.map(param => ({
       id: uuidV4(),
       name: "Param",
+      type: "Param",
       children: [this.visitVar(param.varNode), this.visitType(param.typeNode)],
       startPos: param.startPos,
       stopPos: param.stopPos,
@@ -172,6 +180,7 @@ class Stratifier {
     return {
       id: uuidV4(),
       name: "ProcedureDecl: " + procedureDecl.name,
+      type: "ProcedureDecl",
       children: params.concat(block),
       startPos: procedureDecl.startPos,
       stopPos: procedureDecl.stopPos,
@@ -182,6 +191,7 @@ class Stratifier {
     return {
       id: uuidV4(),
       name: "Program: " + program.name,
+      type: "Program",
       children: [this.visitBlock(program.block)],
       startPos: program.startPos,
       stopPos: program.stopPos,
@@ -192,6 +202,7 @@ class Stratifier {
     return {
       id: uuidV4(),
       name: "Type: " + type.value,
+      type: "Type",
       startPos: type.startPos,
       stopPos: type.stopPos,
     };
@@ -215,6 +226,7 @@ class Stratifier {
     return {
       id: uuidV4(),
       name: "UnaryOp:" + unaryOp.op.type,
+      type: "UnaryOp",
       children: [expr],
       startPos: unaryOp.startPos,
       stopPos: unaryOp.stopPos,
@@ -225,6 +237,7 @@ class Stratifier {
     return {
       id: uuidV4(),
       name: "Var: " + node.token.value,
+      type: "Var",
       startPos: node.startPos,
       stopPos: node.stopPos,
     };
@@ -234,6 +247,7 @@ class Stratifier {
     return {
       id: uuidV4(),
       name: "VarDecl",
+      type: "VarDecl",
       children: [
         this.visitVar(varDecl.varNode),
         this.visitType(varDecl.typeNode),
