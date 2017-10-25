@@ -389,9 +389,8 @@ class Parser {
   /**
    * statement_list: statement | statement SEMI statement_list
    */
-  statementList(): Array<Compound | Assign | NoOp> {
-    const node = this.statement();
-    const result = [node];
+  statementList(): Array<ProcedureCall | Compound | Assign | NoOp> {
+    const result = [this.statement()];
 
     while (this.currentToken.type === "SEMI") {
       this.eat("SEMI");
@@ -408,7 +407,7 @@ class Parser {
   /**
    * statement : procedure_statement | compound_statement | assignment_statement | empty
    */
-  statement(): Compound | Assign | NoOp {
+  statement(): ProcedureCall | Compound | Assign | NoOp {
     if (this.currentToken.type === "BEGIN") {
       return this.compoundStatement();
     } else if (this.currentToken.type === "ID") {
@@ -454,7 +453,7 @@ class Parser {
     const expressions = [this.expr()];
     if (this.currentToken.type === "COMMA") {
       this.eat("COMMA");
-      this.expression.push(this.expr());
+      expressions.push(this.expr());
     }
     return expressions;
   }
