@@ -186,7 +186,7 @@ class Stratifier {
 
     return {
       id: uuidV4(),
-      name: "ProcCall: " + procedureCall.name.name,
+      name: "ProcCall: " + procedureCall.name,
       type: "ProcCall",
       children: children,
       startPos: procedureCall.startPos,

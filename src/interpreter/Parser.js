@@ -40,7 +40,7 @@ export type Block = {|
 
 export type Compound = {|
   type: "compound",
-  children: Array<Compound | Assign | NoOp>,
+  children: Array<ProcedureCall | Compound | Assign | NoOp>,
   startPos: number,
   stopPos: number,
 |};
@@ -374,10 +374,9 @@ class Parser {
   compoundStatement(): Compound {
     const startPos = this.currentToken.startPos;
     this.eat("BEGIN");
-    const nodes = this.statementList();
+    const children = this.statementList();
     this.eat("END");
 
-    const children = nodes.map(x => x);
     return {
       type: "compound",
       children: children,
@@ -442,7 +441,7 @@ class Parser {
 
     return {
       type: "procedure_call",
-      name: variable,
+      name: variable.name,
       params: params,
       startPos: startPos,
       stopPos: stopPos,
