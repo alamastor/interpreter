@@ -208,8 +208,8 @@ class Stratifier {
 
     return {
       id: uuidV4(),
-      name: "ProcedureDecl: " + procedureDecl.name,
-      type: "ProcedureDecl",
+      name: "ProcDecl: " + procedureDecl.name,
+      type: "ProcDecl",
       children: params.concat(block),
       startPos: procedureDecl.startPos,
       stopPos: procedureDecl.stopPos,
