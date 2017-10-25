@@ -16,16 +16,16 @@ import type {
 export type Assign = {|
   type: "assign",
   variable: Var,
-  value: BinOp | Num | UnaryOp | Var,
+  value: Expr,
   startPos: number,
   stopPos: number,
 |};
 
 export type BinOp = {|
   type: "bin_op",
-  left: BinOp | Num | UnaryOp | Var,
+  left: Expr,
   op: PLUS | MINUS | MUL | INTEGER_DIV | FLOAT_DIV,
-  right: BinOp | Num | UnaryOp | Var,
+  right: Expr,
   startPos: number,
   stopPos: number,
 |};
@@ -44,6 +44,8 @@ export type Compound = {|
   startPos: number,
   stopPos: number,
 |};
+
+export type Expr = BinOp | Num | UnaryOp | Var;
 
 export type NoOp = {|
   type: "no_op",
@@ -69,7 +71,7 @@ export type Param = {|
 export type ProcedureCall = {|
   type: "procedure_call",
   name: string,
-  params: Array<BinOp | Num | UnaryOp | Var>,
+  params: Array<Expr>,
   startPos: number,
   stopPos: number,
 |};
@@ -102,7 +104,7 @@ export type Type = {|
 export type UnaryOp = {|
   type: "unary_op",
   op: PLUS | MINUS,
-  expr: BinOp | Num | UnaryOp | Var,
+  expr: Expr,
   startPos: number,
   stopPos: number,
 |};

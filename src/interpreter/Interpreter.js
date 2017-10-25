@@ -5,8 +5,10 @@ import type {
   BinOp,
   Block,
   Compound,
+  Expr,
   UnaryOp,
   NoOp,
+  Param,
   ProcedureCall,
   ProcedureDecl,
   Program,
@@ -16,6 +18,8 @@ import type {
   VarDecl,
 } from "./Parser";
 import type { Token } from "./Token";
+import ScopedNameSpace from "./ScopedNameSpace";
+import _ from "lodash";
 
 export class InterpreterError extends ExtendableError {}
 
@@ -49,32 +53,19 @@ class NameError extends InterpreterError {
 
 class Interpreter {
   program: Program;
-  globalScope: Map<string, number>;
+  currentScope: ScopedNameSpace;
 
   constructor(program: Program) {
     this.program = program;
-    this.globalScope = new Map();
+    this.currentScope = new ScopedNameSpace(this.program.name, 0);
   }
 
   visitAssign(assign: Assign) {
     if (assign.variable.token.type === "ID") {
       const varName = assign.variable.token.value;
-      let value;
-      switch (assign.value.type) {
-        case "bin_op":
-          value = this.visitBinOp(assign.value);
-          break;
-        case "num":
-          value = this.visitNum(assign.value);
-          break;
-        case "unary_op":
-          value = this.visitUnaryOp(assign.value);
-          break;
-        default:
-          value = this.visitVar(assign.value);
-      }
+      const value = this.visitExpr(assign.value);
       if (typeof value === "number") {
-        this.globalScope.set(varName, value);
+        this.currentScope.insertValue(varName, value);
       } else {
         throw new InterpreterError("Expected number.");
       }
@@ -84,34 +75,8 @@ class Interpreter {
   }
 
   visitBinOp(binOp: BinOp) {
-    let left;
-    switch (binOp.left.type) {
-      case "bin_op":
-        left = this.visitBinOp(binOp.left);
-        break;
-      case "num":
-        left = this.visitNum(binOp.left);
-        break;
-      case "unary_op":
-        left = this.visitUnaryOp(binOp.left);
-        break;
-      default:
-        left = this.visitVar(binOp.left);
-    }
-    let right;
-    switch (binOp.right.type) {
-      case "bin_op":
-        right = this.visitBinOp(binOp.right);
-        break;
-      case "num":
-        right = this.visitNum(binOp.right);
-        break;
-      case "unary_op":
-        right = this.visitUnaryOp(binOp.right);
-        break;
-      default:
-        right = this.visitVar(binOp.right);
-    }
+    const left = this.visitExpr(binOp.left);
+    const right = this.visitExpr(binOp.right);
 
     switch (binOp.op.type) {
       case "PLUS":
@@ -157,49 +122,86 @@ class Interpreter {
     });
   }
 
+  visitExpr(expr: Expr) {
+    switch (expr.type) {
+      case "bin_op":
+        return this.visitBinOp(expr);
+      case "num":
+        return this.visitNum(expr);
+      case "unary_op":
+        return this.visitUnaryOp(expr);
+      default:
+        return this.visitVar(expr);
+    }
+  }
+
   visitNoOp(noOp: NoOp) {}
 
   visitNum(num: Num): number {
     return num.token.value;
   }
 
-  visitProcedureCall(procedureCall: ProcedureCall) {}
+  visitProcedureCall(procedureCall: ProcedureCall) {
+    const proc = this.currentScope.lookUpProcedure(procedureCall.name);
+    if (!proc) {
+      throw new NameError(
+        "Proc " + procedureCall.name + " not found in current scope.",
+      );
+    }
+    this.currentScope = new ScopedNameSpace(
+      procedureCall.name,
+      this.currentScope.scopeLevel + 1,
+      this.currentScope,
+    );
 
-  visitProcedureDecl(procedureDecl: ProcedureDecl) {}
+    const nameValPairs: Array<[Param, Expr]> = _.zip(
+      proc.params,
+      procedureCall.params,
+    );
+    nameValPairs.forEach(pair => {
+      this.currentScope.insertValue(
+        pair[0].varNode.name,
+        this.visitExpr(pair[1]),
+      );
+    });
+    this.visitBlock(proc.block);
+    if (this.currentScope.enclosingScope) {
+      this.currentScope = this.currentScope.enclosingScope;
+    }
+  }
+
+  visitProcedureDecl(procedureDecl: ProcedureDecl) {
+    this.currentScope.insertProcedure(procedureDecl);
+  }
 
   visitProgram(program: Program) {
+    this.currentScope = new ScopedNameSpace(
+      "global",
+      this.currentScope.scopeLevel + 1,
+      this.currentScope,
+    );
     this.visitBlock(program.block);
+    if (this.currentScope.enclosingScope) {
+      this.currentScope = this.currentScope.enclosingScope;
+    }
   }
 
   visitType(type: Type) {}
 
   visitUnaryOp(unaryOp: UnaryOp) {
-    let expr;
-    switch (unaryOp.expr.type) {
-      case "bin_op":
-        expr = this.visitBinOp(unaryOp.expr);
-        break;
-      case "num":
-        expr = this.visitNum(unaryOp.expr);
-        break;
-      case "unary_op":
-        expr = this.visitUnaryOp(unaryOp.expr);
-        break;
-      default:
-        expr = this.visitVar(unaryOp.expr);
-    }
+    const expr = this.visitExpr(unaryOp.expr);
     switch (unaryOp.op.type) {
       case "PLUS":
         return expr;
       default:
-        // MINU
+        // MINUS
         return -expr;
     }
   }
 
   visitVar(var_: Var): number {
     const varName = var_.token.value;
-    const val = this.globalScope.get(varName);
+    const val = this.currentScope.lookUpValue(varName);
     if (val !== undefined && val !== null) {
       return val;
     } else {
