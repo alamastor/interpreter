@@ -195,7 +195,7 @@ class Parser {
   }
 
   peek(): Token {
-    return this.tokens[this.tokenIndex + 1];
+    return this.tokens[this.tokenIndex];
   }
 
   /**
