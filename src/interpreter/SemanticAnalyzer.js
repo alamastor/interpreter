@@ -7,6 +7,7 @@ import type {
   Compound,
   NoOp,
   Num,
+  ProcedureCall,
   ProcedureDecl,
   Program,
   UnaryOp,
@@ -100,6 +101,9 @@ export default class SemanticAnalyzer {
   visitCompound(compound: Compound) {
     compound.children.forEach(child => {
       switch (child.type) {
+        case "procedure_call":
+          this.visitProcedureCall(child);
+          break;
         case "compound":
           this.visitCompound(child);
           break;
@@ -115,6 +119,8 @@ export default class SemanticAnalyzer {
   visitNoOp(noOp: NoOp) {}
 
   visitNum(num: Num) {}
+
+  visitProcedureCall(procedureCall: ProcedureCall) {}
 
   visitProcedureDecl(procedureDecl: ProcedureDecl) {
     const procName = procedureDecl.name;

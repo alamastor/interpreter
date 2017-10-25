@@ -7,6 +7,7 @@ import type {
   Compound,
   UnaryOp,
   NoOp,
+  ProcedureCall,
   ProcedureDecl,
   Program,
   Num,
@@ -141,6 +142,9 @@ class Interpreter {
   visitCompound(compound: Compound) {
     compound.children.forEach(child => {
       switch (child.type) {
+        case "procedure_call":
+          this.visitProcedureCall(child);
+          break;
         case "compound":
           this.visitCompound(child);
           break;
@@ -158,6 +162,8 @@ class Interpreter {
   visitNum(num: Num): number {
     return num.token.value;
   }
+
+  visitProcedureCall(procedureCall: ProcedureCall) {}
 
   visitProcedureDecl(procedureDecl: ProcedureDecl) {}
 
