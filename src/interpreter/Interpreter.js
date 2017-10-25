@@ -215,7 +215,7 @@ class Interpreter {
       return "";
     } catch (e) {
       if (e instanceof NameError) {
-        return e.message;
+        return "Name Error: " + e.message;
       } else {
         throw e;
       }

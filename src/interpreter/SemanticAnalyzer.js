@@ -39,52 +39,16 @@ export default class SemanticAnalyzer {
   }
 
   visitAssign(assign: Assign) {
-    switch (assign.value.type) {
-      case "bin_op":
-        this.visitBinOp(assign.value);
-        break;
-      case "num":
-        this.visitNum(assign.value);
-        break;
-      case "unary_op":
-        this.visitUnaryOp(assign.value);
-        break;
-      default:
-        // var case
-        this.visitVar(assign.value);
+    const varSymbol = this.currentScope.lookup(assign.variable.name);
+    if (varSymbol == null) {
+      throw new SemanticError(assign.variable.name + " not found in scope.");
     }
+    this.visitExpr(assign.value);
   }
 
   visitBinOp(binOp: BinOp) {
-    switch (binOp.left.type) {
-      case "bin_op":
-        this.visitBinOp(binOp.left);
-        break;
-      case "num":
-        this.visitNum(binOp.left);
-        break;
-      case "unary_op":
-        this.visitUnaryOp(binOp.left);
-        break;
-      default:
-        // var case
-        this.visitVar(binOp.left);
-    }
-
-    switch (binOp.right.type) {
-      case "bin_op":
-        this.visitBinOp(binOp.right);
-        break;
-      case "num":
-        this.visitNum(binOp.right);
-        break;
-      case "unary_op":
-        this.visitUnaryOp(binOp.right);
-        break;
-      default:
-        // var case
-        this.visitVar(binOp.right);
-    }
+    this.visitExpr(binOp.left);
+    this.visitExpr(binOp.right);
   }
 
   visitBlock(block: Block) {
@@ -116,11 +80,54 @@ export default class SemanticAnalyzer {
     });
   }
 
+  visitExpr(expr: BinOp | Num | UnaryOp | Var) {
+    switch (expr.type) {
+      case "bin_op":
+        this.visitBinOp(expr);
+        break;
+      case "num":
+        this.visitNum(expr);
+        break;
+      case "unary_op":
+        this.visitUnaryOp(expr);
+        break;
+      default:
+        // var case
+        this.visitVar(expr);
+    }
+  }
+
   visitNoOp(noOp: NoOp) {}
 
   visitNum(num: Num) {}
 
-  visitProcedureCall(procedureCall: ProcedureCall) {}
+  visitProcedureCall(procedureCall: ProcedureCall) {
+    const procedureSymbol = this.currentScope.lookup(procedureCall.name);
+    if (!procedureSymbol) {
+      throw new SemanticError(procedureCall.name + " not found in scope.");
+    } else if (procedureSymbol.symbolType !== "procedure") {
+      throw new SemanticError(
+        "Expected " +
+          procedureCall.name +
+          " to be type procedure but it is " +
+          procedureSymbol.symbolType +
+          ".",
+      );
+    }
+    if (procedureCall.params.length !== procedureSymbol.params.length) {
+      throw new SemanticError(
+        "Wrong number of params to " +
+          procedureCall.name +
+          ", expected " +
+          procedureSymbol.params.length +
+          " got " +
+          procedureCall.params.length +
+          ".",
+      );
+    }
+
+    procedureCall.params.forEach(param => this.visitExpr(param));
+  }
 
   visitProcedureDecl(procedureDecl: ProcedureDecl) {
     const procName = procedureDecl.name;
@@ -141,13 +148,9 @@ export default class SemanticAnalyzer {
     procedureDecl.params.forEach(param => {
       const paramType = this.currentScope.lookup(param.typeNode.value);
       if (!paramType) {
-        throw SemanticError(
-          "Expected built in type " +
-            param.typeNode.value +
-            " not found in scope.",
-        );
+        throw new SemanticError(param.typeNode.value + " not found in scope.");
       } else if (paramType.symbolType !== "builtin_type") {
-        throw SemanticError(
+        throw new SemanticError(
           "Expected built in type, got : " + paramType.symbolType,
         );
       } else {
@@ -197,7 +200,7 @@ export default class SemanticAnalyzer {
     const varSymbol = this.currentScope.lookup(varName);
 
     if (!varSymbol) {
-      throw new SemanticError(varName);
+      throw new SemanticError(variable.name + " not found in scope.");
     }
   }
 
