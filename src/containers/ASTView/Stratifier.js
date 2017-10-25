@@ -8,6 +8,7 @@ import type {
   NoOp,
   Num,
   ProcedureDecl,
+  ProcedureCall,
   Program,
   Type,
   UnaryOp,
@@ -127,6 +128,8 @@ class Stratifier {
   visitCompound(compound: Compound): Node {
     const childNodes = compound.children.map(child => {
       switch (child.type) {
+        case "procedure_call":
+          return this.visitProcedureCall(child);
         case "compound":
           return this.visitCompound(child);
         case "assign":
@@ -143,6 +146,19 @@ class Stratifier {
       startPos: childNodes[0].startPos,
       stopPos: childNodes[childNodes.length - 1].stopPos,
     };
+  }
+
+  visitExpr(expr: BinOp | Num | UnaryOp | Var) {
+    switch (expr.type) {
+      case "bin_op":
+        return this.visitBinOp(expr);
+      case "num":
+        return this.visitNum(expr);
+      case "unary_op":
+        return this.visitUnaryOp(expr);
+      default:
+        return this.visitVar(expr);
+    }
   }
 
   visitNoOp(noOp: NoOp): Node {
@@ -162,6 +178,19 @@ class Stratifier {
       type: "Num",
       startPos: num.startPos,
       stopPos: num.stopPos,
+    };
+  }
+
+  visitProcedureCall(procedureCall: ProcedureCall): Node {
+    const children = procedureCall.params.map(param => this.visitExpr(param));
+
+    return {
+      id: uuidV4(),
+      name: "ProcCall: " + procedureCall.name.name,
+      type: "ProcCall",
+      children: children,
+      startPos: procedureCall.startPos,
+      stopPos: procedureCall.stopPos,
     };
   }
 
