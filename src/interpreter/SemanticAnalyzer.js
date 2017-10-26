@@ -21,6 +21,7 @@ import type {
   VarSymbol,
   BuiltinTypeSymbol,
 } from "./ASTSymbol";
+import _ from "lodash";
 
 export class SemanticError extends ExtendableError {}
 
@@ -222,7 +223,30 @@ export default class SemanticAnalyzer {
       );
     }
 
-    procedureCall.params.forEach(param => this.visitExpr(param));
+    const expectedAndGotParams = _.zip(
+      procedureSymbol.params,
+      procedureCall.params,
+    );
+    expectedAndGotParams.forEach(([expected, got]) => {
+      const expectedType = expected.type.name;
+      const gotType = this.visitExpr(got).name;
+      if (
+        expectedType !== gotType &&
+        (expectedType !== "REAL" && gotType !== "INTEGER")
+      ) {
+        throw new SemanticError(
+          "Wrong param type to " +
+            procedureSymbol.name +
+            " param " +
+            expected.name +
+            ", expected " +
+            expectedType +
+            " got " +
+            gotType +
+            ".",
+        );
+      }
+    });
   }
 
   visitProcedureDecl(procedureDecl: ProcedureDecl) {
