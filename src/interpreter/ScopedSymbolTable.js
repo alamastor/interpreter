@@ -1,5 +1,6 @@
 /* @flow */
-import type { ASTSymbol } from "./ASTSymbol";
+import type { ASTSymbol, VarSymbol } from "./ASTSymbol";
+import { toVarSymbol } from "./ASTSymbol";
 
 export default class ScopedSymbolTable {
   symbols: { [string]: ASTSymbol };
@@ -42,5 +43,9 @@ export default class ScopedSymbolTable {
     if (this.enclosingScope) {
       return this.enclosingScope.lookup(name);
     }
+  }
+
+  lookupVar(name: string): ?VarSymbol {
+    return toVarSymbol(this.lookup(name));
   }
 }

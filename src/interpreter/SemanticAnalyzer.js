@@ -5,6 +5,7 @@ import type {
   BinOp,
   Block,
   Compound,
+  Expr,
   NoOp,
   Num,
   ProcedureCall,
@@ -15,7 +16,11 @@ import type {
   VarDecl,
 } from "./Parser";
 import ScopedSymbolTable from "./ScopedSymbolTable";
-import type { ProcedureSymbol, VarSymbol } from "./ASTSymbol";
+import type {
+  ProcedureSymbol,
+  VarSymbol,
+  BuiltinTypeSymbol,
+} from "./ASTSymbol";
 
 export class SemanticError extends ExtendableError {}
 
@@ -39,24 +44,96 @@ export default class SemanticAnalyzer {
   }
 
   visitAssign(assign: Assign) {
-    const varSymbol = this.currentScope.lookup(assign.variable.name);
+    const varSymbol = this.currentScope.lookupVar(assign.variable.name);
     if (varSymbol == null) {
       throw new SemanticError(assign.variable.name + " not found in scope.");
     }
-    this.visitExpr(assign.value);
+    const exprType = this.visitExpr(assign.value);
+    if (varSymbol.type.name !== exprType.name) {
+      if (varSymbol.type.name !== "REAL" && exprType.name !== "INTEGER") {
+        throw new SemanticError(
+          "Can't assign type " +
+            exprType.name +
+            " to var '" +
+            varSymbol.name +
+            "' which has type " +
+            varSymbol.type.name +
+            ".",
+        );
+      }
+    }
   }
 
-  visitBinOp(binOp: BinOp) {
-    this.visitExpr(binOp.left);
-    this.visitExpr(binOp.right);
+  visitBinOp(binOp: BinOp): BuiltinTypeSymbol {
+    const left = this.visitExpr(binOp.left);
+    const right = this.visitExpr(binOp.right);
+    switch (binOp.op.type) {
+      case "PLUS":
+        return this.intRealMixedOp("add", left, right);
+      case "MINUS":
+        return this.intRealMixedOp("subract", left, right);
+      case "MUL":
+        return this.intRealMixedOp("multiply", left, right);
+      case "FLOAT_DIV":
+        return this.intRealMixedOp("divide", left, right);
+      case "INTEGER_DIV":
+        // INTEGER_DIV case
+        if (left.name === "INTEGER" && right.name === "INTEGER") {
+          return left;
+        } else {
+          throw new SemanticError(
+            "Can't integer divide types " +
+              left.name +
+              " and " +
+              right.name +
+              ".",
+          );
+        }
+      default:
+        /* eslint-disable no-unused-expressions */
+        (binOp.op.type: empty); // Won't type check if new case added!
+        /* eslint-enable no-unused-expressions */
+        throw new Error("Impossible state");
+    }
+  }
+
+  intRealMixedOp(
+    opName: string,
+    left: BuiltinTypeSymbol,
+    right: BuiltinTypeSymbol,
+  ): BuiltinTypeSymbol {
+    if (
+      (left.name === "INTEGER" && right.name === "INTEGER") ||
+      (left.name === "REAL" && right.name === "REAL")
+    ) {
+      return left;
+    } else if (
+      (left.name === "INTEGER" && right.name === "REAL") ||
+      (left.name === "REAL" && right.name === "INTEGER")
+    ) {
+      return {
+        symbolType: "builtin_type",
+        name: "REAL",
+      };
+    } else {
+      throw new SemanticError(
+        "Can't " + opName + " types " + left.name + " and " + right.name + ".",
+      );
+    }
   }
 
   visitBlock(block: Block) {
     block.declarations.forEach(node => {
-      if (node.type === "var_decl") {
-        return this.visitVarDecl(node);
-      } else {
-        return this.visitProcedureDecl(node);
+      switch (node.type) {
+        case "var_decl":
+          return this.visitVarDecl(node);
+        case "procedure_decl":
+          return this.visitProcedureDecl(node);
+        default:
+          /* eslint-disable no-unused-expressions */
+          (node.type: empty); // Won't type check if new case added!
+          /* eslint-enable no-unused-expressions */
+          throw new Error("Impossible state");
       }
     });
     this.visitCompound(block.compoundStatement);
@@ -74,32 +151,51 @@ export default class SemanticAnalyzer {
         case "assign":
           this.visitAssign(child);
           break;
-        default:
+        case "no_op":
           this.visitNoOp(child);
+          break;
+        default:
+          /* eslint-disable no-unused-expressions */
+          (child.type: empty); // Won't type check if new case added!
+          /* eslint-enable no-unused-expressions */
+          throw new Error("Impossible state");
       }
     });
   }
 
-  visitExpr(expr: BinOp | Num | UnaryOp | Var) {
+  visitExpr(expr: Expr): BuiltinTypeSymbol {
     switch (expr.type) {
       case "bin_op":
-        this.visitBinOp(expr);
-        break;
+        return this.visitBinOp(expr);
       case "num":
-        this.visitNum(expr);
-        break;
+        return this.visitNum(expr);
       case "unary_op":
-        this.visitUnaryOp(expr);
-        break;
+        return this.visitUnaryOp(expr);
+      case "var":
+        return this.visitVar(expr);
       default:
-        // var case
-        this.visitVar(expr);
+        /* eslint-disable no-unused-expressions */
+        (expr.type: empty); // Won't type check if new case added!
+        /* eslint-enable no-unused-expressions */
+        throw new Error("Impossible state");
     }
   }
 
   visitNoOp(noOp: NoOp) {}
 
-  visitNum(num: Num) {}
+  visitNum(num: Num): BuiltinTypeSymbol {
+    switch (num.token.type) {
+      case "INTEGER_CONST":
+        return { symbolType: "builtin_type", name: "INTEGER" };
+      case "REAL_CONST":
+        return { symbolType: "builtin_type", name: "REAL" };
+      default:
+        /* eslint-disable no-unused-expressions */
+        (num.token.type: empty); // Won't type check if new case added!
+        /* eslint-enable no-unused-expressions */
+        throw new Error("Impossible state");
+    }
+  }
 
   visitProcedureCall(procedureCall: ProcedureCall) {
     const procedureSymbol = this.currentScope.lookup(procedureCall.name);
@@ -178,30 +274,18 @@ export default class SemanticAnalyzer {
     this.visitBlock(program.block);
   }
 
-  visitUnaryOp(unaryOp: UnaryOp) {
-    switch (unaryOp.expr.type) {
-      case "bin_op":
-        this.visitBinOp(unaryOp.expr);
-        break;
-      case "num":
-        this.visitNum(unaryOp.expr);
-        break;
-      case "unary_op":
-        this.visitUnaryOp(unaryOp.expr);
-        break;
-      default:
-        // var case
-        this.visitVar(unaryOp.expr);
-    }
+  visitUnaryOp(unaryOp: UnaryOp): BuiltinTypeSymbol {
+    return this.visitExpr(unaryOp.expr);
   }
 
-  visitVar(variable: Var) {
+  visitVar(variable: Var): BuiltinTypeSymbol {
     const varName = variable.name;
-    const varSymbol = this.currentScope.lookup(varName);
+    const varSymbol = this.currentScope.lookupVar(varName);
 
     if (!varSymbol) {
       throw new SemanticError(variable.name + " not found in scope.");
     }
+    return varSymbol.type;
   }
 
   visitVarDecl(varDecl: VarDecl) {

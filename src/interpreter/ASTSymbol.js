@@ -1,8 +1,8 @@
 /* @flow */
 
-type BuiltinTypeSymbol = {|
+export type BuiltinTypeSymbol = {|
   symbolType: "builtin_type",
-  name: string,
+  name: "INTEGER" | "REAL",
 |};
 
 export type VarSymbol = {|
@@ -26,7 +26,7 @@ const toBuiltinTypeSymbol = (x: mixed): ?BuiltinTypeSymbol => {
     x.hasOwnProperty("symbolType") &&
     x.symbolType === "builtin_type" &&
     x.hasOwnProperty("name") &&
-    typeof x.name === "string"
+    (x.name === "INTEGER" || x.name === "REAL")
   ) {
     return {
       symbolType: "builtin_type",
@@ -35,7 +35,7 @@ const toBuiltinTypeSymbol = (x: mixed): ?BuiltinTypeSymbol => {
   }
 };
 
-const toVarSymblol = (x: mixed): ?VarSymbol => {
+export const toVarSymbol = (x: mixed): ?VarSymbol => {
   if (
     typeof x === "object" &&
     x &&
@@ -87,5 +87,5 @@ const toProcedureSymbol = (x: mixed): ?ProcedureSymbol => {
 };
 
 export const toASTSymbol = (x: mixed): ?ASTSymbol => {
-  return toBuiltinTypeSymbol(x) || toVarSymblol(x) || toProcedureSymbol(x);
+  return toBuiltinTypeSymbol(x) || toVarSymbol(x) || toProcedureSymbol(x);
 };
