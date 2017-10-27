@@ -134,8 +134,13 @@ class Stratifier {
           return this.visitCompound(child);
         case "assign":
           return this.visitAssign(child);
-        default:
+        case "no_op":
           return this.visitNoOp(child);
+        default:
+          /* eslint-disable no-unused-expressions */
+          (child.type: empty); // Won't type check if new case added!
+          /* eslint-enable no-unused-expressions */
+          throw new Error("Impossible state");
       }
     });
     return {
