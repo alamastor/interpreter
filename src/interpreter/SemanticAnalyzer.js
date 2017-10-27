@@ -78,7 +78,6 @@ export default class SemanticAnalyzer {
       case "FLOAT_DIV":
         return this.intRealMixedOp("divide", left, right);
       case "INTEGER_DIV":
-        // INTEGER_DIV case
         if (left.name === "INTEGER" && right.name === "INTEGER") {
           return left;
         } else {
