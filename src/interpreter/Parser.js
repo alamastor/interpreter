@@ -40,7 +40,7 @@ export type Block = {|
 
 export type Compound = {|
   type: "compound",
-  children: Array<ProcedureCall | Compound | Assign | NoOp>,
+  children: Array<ProcedureCall | Compound | Assign | NoOp | WriteStream>,
   startPos: number,
   stopPos: number,
 |};
@@ -121,6 +121,14 @@ export type VarDecl = {|
   type: "var_decl",
   varNode: Var,
   typeNode: Type,
+  startPos: number,
+  stopPos: number,
+|};
+
+export type WriteStream = {|
+  type: "write_stream",
+  stream: string,
+  var: Var,
   startPos: number,
   stopPos: number,
 |};
@@ -390,7 +398,12 @@ class Parser {
   /**
    * statement_list: statement | statement SEMI statement_list
    */
-  statementList(): Array<ProcedureCall | Compound | Assign | NoOp> {
+  statementList(): Array<
+    ProcedureCall | Compound | Assign | NoOp | WriteStream,
+  > {
+    // NOTE: Parser can't actually produce WriteStream node, the node will be
+    // inserted by built in procedures. WriteStream is just here to keep type
+    // checker happy.
     const result = [this.statement()];
 
     while (this.currentToken.type === "SEMI") {

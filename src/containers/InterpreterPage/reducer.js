@@ -105,7 +105,9 @@ export default (
           symbolTable: {},
         });
       }
-      const interpreterOutput = new Interpreter(ast).interpret();
+      const interpreterStreams = new Interpreter(ast).interpret();
+      const interpreterOutput =
+        interpreterStreams.STDOUT + "\n" + interpreterStreams.STDERR;
 
       return Object.assign({}, state, {
         code: action.code,

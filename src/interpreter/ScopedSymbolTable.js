@@ -36,7 +36,7 @@ export default class ScopedSymbolTable {
       return symbol;
     }
 
-    if (currentScopeOnly !== null) {
+    if (currentScopeOnly != null) {
       return;
     }
 

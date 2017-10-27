@@ -14,6 +14,7 @@ import type {
   UnaryOp,
   Var,
   VarDecl,
+  WriteStream,
 } from "../../interpreter/Parser";
 import uuidV4 from "uuid/v4";
 
@@ -136,6 +137,8 @@ class Stratifier {
           return this.visitAssign(child);
         case "no_op":
           return this.visitNoOp(child);
+        case "write_stream":
+          return this.visitWriteStream(child);
         default:
           /* eslint-disable no-unused-expressions */
           (child.type: empty); // Won't type check if new case added!
@@ -288,6 +291,16 @@ class Stratifier {
       ],
       startPos: varDecl.startPos,
       stopPos: varDecl.stopPos,
+    };
+  }
+
+  visitWriteStream(writeStream: WriteStream): Node {
+    return {
+      id: uuidV4(),
+      name: "WriteStream",
+      type: "WriteStream",
+      startPos: writeStream.startPos,
+      stopPos: writeStream.stopPos,
     };
   }
 }

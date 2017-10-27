@@ -16,10 +16,12 @@ import type {
   Type,
   Var,
   VarDecl,
+  WriteStream,
 } from "./Parser";
 import type { Token } from "./Token";
 import ScopedNameSpace from "./ScopedNameSpace";
 import _ from "lodash";
+import { write } from "./builtins";
 
 export class InterpreterError extends ExtendableError {}
 
@@ -54,10 +56,23 @@ class NameError extends InterpreterError {
 class Interpreter {
   program: Program;
   currentScope: ScopedNameSpace;
+  streams: {|
+    STDOUT: string,
+    STDERR: string,
+  |};
 
   constructor(program: Program) {
     this.program = program;
     this.currentScope = new ScopedNameSpace(this.program.name, 0);
+    this.streams = {
+      STDOUT: "",
+      STDERR: "",
+    };
+    this.initBuiltins();
+  }
+
+  initBuiltins() {
+    this.currentScope.insertProcedure(write);
   }
 
   visitAssign(assign: Assign) {
@@ -87,9 +102,13 @@ class Interpreter {
         return left * right;
       case "INTEGER_DIV":
         return Math.floor(left / right);
-      default:
-        // FLOAT_DIV
+      case "FLOAT_DIV":
         return left / right;
+      default:
+        /* eslint-disable no-unused-expressions */
+        (binOp.op.type: empty); // Won't type check if new case added!
+        /* eslint-enable no-unused-expressions */
+        throw new Error("Impossible state");
     }
   }
 
@@ -116,13 +135,22 @@ class Interpreter {
         case "assign":
           this.visitAssign(child);
           break;
-        default:
+        case "no_op":
           this.visitNoOp(child);
+          break;
+        case "write_stream":
+          this.visitWriteStream(child);
+          break;
+        default:
+          /* eslint-disable no-unused-expressions */
+          (child.type: empty); // Won't type check if new case added!
+          /* eslint-enable no-unused-expressions */
+          throw new Error("Impossible state");
       }
     });
   }
 
-  visitExpr(expr: Expr) {
+  visitExpr(expr: Expr): number {
     switch (expr.type) {
       case "bin_op":
         return this.visitBinOp(expr);
@@ -211,13 +239,19 @@ class Interpreter {
 
   visitVarDecl(varDecl: VarDecl) {}
 
-  interpret(): string {
+  visitWriteStream(writeStream: WriteStream) {
+    const value = this.currentScope.lookUpValue(writeStream.var.name);
+    this.streams[writeStream.stream] += value;
+  }
+
+  interpret(): { STDOUT: string, STDERR: string } {
     try {
       this.visitProgram(this.program);
-      return "";
+      return this.streams;
     } catch (e) {
       if (e instanceof NameError) {
-        return "Name Error: " + e.message;
+        this.streams.STDOUT += "Name Error: " + e.message;
+        return this.streams;
       } else {
         throw e;
       }

@@ -14,6 +14,7 @@ import type {
   UnaryOp,
   Var,
   VarDecl,
+  WriteStream,
 } from "./Parser";
 import ScopedSymbolTable from "./ScopedSymbolTable";
 import type {
@@ -22,6 +23,7 @@ import type {
   BuiltinTypeSymbol,
 } from "./ASTSymbol";
 import _ from "lodash";
+import { write } from "./builtins";
 
 export class SemanticError extends ExtendableError {}
 
@@ -30,6 +32,11 @@ export default class SemanticAnalyzer {
 
   constructor() {
     this.currentScope = new ScopedSymbolTable("empty", 0);
+    this.initBuiltins();
+  }
+
+  initBuiltins() {
+    this.visitProcedureDecl(write);
   }
 
   check(program: Program): ?string {
@@ -153,6 +160,9 @@ export default class SemanticAnalyzer {
           break;
         case "no_op":
           this.visitNoOp(child);
+          break;
+        case "write_stream":
+          this.visitWriteStream(child);
           break;
         default:
           /* eslint-disable no-unused-expressions */
@@ -292,9 +302,16 @@ export default class SemanticAnalyzer {
   }
 
   visitProgram(program: Program) {
-    const globalScope = new ScopedSymbolTable("global", 1);
+    const globalScope = new ScopedSymbolTable(
+      "global",
+      this.currentScope.scopeLevel + 1,
+      this.currentScope,
+    );
     this.currentScope = globalScope;
     this.visitBlock(program.block);
+    if (this.currentScope.enclosingScope) {
+      this.currentScope = this.currentScope.enclosingScope;
+    }
   }
 
   visitUnaryOp(unaryOp: UnaryOp): BuiltinTypeSymbol {
@@ -326,4 +343,6 @@ export default class SemanticAnalyzer {
 
     this.currentScope.insert(varSymbol);
   }
+
+  visitWriteStream(writeStream: WriteStream) {}
 }
