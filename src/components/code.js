@@ -1,11 +1,12 @@
 /* @flow */
 import React, { Component, Element } from "react";
+import type { Action } from "../actionTypes";
 
 type CodeProps = {
   children?: Element<any>,
   highlightStart: number,
   highlightStop: number,
-  onSetCode: string => void,
+  onSetCode: string => Action,
 };
 type CodeState = {
   scrollTop: number,
@@ -13,6 +14,9 @@ type CodeState = {
 };
 export default class extends Component<void, CodeProps, CodeState> {
   onScroll: UIEvent => void;
+  onTab: KeyboardEvent => void;
+  onKeyDown: KeyboardEvent => void;
+  onUpdateText: KeyboardEvent => void;
 
   state = {
     scrollTop: 0,
@@ -23,10 +27,19 @@ export default class extends Component<void, CodeProps, CodeState> {
     super(props);
 
     this.onScroll = this.onScroll.bind(this);
+    this.onKeyDown = this.onKeyDown.bind(this);
+    this.onTab = this.onTab.bind(this);
+    this.onUpdateText = this.onUpdateText.bind(this);
     this.state = {
       scrollTop: 0,
       scrollLeft: 0,
     };
+  }
+
+  onUpdateText({ target }: { target: EventTarget }) {
+    if (target.value != null && typeof target.value === "string") {
+      this.props.onSetCode(target.value);
+    }
   }
 
   componentDidUpdate() {
@@ -41,6 +54,26 @@ export default class extends Component<void, CodeProps, CodeState> {
     });
   }
 
+  onKeyDown(event: KeyboardEvent) {
+    if (event.keyCode === 9) {
+      this.onTab(event);
+    }
+  }
+
+  onTab(event: KeyboardEvent) {
+    // TODO: Currently just inserts 4 spaces, add real tab behaviour.
+    event.preventDefault();
+    const target = event.target;
+    if (target instanceof window.HTMLTextAreaElement) {
+      const cursorPosition = target.selectionStart;
+      const code = target.value;
+      const updateText =
+        code.slice(0, cursorPosition) + "    " + code.slice(cursorPosition);
+      this.refs.textArea.value = updateText;
+      this.refs.textArea.selectionEnd = cursorPosition + 4;
+      this.props.onSetCode(updateText);
+    }
+  }
   render() {
     let code;
     typeof this.props.children === "string"
@@ -61,17 +94,16 @@ export default class extends Component<void, CodeProps, CodeState> {
           className="code-text"
           spellCheck="false"
           value={code}
-          onChange={this.props.onSetCode}
+          onChange={this.onUpdateText}
           onScroll={this.onScroll}
+          onKeyDown={this.onKeyDown}
           ref="textArea"
         />
 
         <div className="highlights-container" ref="highlightsContainer">
           <div className="highlights">
             {beforeHightlight}
-            <mark>
-              {highlight}
-            </mark>
+            <mark>{highlight}</mark>
             {afterHighlight}
           </div>
         </div>

@@ -63,22 +63,14 @@ type InterpreterProps = {
 };
 
 class InterpreterView extends Component<void, InterpreterProps, void> {
-  onSetCode: string => void;
+  onSetCode: string => Action;
 
   constructor(props: InterpreterProps) {
     super(props);
-
-    this.onSetCode = this.onSetCode.bind(this);
   }
 
   componentWillMount() {
     this.props.onSetCode(this.props.code);
-  }
-
-  onSetCode({ target }: { target: EventTarget }) {
-    if (target.value != null && typeof target.value === "string") {
-      this.props.onSetCode(target.value);
-    }
   }
 
   render() {
@@ -86,7 +78,7 @@ class InterpreterView extends Component<void, InterpreterProps, void> {
       <main>
         <h1>Pascal Interpreter</h1>
         <Code
-          onSetCode={this.onSetCode}
+          onSetCode={this.props.onSetCode}
           highlightStart={this.props.highlightStart}
           highlightStop={this.props.highlightStop}
         >
