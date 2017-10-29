@@ -30,7 +30,7 @@ export default class ScopedNameSpace {
 
   lookUpValue(name: string): ?number {
     const value = this.values[name];
-    if (value) {
+    if (value != null) {
       return value;
     }
     if (this.enclosingScope) {
@@ -40,7 +40,7 @@ export default class ScopedNameSpace {
 
   lookUpProcedure(name: string): ?ProcedureDecl {
     const procedure = this.procedures[name];
-    if (procedure) {
+    if (procedure != null) {
       return procedure;
     }
     if (this.enclosingScope) {
