@@ -65,10 +65,6 @@ type InterpreterProps = {
 class InterpreterView extends Component<void, InterpreterProps, void> {
   onSetCode: string => Action;
 
-  constructor(props: InterpreterProps) {
-    super(props);
-  }
-
   componentWillMount() {
     this.props.onSetCode(this.props.code);
   }

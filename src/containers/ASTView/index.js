@@ -5,8 +5,14 @@ import React, { Component } from "react";
 import * as d3 from "d3";
 import type { Program } from "../../interpreter/Parser";
 import type { Node } from "./Stratifier";
-import type { ViewNode } from "./tree";
-import { mapTreeToNewCoords, treeMaxX, treeMaxY, viewNodeKey } from "./tree";
+import {
+  mapTreeToNewCoords,
+  treeMaxX,
+  treeMaxY,
+  viewNodeKey,
+  getYoungestExistingParent,
+  findNode,
+} from "./tree";
 import { NODE_RAD, DURATION } from "./consts";
 import type { Token } from "../../interpreter/Token";
 import { bindActionCreators } from "redux";
@@ -22,7 +28,6 @@ import "./index.css";
 const mapStateToProps = (state: State) => ({
   ast: state.interpreterPage.ast,
   strata: state.astView.strata,
-  sourceNode: state.astView.sourceNode,
   tokenList: state.lexerView.tokenList,
 });
 
@@ -37,21 +42,9 @@ const mapDispatchToProps = (dispatch: *) =>
     dispatch,
   );
 
-const findNode = (root: ViewNode, sourceNode: Node): ?ViewNode => {
-  const data = root.data;
-  if (data.id === sourceNode.id) {
-    return root;
-  } else if (Array.isArray(root.children)) {
-    return root.children
-      .map(child => findNode(child, sourceNode))
-      .find(x => x !== undefined);
-  }
-};
-
 type Props = {
   ast: ?Program,
   strata: Node,
-  sourceNode: Node,
   tokenList: Array<Token>,
   onHoverNode: Node => Action,
   onStopHoverNode: () => Action,
@@ -135,10 +128,6 @@ class ASTView extends Component<void, Props, void> {
       previousTreeWidth + (NODE_RAD + 1) * 2 + NODE_RAD * 25;
     const previousSvgHeight = previousTreeHeight + (NODE_RAD + 1) * 2;
 
-    const sourceNode = findNode(tree, this.props.sourceNode) || tree;
-    const previousSourceNode =
-      findNode(previousTree, this.props.sourceNode) || tree;
-
     const svg = d3
       .select(this.svg)
       .attr("width", Math.max(svgWidth, previousSvgWidth))
@@ -160,18 +149,24 @@ class ASTView extends Component<void, Props, void> {
 
     const node = containerGroup.selectAll("g.node").data(nodes, viewNodeKey);
 
+    const enteringNodes = new Set(
+      node
+        .enter()
+        .nodes()
+        .map(d => d.__data__),
+    );
     const nodeEnter = node
       .enter()
       .append("g")
       .attr("class", "node")
-      .attr(
-        "transform",
-        "translate(" +
-          (previousSourceNode.x || 0) +
-          "," +
-          (previousSourceNode.y || 0) +
-          ")",
-      )
+      .attr("transform", d => {
+        const sourceInNewTree = getYoungestExistingParent(d, enteringNodes);
+        const sourceNode =
+          findNode(previousTree, sourceInNewTree) || sourceInNewTree;
+        return (
+          "translate(" + (sourceNode.x || 0) + "," + (sourceNode.y || 0) + ")"
+        );
+      })
       .on("click", this.clickNode)
       .on("mouseover", this.hoverNode)
       .on("mouseout", this.stopHoverNode);
@@ -209,14 +204,21 @@ class ASTView extends Component<void, Props, void> {
       .select("circle")
       .attr("fill", d => (d.data.hiddenChildren ? "#999" : "#333"));
 
+    const exitingNodes = new Set(
+      node
+        .exit()
+        .nodes()
+        .map(d => d.__data__),
+    );
     const nodeExit = node
       .exit()
       .transition()
       .duration(DURATION)
-      .attr(
-        "transform",
-        "translate(" + (sourceNode.x || 0) + "," + (sourceNode.y || 0) + ")",
-      )
+      .attr("transform", d => {
+        const destInOldTree = getYoungestExistingParent(d, exitingNodes);
+        const destNode = findNode(tree, destInOldTree) || destInOldTree;
+        return "translate(" + (destNode.x || 0) + "," + (destNode.y || 0) + ")";
+      })
       .remove();
     nodeExit.select("text").style("fill-opacity", 1e-6);
     nodeExit.style("fill-opacity", 1e-6).style("stroke-opacity", 1e-6);
@@ -229,7 +231,14 @@ class ASTView extends Component<void, Props, void> {
       .enter()
       .insert("path", "g")
       .attr("class", "link")
-      .attr("d", this.path(previousSourceNode, previousSourceNode));
+      .attr("d", d => {
+        const sourceInNewTree = getYoungestExistingParent(d, enteringNodes);
+        const fn = findNode(previousTree, sourceInNewTree);
+        console.log(fn);
+        const sourceNode =
+          findNode(previousTree, sourceInNewTree) || sourceInNewTree;
+        return this.path(sourceNode, sourceNode);
+      });
 
     const linkUpdate = linkEnter.merge(link);
     linkUpdate
@@ -241,7 +250,11 @@ class ASTView extends Component<void, Props, void> {
       .exit()
       .transition()
       .duration(DURATION)
-      .attr("d", this.path(sourceNode, sourceNode))
+      .attr("d", d => {
+        const destInOldTree = getYoungestExistingParent(d, exitingNodes);
+        const destNode = findNode(tree, destInOldTree) || destInOldTree;
+        return this.path(destNode, destNode);
+      })
       .remove();
   }
 

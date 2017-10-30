@@ -124,13 +124,12 @@ export const viewNodeKey = (node: ViewNode): string => {
   return key;
 };
 
-const findViewNode = (root: ViewNode, key: string) => {
-  if (viewNodeKey(root) === key) {
+export const findNode = (root: ViewNode, node: ViewNode): ?ViewNode => {
+  if (viewNodeKey(root) === viewNodeKey(node)) {
     return root;
-  }
-  if (Array.isArray(root.children)) {
+  } else if (Array.isArray(root.children)) {
     return root.children
-      .map(child => findViewNode(child, key))
+      .map(child => findNode(child, node))
       .find(x => x !== undefined);
   }
 };
@@ -156,4 +155,19 @@ export const updateChildNode = (root: Node, oldChild: Node, newChild: Node) => {
       updateChildNode(child, oldChild, newChild),
     ),
   });
+};
+
+export const getYoungestExistingParent = (
+  node: ViewNode,
+  exitingNodes: Set<ViewNode>,
+): ViewNode => {
+  if (!exitingNodes.has(node)) {
+    return node;
+  } else {
+    if (node.parent) {
+      return getYoungestExistingParent(node.parent, exitingNodes);
+    } else {
+      return node;
+    }
+  }
 };

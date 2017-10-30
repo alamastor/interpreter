@@ -1,6 +1,6 @@
 /* @flow */
 import type { Action } from "../../actionTypes.js";
-import ASTStratifier from "./Stratifier";
+import ASTStratifier, { emptyStrata } from "./Stratifier";
 import type { Node } from "./Stratifier";
 import { updateChildNode } from "./tree";
 
@@ -12,20 +12,10 @@ const toggleChildren = (node: Node): Node =>
 
 type ASTViewState = {
   strata: Node,
-  sourceNode: Node,
-};
-
-export const emptyStrata: Node = {
-  id: "",
-  name: "",
-  type: "",
-  startPos: 0,
-  stopPos: 0,
 };
 
 const initialState: ASTViewState = {
   strata: emptyStrata,
-  sourceNode: emptyStrata,
 };
 
 const ASTView = (
@@ -40,7 +30,6 @@ const ASTView = (
           action.node,
           toggleChildren(action.node),
         ),
-        sourceNode: action.node,
       });
 
     case "ast_view_received_ast":
@@ -48,13 +37,11 @@ const ASTView = (
       if (ast == null) {
         return Object.assign({}, state, {
           strata: emptyStrata,
-          sourceNode: emptyStrata,
         });
       }
       const strata = new ASTStratifier(ast).build();
       return Object.assign({}, state, {
         strata: strata,
-        sourceNode: emptyStrata,
       });
 
     default:

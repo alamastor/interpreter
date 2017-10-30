@@ -19,13 +19,19 @@ import type {
 import uuidV4 from "uuid/v4";
 
 export type Node = {
-  id: string,
   name: string,
   type: string,
   children?: Array<Node>,
   hiddenChildren?: Array<Node>,
   startPos: number,
   stopPos: number,
+};
+
+export const emptyStrata: Node = {
+  name: "",
+  type: "",
+  startPos: 0,
+  stopPos: 0,
 };
 
 class Stratifier {
@@ -59,7 +65,6 @@ class Stratifier {
         value = this.visitVar(assign.value);
     }
     return {
-      id: uuidV4(),
       name: ":=",
       type: "Assign",
       children: [variable, value],
@@ -98,7 +103,6 @@ class Stratifier {
         right = this.visitVar(binOp.right);
     }
     return {
-      id: uuidV4(),
       name: "BinOp:" + binOp.op.type,
       type: "BinOp",
       children: [left, right],
@@ -117,7 +121,6 @@ class Stratifier {
     });
     const compoundStatement: Node = this.visitCompound(block.compoundStatement);
     return {
-      id: uuidV4(),
       name: "Block",
       type: "Block",
       children: declarations.concat([compoundStatement]),
