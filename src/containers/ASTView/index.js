@@ -174,6 +174,7 @@ class ASTView extends Component<void, Props, void> {
     nodeEnter
       .append("circle")
       .classed("node-circle", true)
+      .style("fill-opacity", "1e-6")
       .attr("r", NODE_RAD);
 
     nodeEnter
@@ -202,6 +203,9 @@ class ASTView extends Component<void, Props, void> {
       .text(d => d.data.name);
     nodeUpdate
       .select("circle")
+      .transition()
+      .duration(DURATION)
+      .style("fill-opacity", "1")
       .attr("fill", d => (d.data.hiddenChildren ? "#999" : "#333"));
 
     const exitingNodes = new Set(
@@ -221,7 +225,10 @@ class ASTView extends Component<void, Props, void> {
       })
       .remove();
     nodeExit.select("text").style("fill-opacity", 1e-6);
-    nodeExit.style("fill-opacity", 1e-6).style("stroke-opacity", 1e-6);
+    nodeExit
+      .select("circle")
+      .style("fill-opacity", 1e-6)
+      .style("stroke-opacity", 1e-6);
 
     const link = containerGroup
       .selectAll("path.link")
