@@ -2,7 +2,7 @@
 import type { Action } from "../../actionTypes.js";
 import ASTStratifier, { emptyStrata } from "./Stratifier";
 import type { Node } from "./Stratifier";
-import { updateChildNode } from "./tree";
+import { replaceNodeInTree } from "./tree";
 
 const toggleChildren = (node: Node): Node =>
   Object.assign({}, node, {
@@ -25,7 +25,7 @@ const ASTView = (
   switch (action.type) {
     case "ast_view_node_click":
       return Object.assign({}, state, {
-        strata: updateChildNode(
+        strata: replaceNodeInTree(
           state.strata,
           action.node,
           toggleChildren(action.node),
