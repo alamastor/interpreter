@@ -16,7 +16,6 @@ import type {
   VarDecl,
   WriteStream,
 } from "../../interpreter/Parser";
-import uuidV4 from "uuid/v4";
 
 export type Node = {
   name: string,
@@ -150,7 +149,6 @@ class Stratifier {
       }
     });
     return {
-      id: uuidV4(),
       name: "Compound",
       type: "Compound",
       children: childNodes,
@@ -174,7 +172,6 @@ class Stratifier {
 
   visitNoOp(noOp: NoOp): Node {
     return {
-      id: uuidV4(),
       name: "NoOp",
       type: "NoOp",
       startPos: noOp.startPos,
@@ -184,7 +181,6 @@ class Stratifier {
 
   visitNum(num: Num) {
     return {
-      id: uuidV4(),
       name: "Num: " + num.token.value,
       type: "Num",
       startPos: num.startPos,
@@ -196,7 +192,6 @@ class Stratifier {
     const children = procedureCall.params.map(param => this.visitExpr(param));
 
     return {
-      id: uuidV4(),
       name: "ProcCall: " + procedureCall.name,
       type: "ProcCall",
       children: children,
@@ -207,7 +202,6 @@ class Stratifier {
 
   visitProcedureDecl(procedureDecl: ProcedureDecl): Node {
     const params = procedureDecl.params.map(param => ({
-      id: uuidV4(),
       name: "Param",
       type: "Param",
       children: [this.visitVar(param.varNode), this.visitType(param.typeNode)],
@@ -218,7 +212,6 @@ class Stratifier {
     const block = this.visitBlock(procedureDecl.block);
 
     return {
-      id: uuidV4(),
       name: "ProcDecl: " + procedureDecl.name,
       type: "ProcDecl",
       children: params.concat(block),
@@ -229,7 +222,6 @@ class Stratifier {
 
   visitProgram(program: Program): Node {
     return {
-      id: uuidV4(),
       name: "Program: " + program.name,
       type: "Program",
       children: [this.visitBlock(program.block)],
@@ -240,7 +232,6 @@ class Stratifier {
 
   visitType(type: Type) {
     return {
-      id: uuidV4(),
       name: "Type: " + type.value,
       type: "Type",
       startPos: type.startPos,
@@ -264,7 +255,6 @@ class Stratifier {
         expr = this.visitVar(unaryOp.expr);
     }
     return {
-      id: uuidV4(),
       name: "UnaryOp:" + unaryOp.op.type,
       type: "UnaryOp",
       children: [expr],
@@ -275,7 +265,6 @@ class Stratifier {
 
   visitVar(node: Var): Node {
     return {
-      id: uuidV4(),
       name: "Var: " + node.token.value,
       type: "Var",
       startPos: node.startPos,
@@ -285,7 +274,6 @@ class Stratifier {
 
   visitVarDecl(varDecl: VarDecl): Node {
     return {
-      id: uuidV4(),
       name: "VarDecl",
       type: "VarDecl",
       children: [
@@ -299,7 +287,6 @@ class Stratifier {
 
   visitWriteStream(writeStream: WriteStream): Node {
     return {
-      id: uuidV4(),
       name: "WriteStream",
       type: "WriteStream",
       startPos: writeStream.startPos,
