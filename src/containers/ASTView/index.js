@@ -233,8 +233,6 @@ class ASTView extends Component<void, Props, void> {
       .attr("class", "link")
       .attr("d", d => {
         const sourceInNewTree = getYoungestExistingParent(d, enteringNodes);
-        const fn = findNode(previousTree, sourceInNewTree);
-        console.log(fn);
         const sourceNode =
           findNode(previousTree, sourceInNewTree) || sourceInNewTree;
         return this.path(sourceNode, sourceNode);
